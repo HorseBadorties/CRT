@@ -11,15 +11,27 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.event.EventListenerList;
 
+import de.toto.game.Position;
+import de.toto.game.Rules.Piece;
 import de.toto.sound.Sounds;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel {
 	
-	public BoardCanvas boardCanvas = new BoardCanvas(this);
+	private Position currentPosition = new Position();
+	private BoardCanvas boardCanvas = new BoardCanvas(this);
 	
+	public Position getCurrentPosition() {
+		return currentPosition;
+	}
+
+	public void setCurrentPosition(Position currentPosition) {
+		this.currentPosition = currentPosition;
+		boardCanvas.positionChanged();
+		repaint();		
+	}
+
 	public Board() {
 		super();
 		add(boardCanvas);
@@ -63,47 +75,15 @@ public class Board extends JPanel {
 	
 	public static class BoardCanvas extends JComponent {
 
-		public enum Piece {			
-			WHITE_KING('K', 'K'), WHITE_QUEEN('Q', 'Q'), WHITE_ROOK('R', 'R'), WHITE_BISHOP('B', 'B'), WHITE_KNIGHT('N', 'N'), WHITE_PAWN('P', ' '), 
-			BLACK_KING('k', 'K'), BLACK_QUEEN('q', 'Q'), BLACK_ROOK('r', 'R'), BLACK_BISHOP('b', 'B'), BLACK_KNIGHT('n', 'N'), BLACK_PAWN('p', ' ');
-			
-			private final char fenChar;
-			private final char pgnChar;
-			
-			Piece(char fenChar, char pgnChar) {
-				this.fenChar = fenChar;
-				this.pgnChar = pgnChar;
-			}
-			
-			char fenChar() {
-				return fenChar;
-			}
-			
-			char pgnChar() {
-				return pgnChar;
-			}
-			
-			static Piece getByFenChar(char fenChar) {
-				for (Piece p : Piece.values()) {
-					if (p.fenChar == fenChar) return p;
-				}
-				return null;
-			}
-			
-		}
-
-		private static class Square {
-			boolean isWhite;
+		private static class Square {	
+			de.toto.game.Square gameSquare;
 			int rank;
-			int file;
-			Piece piece;
+			int file;			
 			Point topLeftOnBoard;
 			boolean isDragSource = false;
 			boolean isDragTarget = false;
 
-			public Square(int rank, int file, boolean isWhite) {
-				super();
-				this.isWhite = isWhite;
+			public Square(int rank, int file) {
 				this.rank = rank;
 				this.file = file;
 			}
@@ -113,14 +93,6 @@ public class Board extends JPanel {
 				Character cFile = Character.valueOf((char)(file+96));
 				return cFile.toString() + rank;
 			}
-
-			@Override
-			public String toString() {
-				return String.format("%s, %s, %s, %s, ", getName(),
-						isWhite ? "white" : "black", piece != null ? piece
-								: "empty", topLeftOnBoard);
-			}
-
 		}
 
 		private Image boardImage, boardImageScaled;
@@ -140,18 +112,25 @@ public class Board extends JPanel {
 		private Square dragSquare = null;
 		private Square dragTarget = null;
 
-		private boolean isOrientationWhite = true;
-		private Square[][] squares = new Square[8][8];
-		
 		private Board board;
+		private Square[][] squares = new Square[8][8];
+		private boolean isOrientationWhite = true;
+		
+		private void positionChanged() {
+			for (int rank = 1; rank <= 8; rank++) {
+				for (int file = 1; file <= 8; file++) {
+					squares[rank-1][file-1].gameSquare = board.currentPosition.getSquare(rank, file);
+				}
+			}
+		}
 
 		private MouseAdapter mouseAdapter = new MouseAdapter() {
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
 				if (!isDragging) {
-					dragSquare = getSquareAt(e.getPoint());	
-					if (dragSquare.piece == null) return;
+					dragSquare = getSquareAt(e.getPoint());					
+					if (dragSquare.gameSquare.piece == null) return;
 					dragSquare.isDragSource = true;
 				}
 				isDragging = true;
@@ -175,8 +154,8 @@ public class Board extends JPanel {
 					return;
 				Square dropSquare = getSquareAt(e.getPoint());
 				if (dropSquare != null && dropSquare != dragSquare) {
-					String move = dragSquare.piece.pgnChar + dragSquare.getName();
-					if (dropSquare.piece != null) {
+					String move = dragSquare.gameSquare.piece.pgnChar + dragSquare.getName();
+					if (dropSquare.gameSquare.piece != null) {
 						Sounds.capture();
 						move += "x";
 					} else {
@@ -184,8 +163,8 @@ public class Board extends JPanel {
 						move += "-";
 					}
 					move += dropSquare.getName();
-					dropSquare.piece = dragSquare.piece;
-					dragSquare.piece = null;
+					dropSquare.gameSquare.piece = dragSquare.gameSquare.piece;
+					dragSquare.gameSquare.piece = null;
 					board.fireUserMoved(move.trim());
 				}
 				isDragging = false;
@@ -284,13 +263,10 @@ public class Board extends JPanel {
 			return result;
 		}
 
-		private void initSquares() {
-			boolean isWhite;
-			for (int rank = 1; rank <= 8; rank++) {
-				isWhite = rank % 2 == 0 ? true : false;
+		private void initSquares() {			
+			for (int rank = 1; rank <= 8; rank++) {				
 				for (int file = 1; file <= 8; file++) {
-					squares[rank - 1][file - 1] = new Square(rank, file, isWhite);
-					isWhite = !isWhite;
+					squares[rank - 1][file - 1] = new Square(rank, file);
 				}
 			}
 		}
@@ -406,12 +382,12 @@ public class Board extends JPanel {
 					Square square = getSquare(rank, file);
 					// draw square background if no boardImage is loaded
 					if (boardImageScaled == null) {
-						g2.setColor(square.isWhite ? squareColorWhite : squareColorBlack);
+						g2.setColor(square.gameSquare.isWhite ? squareColorWhite : squareColorBlack);
 						g2.fillRect(square.topLeftOnBoard.x, square.topLeftOnBoard.y, squareSize, squareSize);
 					}					
 					
-					if (square.piece != null && !square.isDragSource) {
-						g2.drawImage(getScaledPiece(square.piece),
+					if (square.gameSquare.piece != null && !square.isDragSource) {
+						g2.drawImage(getScaledPiece(square.gameSquare.piece),
 								square.topLeftOnBoard.x,
 								square.topLeftOnBoard.y, null);
 					}
@@ -433,57 +409,11 @@ public class Board extends JPanel {
 						}
 					}
 				}
-				g2.drawImage(getScaledPiece(dragSquare.piece), cursorLocation.x
+				g2.drawImage(getScaledPiece(dragSquare.gameSquare.piece), cursorLocation.x
 						- squareSize / 2, cursorLocation.y - squareSize / 2, null);
 			}
 
 		}
-
-		public void move(String from, String to) {
-			move(getSquare(from), getSquare(to));
-		}
-
-		public void move(Square from, Square to) {
-			to.piece = from.piece;
-			from.piece = null;
-			repaint();
-		}
 		
-		public void fen(String fen) {
-			//clear all squares
-			for (int rank = 1; rank <= 8; rank++) {
-				for (int file = 1; file <= 8; file++) {
-					getSquare(rank, file).piece = null;
-				}
-			}
-			int rank = 8;
-			int file = 1;
-			for (int i = 0; i < fen.length(); i++) {
-				char fenChar = fen.charAt(i);
-				if (' ' == fenChar) {
-					//ignore rest of FEN
-					repaint();
-					return;
-				}
-				if ('/' == fenChar) {
-					rank--;
-					file = 1;
-					continue;
-				}
-				int numericValue = Character.getNumericValue(fenChar);
-				if (numericValue > 0 && numericValue <= 8) {
-					file += numericValue;
-					continue;
-				}
-				Piece piece = Piece.getByFenChar(fenChar);
-				if (piece != null) {
-					getSquare(rank, file).piece = piece;
-					file++;
-				} else {
-					throw new IllegalArgumentException("failed to parse FEN: " + fen);
-				}				
-			}				
-		}
-
 	}
 }

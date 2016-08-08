@@ -13,19 +13,6 @@ public class Main {
 	
 	public static void main(String[] args) {
 		
-		// TODO remove soon
-//		try {
-//			String f = "C:\\Users\\Torsten\\Documents\\Adrian-Geisen.pgn"; //Adrian-Geisen.pgn
-//			PGNReader reader = new PGNReader(f);
-//            reader.setErrorHandler(new PGNSimpleErrorHandler(System.out));
-//            game = reader.parseGame();
-//            game.gotoStart();
-//
-//	
-//		} catch (Exception ex) {
-//			ex.printStackTrace();
-//		}
-		
 		game = new Game();
 		game.start();
 		game.addMove("d4", "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1");
@@ -36,7 +23,6 @@ public class Main {
 		game.addMove("b5", "rnbqkb1r/p2ppppp/5n2/1ppP4/2P5/8/PP2PPPP/RNBQKBNR w KQkq - 0 4");
 		game.addMove("cxb5", "rnbqkb1r/p2ppppp/5n2/1PpP4/8/8/PP2PPPP/RNBQKBNR b KQkq - 0 4");
 		game.gotoStartPosition();
-		
 		
 		java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {

@@ -1,0 +1,334 @@
+﻿[Event "Fernando 01.01"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga "]
+[Black "4.Nf3"]
+[Result "*"]
+[ECO "E10"]
+[PlyCount "8"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. Nf3 e6 {Blumenfeld Gambit} *
+
+[Event "Fernando 01.02"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga "]
+[Black "4.b3"]
+[Result "*"]
+[ECO "A57"]
+[PlyCount "16"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. b3 e6 5. dxe6 (5. Bb2 bxc4 6. bxc4 Ba6 7. Nd2 (
+7. Qc2 exd5 8. cxd5 Nxd5 9. Qe4+ Ne7 10. Qxa8 Nec6 11. Nc3 Qc8 12. Nd5 Bb7 13.
+Nb6 Qc7 14. Nd5 Qc8) 7... exd5) (5. Nf3 exd5 6. cxd5 Bb7 7. e4 Nxe4 8. Bxb5
+Qa5+ $13 9. Nbd2 Qxb5 (9... Nxd2 10. Qe2+ Ne4+ 11. Bd2) 10. Nxe4 Be7 11. Bb2
+O-O) 5... fxe6 6. cxb5 Ne4 7. Bb2 Qa5+ 8. Nc3 d5 *
+
+[Event "Fernando 01.03"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga "]
+[Black "4.a4"]
+[Result "*"]
+[ECO "A57"]
+[PlyCount "18"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. a4 b4 5. Nd2 g6 6. e4 d6 7. Ngf3 (7. f4 $5 Bg7
+8. Ngf3 O-O 9. Bd3 Nbd7 10. O-O) 7... Bg7 8. Bd3 O-O 9. O-O e5 *
+
+[Event "Fernando 01.04"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga "]
+[Black "4.Nd2"]
+[Result "*"]
+[ECO "A57"]
+[PlyCount "18"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. Nd2 bxc4 5. e4 (5. Nxc4 Bb7) 5... Bb7 6. Bxc4 g6
+7. b3 Bg7 8. Bb2 O-O 9. Ngf3 e6 *
+
+[Event "Fernando 01.05"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga "]
+[Black "4.Qc2"]
+[Result "*"]
+[ECO "A57"]
+[PlyCount "20"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. Qc2 bxc4 5. e4 d6 (5... e6 6. Bxc4 exd5 7. exd5
+d6 8. Nc3 Be7 9. Nf3 O-O 10. O-O Nbd7 (10... Bg4 $6 11. Nd2 Bh5 12. f4) 11. Re1
+Nb6 12. b3 Bg4 {[%cal Gg4h5,Gh5g6]} 13. Nd2 Bh5 14. f4 Bg4 15. h3 Bd7 16. Nf3
+Re8 17. Bb2 Nxc4 18. bxc4 Rb8) 6. Bxc4 g6 7. Nc3 Bg7 8. Nf3 O-O 9. O-O Ba6 10.
+Bxa6 Nxa6 {[%cal Ga6c7,Gc7b5,Gb5d4,Ga8b8,Gb8b2]} *
+
+[Event "Fernando 01.06"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga "]
+[Black "4.e3/e4"]
+[Result "*"]
+[ECO "A57"]
+[PlyCount "11"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. e3 (4. e4 Nxe4 5. Qf3 Nd6 (5... Nf6 $4 6. d6))
+4... Qa5+ 5. Nc3 (5. Bd2 b4) (5. Nd2 bxc4 6. Bxc4 Ba6) 5... b4 6. Nce2 *
+
+[Event "Fernando 01.07"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga "]
+[Black "4.Bg5"]
+[Result "*"]
+[ECO "A57"]
+[PlyCount "16"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. Bg5 Ne4 5. Bf4 Qa5+ 6. Nd2 g5 7. Be5 (7. Be3
+bxc4) 7... f6 8. Bg3 bxc4 *
+
+[Event "Fernando 02.01"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga Zaizev"]
+[Black "5.Nc3"]
+[Result "*"]
+[ECO "A57"]
+[PlyCount "22"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. cxb5 a6 5. Nc3 axb5 6. e4 (6. Nxb5 Qa5+ 7. Nc3
+Bb7 8. Bd2 Qb6 9. e4 e6 10. Bc4 Nxe4) 6... Qa5 {recommended by GM Ramirez} (
+6... b4 7. Nb5 d6 (7... Nxe4 $4 8. Qe2 {[%cal Gb5d6]} f5 9. f3) 8. Bd3 (8. Bf4
+g5 $1 9. Bxg5 Nxe4 10. Bf4 Nf6 $1 {[%cal Gb8d7,Gf8g7,Ge8g8,Gh8f8]} 11. Qe2 Ra6)
+(8. Bc4 Nbd7 (8... Nxe4 $6 9. Qe2 Nf6 10. Bf4 $16 Ra6 11. Nxd6+ Rxd6 12. Bb5+)
+9. Nf3 Nb6) (8. Nf3 Nxe4 9. Bc4 g6 10. Qe2 f5) 8... e6 9. dxe6 Bxe6 10. a4 bxa3
+11. Rxa3 Rxa3 12. Nxa3 Be7 $11 {[%cal Ge8g8,Gh8f8,Gb8c6]}) 7. Bd2 b4 8. e5 (8.
+Nb5 Nxe4 9. Qe2 Ba6 10. Qxe4 Bxb5 11. Bxb5 Qxb5 12. d6 Nc6) 8... bxc3 9. Bxc3
+Qa4 (9... Qb6 10. exf6 gxf6 11. Nf3 d6 12. Be2 Nd7 13. O-O Bh6 14. a4) 10. Qxa4
+Rxa4 11. exf6 gxf6 {[%csl Rd5][%cal Rh8g8,Rg8g2,Ra4a2]} *
+
+[Event "Fernando 02.02"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga Dlugy"]
+[Black "5.f3"]
+[Result "*"]
+[ECO "A57"]
+[PlyCount "20"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. cxb5 a6 5. f3 g6 (5... axb5 6. e4 Qa5+ 7. Bd2 (
+7. b4 cxb4 8. Nd2 (8. Bb2 e5 $1) 8... e5 $1 9. Nb3 Qb6 10. Qd3 Na6 11. Qxb5 (
+11. Be3 $5 Nc5 12. Qe2 d6)) (7. Nc3 b4 8. Nb5 d6 9. a4 (9. e5 $2 dxe5 10. d6
+exd6 11. Nxd6+ Bxd6 12. Qxd6 Be6 13. Be3 Nbd7 14. Rc1 Nd5 15. Bxc5 $4 b3+ 16.
+Kf2 Qd2+) 9... Nbd7 {[%cal Gg7g6,Gf8g7,Ge8g8,Gh8f8]} (9... g6 $6 10. e5 dxe5
+11. d6 exd6 12. Nxd6+ Bxd6 13. Qxd6)) 7... b4 8. Na3 d6 9. Nc4 Qd8 10. a3 (10.
+Bd3 e6 $1 11. dxe6 Bxe6 12. Ne2 Nc6 13. O-O Be7 14. Nf4 O-O) 10... e6 $1 11.
+dxe6 Bxe6 12. Ne3 (12. axb4 Rxa1 13. Qxa1 d5) 12... d5) 6. e4 Bg7 7. Na3 {
+[%cal Ga3c4,Yg1e2,Ye2c3]} (7. e5 Ng8 8. f4 d6 9. Nf3 Nh6 10. Nc3 O-O $13) (7.
+Nc3 {[%csl Rg1]} O-O 8. Nge2 d6 9. a4 Nbd7 10. Nf4 Ne5 11. Be2 c4 12. bxa6 Qa5
+13. Bd2 Bxa6 14. Nb5 Qb6 15. Kf1 Bxb5 16. axb5 Qxb5) 7... O-O 8. Ne2 e6 9. Nc3
+exd5 10. Nxd5 Bb7 *
+
+[Event "Fernando 02.03"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga Quite"]
+[Black "5.e3"]
+[Result "*"]
+[ECO "A57"]
+[PlyCount "28"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. cxb5 a6 5. e3 Bb7 $1 (5... axb5 6. Bxb5 Qa5+ 7.
+Nc3 Bb7 {[%csl Rd5]} 8. Bd2 (8. Nge2 Nxd5 9. O-O Nc7 10. Bc4 e6 11. e4 Be7) (8.
+Bc4 e6 9. Bd2 Qb6 10. e4 Nxe4 $1) (8. e4 Nxe4 9. Nge2 Nd6 10. Bd3 Bxd5 11. O-O
+Bb7 $44 {[%cal Ge7e6,Gf8e7,Ge8g8,Gh8f8]}) 8... Qb6 9. Qb3 (9. Bc4 e6) (9. Nf3
+Nxd5 10. Nxd5 Bxd5 11. a4 e6 12. Bc3 Be7 13. O-O {[%cal Gf3d2,Gd2c4]} Qb7) 9...
+e6 10. Bc4 (10. e4 Nxe4 $1 {[%csl Rb5,Rd5,Rg2][%cal Rb7g2]} 11. Nxe4 Bxd5 12.
+Qd3 f5 (12... Qb7 13. f3 c4 14. Bxc4 Bxc4 15. Qxc4 d5 $13) 13. Ng3 Bxg2 $13)
+10... Qxb3 11. Bxb3 exd5 12. Nge2 Be7) 6. Nc3 Qa5 7. Bd2 (7. bxa6 Nxa6 8. Bd2
+Qb6 9. e4 e6) 7... axb5 8. Bxb5 Qb6 9. Qb3 (9. Bc4 e6 10. e4 Nxe4) 9... e6 10.
+Bc4 (10. e4 Nxe4 11. Nxe4 Bxd5 12. Qd3 f5 (12... Qb7 13. f3 c4 14. Bxc4 Bxc4
+15. Qxc4 d5 16. Qd4 dxe4) 13. Ng3 Bxg2 14. N1e2 Bxh1 15. Nxh1 Be7 16. Bc3 O-O
+17. Bxd7 $2 Rd8 18. Qg3 Bf8 {[%csl Rd7]}) 10... Qxb3 11. Bxb3 exd5 12. Nge2 Na6
+{[%csl Rd5][%cal Ga6c7]} 13. O-O Nc7 14. Rfd1 Bd6 *
+
+[Event "Fernando 03.01"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga "]
+[Black "5.b6"]
+[Result "*"]
+[ECO "A57"]
+[PlyCount "16"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. cxb5 a6 5. b6 e6 6. Nc3 exd5 7. Nxd5 Nxd5 8.
+Qxd5 Nc6 *
+
+[Event "Fernando 04.01"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga without d6"]
+[Black "8.e5"]
+[Result "*"]
+[ECO "A58"]
+[PlyCount "28"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. cxb5 a6 5. bxa6 g6 6. Nc3 Bg7 7. e4 O-O 8. e5
+Ne8 9. Nf3 (9. f4 d6 10. Nf3 Nc7 11. Be2 Nd7 12. O-O dxe5 13. fxe5 Nxe5 $13)
+9... d6 10. Bf4 (10. exd6 Nxd6 11. Be2 Nxa6 12. O-O Nf5) 10... Nd7 11. exd6
+Nxd6 12. Be2 Qb6 13. Rb1 Bxa6 14. O-O Rfb8 *
+
+[Event "Fernando 04.02"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga without d6"]
+[Black "8.Nf3"]
+[Result "*"]
+[ECO "A58"]
+[PlyCount "22"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. cxb5 a6 5. bxa6 g6 6. Nc3 Bg7 7. e4 O-O 8. Nf3
+Qa5 9. Bd2 (9. Bd3 Nxd5 10. exd5 Bxc3+) (9. Nd2 Bxa6 10. Nb3 Qb6) 9... Bxa6 10.
+Bxa6 (10. Be2 Bxe2 (10... Qb4 11. Bxa6 Nxa6 12. Qe2 Qxb2 13. Rb1 Qa3 14. Rb3
+Qa5 15. e5 Ne8 16. O-O d6 17. Rfb1 Qd8 18. Rb7 Nb4) 11. Qxe2 Qa6 12. Qxa6 (12.
+a4 e6 13. Qxa6 Nxa6) 12... Nxa6 13. O-O Rfb8 $44) 10... Qxa6 11. Qe2 e6 *
+
+[Event "Fernando 05.01"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga g3"]
+[Black "10.0-0"]
+[Result "*"]
+[ECO "A58"]
+[PlyCount "19"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. cxb5 a6 5. bxa6 g6 6. Nc3 Bg7 7. g3 d6 8. Bg2
+O-O 9. Nf3 Nbd7 10. O-O *
+
+[Event "Fernando 05.02"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga g3"]
+[Black "10.Rb1"]
+[Result "*"]
+[ECO "A58"]
+[PlyCount "19"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. cxb5 a6 5. bxa6 g6 6. Nc3 Bg7 7. g3 d6 8. Bg2
+O-O 9. Nf3 Nbd7 10. Rb1 *
+
+[Event "Fernando 06.01"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Blumenfeld"]
+[Black "5.e4"]
+[Result "*"]
+[ECO "E10"]
+[PlyCount "20"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. Nf3 e6 5. e4 Nxe4 6. Bd3 Nf6 7. O-O Be7 8. Nc3
+a6 9. Re1 O-O 10. cxb5 Bb7 *
+
+[Event "Fernando 06.02"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Blumenfeld"]
+[Black "5.a4"]
+[Result "*"]
+[ECO "E10"]
+[PlyCount "9"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. Nf3 e6 5. a4 *
+
+[Event "Fernando 06.03"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Blumenfeld"]
+[Black "5.Bf4"]
+[Result "*"]
+[ECO "E10"]
+[PlyCount "16"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. Nf3 e6 5. Bf4 exd5 6. cxd5 Bb7 7. d6 g6 8. Nc3
+Bg7 *
+
+[Event "Fernando 06.04"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Blumenfeld"]
+[Black "5.Nc3"]
+[Result "*"]
+[ECO "E10"]
+[PlyCount "9"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. Nf3 e6 5. Nc3 *
+
+[Event "Fernando 06.05"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Blumenfeld"]
+[Black "5.exd6"]
+[Result "*"]
+[ECO "E10"]
+[PlyCount "12"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. Nf3 e6 5. dxe6 fxe6 6. cxb5 a6 *
+
+[Event "Fernando 06.06"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Blumenfeld"]
+[Black "5.Bg5"]
+[Result "*"]
+[ECO "E10"]
+[PlyCount "9"]
+
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. Nf3 e6 5. Bg5 *
+
+[Event "Fernando 07.01"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Trompowsky"]
+[Black "3.e4"]
+[Result "*"]
+[ECO "A45"]
+[PlyCount "20"]
+
+1. d4 Nf6 2. Bg5 e6 3. e4 h6 4. Bxf6 Qxf6 5. Nc3 Bb4 {[%cal Gd7d5]} 6. Qd2 d5
+7. e5 Qd8 8. a3 Be7 9. f4 c5 10. Nf3 a6 *
+
+[Event "Fernando 07.02"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Trompowsky"]
+[Black "3.Nd2"]
+[Result "*"]
+[ECO "A45"]
+[PlyCount "10"]
+
+1. d4 Nf6 2. Bg5 e6 3. Nd2 c5 4. e4 (4. Ne4 Qb6 5. Nxf6+ gxf6 6. Bxf6 Qxb2)
+4... cxd4 5. e5 Qa5 *
+

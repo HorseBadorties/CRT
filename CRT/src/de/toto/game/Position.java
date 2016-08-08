@@ -3,6 +3,8 @@ package de.toto.game;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.toto.game.Rules.Piece;
+
 public class Position {
 	
 	int variationLevel = 0; //0 = main line, 1 = variation, 2 = variation of variation ...
@@ -14,11 +16,12 @@ public class Position {
 	String comment = null; // may contain graphics token such as [%csl Ge5][%cal Ge5b2]
 	List<String> nags = new ArrayList<String>(); // !, ?, ?? ...
 	
+	private Square[][] squares;
+	
 	
 	// Startposition
-	public Position() {
-		fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; 
-		whiteToMove = true;
+	public Position() {		
+		setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 	}
 
 	public Position(Position previous, String move) {
@@ -31,7 +34,7 @@ public class Position {
 		this.whiteToMove = !previous.whiteToMove;
 		this.move = move;
 		this.variationLevel = previous.variationLevel;
-		this.fen = fen;
+		setFen(fen);
 	}
 	
 	public boolean wasCapture() {
@@ -61,13 +64,109 @@ public class Position {
 		
 	}
 	
-	public String getFEN() {
-		return fen;
-	}
-	
 	private void addNextPosition(Position nextPosition) {
 		next.add(nextPosition);
 	}
 	
+	public String getFEN() {
+		return fen;
+	}
+	
+	private void initSquares() {
+		squares = new Square[8][8];
+		boolean isWhite;
+		for (int rank = 1; rank <= 8; rank++) {
+			isWhite = rank % 2 == 0 ? true : false;
+			for (int file = 1; file <= 8; file++) {
+				squares[rank - 1][file - 1] = new Square(rank, file, isWhite);
+				isWhite = !isWhite;
+			}
+		}
+	}
+	
+	public Square getSquare(int rank, int file) {
+		return squares[rank - 1][file - 1];
+	}
+
+	// e.g. "a1"
+	private Square getSquare(String squarename) {
+		int file = squarename.charAt(0) - 96;
+		int rank = Character.getNumericValue(squarename.charAt(1));
+		return getSquare(rank, file);
+	}
+	
+	private void setFen(String fen) {
+		this.fen = fen;
+		try {
+			String[] fenFields = getFenFields(fen);
+			initSquares();
+			int rank = 8;
+			int file = 1;			
+			for (int i = 0; i < fenFields[0].length(); i++) {
+				char fenChar = fen.charAt(i);			
+				if ('/' == fenChar) {
+					rank--;
+					file = 1;
+					continue;
+				}
+				int numericValue = Character.getNumericValue(fenChar);
+				if (numericValue > 0 && numericValue <= 8) {
+					file += numericValue;
+					continue;
+				}
+				Piece piece = Piece.getByFenChar(fenChar);
+				if (piece != null) {
+					getSquare(rank, file).piece = piece;
+					file++;
+				} else {
+					throw new IllegalArgumentException("failed to parse FEN: " + fen);
+				}				
+			}			
+			whiteToMove = "w".equals(fenFields[1]);
+			//TODO use other fields...
+		} catch (Exception ex) {
+			throw new IllegalArgumentException("failed to parse FEN: " + fen, ex);
+		}
+	}
+		
+	private static String[] getFenFields(String fen) {
+		String[] result = fen.split(" ");
+		return result;
+	}
+
+	public String toFen() {
+		StringBuilder fen = new StringBuilder();
+		for (int rank = 8; rank >= 1; rank--) {
+			int emptySquareCounter = 0;
+			for (int file = 1; file <= 8; file++) {
+				Square s = getSquare(rank, file);
+				if (s.piece != null) {
+					if (emptySquareCounter > 0) fen.append(emptySquareCounter);
+					emptySquareCounter = 0;
+					fen.append(s.piece.fenChar);
+				} else emptySquareCounter++;
+			}
+			if (emptySquareCounter > 0) fen.append(emptySquareCounter);
+			if (rank > 1) fen.append("/");	
+		}
+		fen.append(" ");
+		fen.append(whiteToMove ? "w" : "b");
+		// TODO Castle field
+		fen.append(" -");
+		// TODO En passant square field
+		fen.append(" -");
+		// TODO Halfmove clock field
+		fen.append(" 0");
+		// TODO Fullmove number field
+		fen.append(" 0");
+		return fen.toString();
+	}
+	
+	public static void main(String[] args) {
+		String fen = "r1bqkb1r/pp1ppp1p/2n2np1/8/1PpPP3/5N2/P1P1BPPP/RNBQK1R1 b Qkq - 1 6";
+		Position p = new Position();
+		p.setFen(fen);
+		System.out.println(p.toFen());
+	}
 	
 }

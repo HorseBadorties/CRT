@@ -27,15 +27,6 @@ public class AppFrame extends JFrame implements BoardListener {
 		getContentPane().add(board, BorderLayout.CENTER);
 		board.setPreferredSize(new Dimension(800, 800));
 		
-		
-		final JTextField txt = new JTextField(50);
-		ActionListener actionLoadFen = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				board.boardCanvas.fen(txt.getText());
-			}
-		}; 
-		txt.addActionListener(actionLoadFen);
 		Action actionNext = new AbstractAction("next") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -43,9 +34,8 @@ public class AppFrame extends JFrame implements BoardListener {
 					updateBoard(true);
 				};
 			}
-		};
-		
-		JButton btn = new JButton(actionNext);
+		};		
+		JButton btnNext = new JButton(actionNext);
 		Action actionBack = new AbstractAction("back") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -54,10 +44,11 @@ public class AppFrame extends JFrame implements BoardListener {
 				};
 			}
 		};
+		JButton btnBack = new JButton(actionBack);
 		
-		JPanel pnlSouth = new JPanel();
-		pnlSouth.add(txt);
-		pnlSouth.add(btn);
+		JPanel pnlSouth = new JPanel();		
+		pnlSouth.add(btnBack);
+		pnlSouth.add(btnNext);
 		getContentPane().add(pnlSouth, BorderLayout.PAGE_END);
 		
 		KeyStroke keyNext = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0);
@@ -71,7 +62,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	}
 	
 	private void updateBoard(boolean playSound) {
-		board.boardCanvas.fen(game.getPosition().getFEN());
+		board.setCurrentPosition(game.getPosition());
 		if (playSound) {
 			if (game.getPosition().wasCapture()) {
 				Sounds.capture();
