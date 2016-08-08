@@ -163,6 +163,16 @@ public class Board extends JPanel {
 						move += "-";
 					}
 					move += dropSquare.getName();
+					//Castles?
+					if (dragSquare.gameSquare.piece.type == de.toto.game.Rules.PieceType.KING
+							&& dragSquare.file == 5) 
+					{
+						if (dropSquare.file == 3) {
+							move = "0-0-0";
+						} else if (dropSquare.file == 7) {
+							move = "0-0";
+						}
+					}
 					board.fireUserMoved(move.trim());
 //					dropSquare.gameSquare.piece = dragSquare.gameSquare.piece;
 //					dragSquare.gameSquare.piece = null;

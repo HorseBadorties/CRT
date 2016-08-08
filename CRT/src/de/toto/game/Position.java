@@ -174,15 +174,29 @@ public class Position {
 				squares[rank - 1][file - 1].piece = previous.getSquare(rank, file).piece;
 			}
 		}
-		String[] m = move.split("x|-");
-		String from = m[0];
-		if (from.length() > 2) {
-			from = from.substring(from.length()-2, from.length());
+		if ("0-0".equals(move)) {
+			int rank = whiteToMove ? 8 : 1;
+			getSquare(rank, 5).piece = null;
+			getSquare(rank, 6).piece = previous.getSquare(rank, 8).piece;
+			getSquare(rank, 7).piece = previous.getSquare(rank, 5).piece;
+			getSquare(rank, 8).piece = null;
+		} else if ("0-0-0".equals(move)) {
+			int rank = whiteToMove ? 8 : 1;
+			getSquare(rank, 5).piece = null;
+			getSquare(rank, 4).piece = previous.getSquare(rank, 1).piece;
+			getSquare(rank, 3).piece = previous.getSquare(rank, 5).piece;
+			getSquare(rank, 1).piece = null;
+		} else {
+			String[] m = move.split("x|-");
+			String from = m[0];
+			if (from.length() > 2) {
+				from = from.substring(from.length()-2, from.length());
+			}
+			String to = m[1];
+			Piece piece = getSquare(from).piece;
+			getSquare(from).piece = null;
+			getSquare(to).piece = piece;
 		}
-		String to = m[1];
-		Piece piece = getSquare(from).piece;
-		getSquare(from).piece = null;
-		getSquare(to).piece = piece;
 		this.fen = toFen();
 	}
 	
