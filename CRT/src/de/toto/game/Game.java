@@ -1,5 +1,8 @@
 package de.toto.game;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Game {
 	private Position currentPosition;
 	
@@ -46,6 +49,23 @@ public class Game {
 		} else return null;
 	}
 	
+	public List<String> dumpMoves() {
+		List<String> result = new ArrayList<String>();
+		Position p = currentPosition;
+		while (!p.isStartPosition()) {
+			p = p.previous;
+		}
+		for(;;) {
+			result.add(p.move);
+			if (p.next.isEmpty()) break;
+			p = p.next.get(0);
+		}
+		return result;
+	}
 	
-
+	@Override
+	public String toString() {
+		return dumpMoves().toString(); 
+	}
+	
 }

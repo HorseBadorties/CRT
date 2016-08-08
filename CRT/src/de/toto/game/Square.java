@@ -24,11 +24,12 @@ public class Square {
 		
 		// e.g. "Nf3"
 		public String getNameWithPieceSuffix() {
-			String name = getName();
+			String name = "";
 			if (piece != null) {
-				name += piece.pgnChar;
+				name += piece.fenChar;
 				name.trim();
 			}
+			name += getName();
 			return name;
 		}
 

@@ -163,9 +163,9 @@ public class Board extends JPanel {
 						move += "-";
 					}
 					move += dropSquare.getName();
-					dropSquare.gameSquare.piece = dragSquare.gameSquare.piece;
-					dragSquare.gameSquare.piece = null;
 					board.fireUserMoved(move.trim());
+//					dropSquare.gameSquare.piece = dragSquare.gameSquare.piece;
+//					dragSquare.gameSquare.piece = null;
 				}
 				isDragging = false;
 				cursorLocation = null;
@@ -197,9 +197,9 @@ public class Board extends JPanel {
 		
 		public void setOrientationWhite(boolean value) {
 			if (value != isOrientationWhite) {
-				isOrientationWhite = value;	
-				repaint();
+				isOrientationWhite = value;
 				rescaleAll();
+				repaint();
 			} 
 		}
 
@@ -213,8 +213,8 @@ public class Board extends JPanel {
 
 		private void loadImages() {
 			try {
-//				boardImage = ImageIO.read(Board.class
-//						.getResource("/images/board/wood-1024.jpg"));
+				boardImage = ImageIO.read(Board.class
+						.getResource("/images/board/wood-1024.jpg"));
 				wK = ImageIO.read(Board.class
 						.getResource("/images/pieces/png/Chess_klt60.png"));
 				wQ = ImageIO.read(Board.class

@@ -34,7 +34,11 @@ public class Position {
 		this.whiteToMove = !previous.whiteToMove;
 		this.move = move;
 		this.variationLevel = previous.variationLevel;
-		setFen(fen);
+		if (fen != null) {
+			setFen(fen);
+		} else if (move != null) {
+			setMove(move);
+		}
 	}
 	
 	public boolean wasCapture() {
@@ -160,6 +164,42 @@ public class Position {
 		// TODO Fullmove number field
 		fen.append(" 0");
 		return fen.toString();
+	}
+	
+	
+	private void setMove(String move) {
+		initSquares();
+		for (int rank = 1; rank <= 8; rank++) {
+			for (int file = 1; file <= 8; file++) {
+				squares[rank - 1][file - 1].piece = previous.getSquare(rank, file).piece;
+			}
+		}
+		String[] m = move.split("x|-");
+		String from = m[0];
+		if (from.length() > 2) {
+			from = from.substring(from.length()-2, from.length());
+		}
+		String to = m[1];
+		Piece piece = getSquare(from).piece;
+		getSquare(from).piece = null;
+		getSquare(to).piece = piece;
+		this.fen = toFen();
+	}
+	
+	@Override
+	public String toString() {
+		return move + "; " + dumpSquares();
+	}
+	
+	private String dumpSquares() {
+		StringBuilder result = new StringBuilder();
+		for (int rank = 0; rank < 8; rank++) {
+			for (int file = 0; file < 8; file++) {
+				result.append(squares[rank][file].getNameWithPieceSuffix()).append(" ");
+			}
+			result.append("\n");
+		}
+		return result.toString();
 	}
 	
 	public static void main(String[] args) {
