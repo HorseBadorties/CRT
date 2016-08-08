@@ -25,7 +25,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	private void doUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().add(board, BorderLayout.CENTER);
-		board.setPreferredSize(new Dimension(1200, 1200));
+		board.setPreferredSize(new Dimension(800, 800));
 		
 		
 		final JTextField txt = new JTextField(50);
