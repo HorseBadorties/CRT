@@ -13,7 +13,7 @@ public class Main {
 	
 	public static void main(String[] args) {
 		
-		// TODO remove
+		// TODO remove soon
 //		try {
 //			String f = "C:\\Users\\Torsten\\Documents\\Adrian-Geisen.pgn"; //Adrian-Geisen.pgn
 //			PGNReader reader = new PGNReader(f);
