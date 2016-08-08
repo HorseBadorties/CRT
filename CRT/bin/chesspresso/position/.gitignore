@@ -1,0 +1,15 @@
+/AbstractMoveablePosition.class
+/AbstractMutablePosition.class
+/AbstractPosition.class
+/CompactPosition.class
+/FEN.class
+/IllegalPositionException.class
+/ImmutablePosition.class
+/LightWeightPosition.class
+/MoveablePosition.class
+/MutablePosition.class
+/NAG.class
+/Position.class
+/PositionChangeListener.class
+/PositionListener.class
+/PositionMotionListener.class
