@@ -7,8 +7,6 @@ import de.toto.game.Game;
 //import chesspresso.pgn.PGNSimpleErrorHandler;
 import de.toto.gui.AppFrame;
 
-
-
 public class Main {
 
 	public static Game game;
