@@ -14,6 +14,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	
 	private Game game;
 	private Board board;
+	private JTextField txtFen;
 	
 	public AppFrame(Game game) throws HeadlessException {
 		this.game = game;
@@ -46,9 +47,14 @@ public class AppFrame extends JFrame implements BoardListener {
 		};
 		JButton btnBack = new JButton(actionBack);
 		
-		JPanel pnlSouth = new JPanel();		
+		txtFen = new JTextField();
+		txtFen.setEditable(false);
+		txtFen.setColumns(50);
+		
+		JPanel pnlSouth = new JPanel();
 		pnlSouth.add(btnBack);
 		pnlSouth.add(btnNext);
+		pnlSouth.add(txtFen);
 		getContentPane().add(pnlSouth, BorderLayout.PAGE_END);
 		
 		KeyStroke keyNext = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0);
@@ -63,6 +69,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	
 	private void updateBoard(boolean playSound) {
 		board.setCurrentPosition(game.getPosition());
+		txtFen.setText(game.getPosition().getFen());
 		if (playSound) {
 			if (game.getPosition().wasCapture()) {
 				Sounds.capture();

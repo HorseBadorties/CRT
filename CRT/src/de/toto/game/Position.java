@@ -7,8 +7,7 @@ import de.toto.game.Rules.Piece;
 
 public class Position {
 	
-	private Square[][] squares;
-	private boolean whiteToMove = true;
+	private Square[][] squares;	
 	private Position previous = null;
 	private List<Position> next = new ArrayList<Position>(); 
 	private int variationLevel = 0; //0 = main line, 1 = variation, 2 = variation of variation ...
@@ -20,7 +19,6 @@ public class Position {
 	// Startposition
 	public Position() {		
 		setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-		whiteToMove = true;
 	}
 
 	public Position(Position previous, String move) {
@@ -34,7 +32,6 @@ public class Position {
 	public Position(Position previous, String move, String fen, boolean asVariation) {
 		this.previous = previous;
 		previous.addNextPosition(this, asVariation);
-		this.whiteToMove = !previous.whiteToMove;
 		this.move = move;
 		this.variationLevel = asVariation ? previous.variationLevel+1 : previous.variationLevel;
 		if (fen != null) {
@@ -89,7 +86,13 @@ public class Position {
 	}
 
 	public boolean isWhiteToMove() {
-		return whiteToMove;
+		if (fen != null) {
+			return "w".equals(fen.split(" ")[1]);
+		} else if (previous != null) {
+			return !previous.isWhiteToMove();
+		} else {
+			return true;
+		}
 	}
 
 	public Square[][] getSquares() {
@@ -104,6 +107,14 @@ public class Position {
 		return move != null && move.startsWith("0-0");
 	}
 	
+	private boolean wasKingMove() {
+		return move != null && move.startsWith("K");
+	}
+	
+	private boolean wasRookMove() {
+		return move != null && move.startsWith("R");
+	}
+	
 	public boolean wasPromotion() {
 		return move != null && move.contains("=");
 	}
@@ -113,7 +124,7 @@ public class Position {
 			boolean checkOrMate = isCheck() || isMate();
 			int promotionPiecePosition = checkOrMate ? move.length() - 2 : move.length() - 1;
 			String promotionPiece = move.substring(promotionPiecePosition, move.length());
-			if (whiteToMove) promotionPiece.toLowerCase();
+			if (isWhiteToMove()) promotionPiece.toLowerCase();
 			return Piece.getByFenChar(promotionPiece.charAt(0));			
 		}		
 		return null;
@@ -127,14 +138,8 @@ public class Position {
 		return move != null && move.endsWith("#");
 	}
 	
-	public int getMoveNumber() {
-		int moveCount = 0;
-		Position halfMove = this;
-		do  {
-			if (!halfMove.whiteToMove) moveCount++;
-			halfMove = halfMove.previous;
-		} while (halfMove != null);
-		return moveCount;
+	public int getMoveNumber() {		
+		return Integer.parseInt(previous.getFen().split(" ")[5]);
 		
 	}
 		
@@ -191,9 +196,7 @@ public class Position {
 				} else {
 					throw new IllegalArgumentException("failed to parse FEN: " + fen);
 				}				
-			}			
-			whiteToMove = "w".equals(fenFields[1]);
-			//TODO use other fields...
+			}	
 		} catch (Exception ex) {
 			throw new IllegalArgumentException("failed to parse FEN: " + fen, ex);
 		}
@@ -214,16 +217,43 @@ public class Position {
 			if (emptySquareCounter > 0) fen.append(emptySquareCounter);
 			if (rank > 1) fen.append("/");	
 		}
+		String[] previousFenFields = previous != null ? previous.getFen().split(" ") : null;
+		// move field
 		fen.append(" ");
-		fen.append(whiteToMove ? "w" : "b");
-		// TODO Castle field
-		fen.append(" -");
+		boolean whiteToMove = isWhiteToMove();
+		fen.append(whiteToMove ? "w" : "b");		
+		// Castle field
+		String castleField = previousFenFields != null ? previousFenFields[2] : "KQkq";		
+		boolean couldCastle = castleField.contains(whiteToMove ? "k" : "K") || castleField.contains(whiteToMove ? "q" : "Q");		 
+		if (couldCastle) {
+			String regex = "K|Q";
+			if (whiteToMove) regex = regex.toLowerCase();
+			if (wasCastling() || wasKingMove()) {			
+				castleField = castleField.replaceAll(regex, "");			
+			} else if (wasRookMove()) {				
+				int rank = isWhiteToMove() ? 8 : 1;
+				String kOrQ = null;
+				if (getMoveSquareNames()[0].equals("a"+rank)) {
+					kOrQ = "Q";
+				} else if (getMoveSquareNames()[0].equals("h"+rank)) {
+					kOrQ = "K";
+				}
+				if (kOrQ != null) {
+					if (whiteToMove) kOrQ = kOrQ.toLowerCase();
+					castleField = castleField.replaceAll(kOrQ, "");
+				}
+			}
+		}
+		if (castleField.length() == 0) castleField = "-";
+		fen.append(" ").append(castleField);
 		// TODO En passant square field
 		fen.append(" -");
 		// TODO Halfmove clock field
 		fen.append(" 0");
-		// TODO Fullmove number field
-		fen.append(" 0");
+		// Fullmove number field		
+		int moveNumber = previousFenFields != null ? Integer.parseInt(previousFenFields[5]) : 1;
+		if (whiteToMove && previous != null) moveNumber++;
+		fen.append(" ").append(moveNumber);
 		this.fen = fen.toString();
 	}
 	
@@ -283,15 +313,15 @@ public class Position {
 	}
 	
 	/*
-	 * result[0] = king position before castling
-	 * result[1] = rook position after castling
-	 * result[2] = king position after castling
-	 * result[3] = rook position before castling
+	 * result[0] = king position before castling, e.g. "e1" 
+	 * result[1] = rook position after castling, e.g. "f1"
+	 * result[2] = king position after castling, e.g. "g1"
+	 * result[3] = rook position before castling, e.g. "h1"
 	 * 
 	 */
 	private String[] getCastlingSquareNames() {
 		String[] result = new String[4];
-		int rank = whiteToMove ? 8 : 1;
+		int rank = isWhiteToMove() ? 8 : 1;
 		boolean longCastles = move.startsWith("0-0-0");
 		result[0] = "e" + rank;
 		result[1] = (longCastles ? "d" : "f") + rank;

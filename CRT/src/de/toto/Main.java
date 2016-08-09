@@ -15,7 +15,8 @@ public class Main {
 		
 		game = new Game();
 		game.start();
-		String[] moves = {"d2-e4", "d7-d5", "e4xd5", "e7-e6", "d5xe6", "Bf8-b4", "e6xf7+", "Ke8-e7", "f7xg8=N+"};
+//		String[] moves = {"e2-e4", "d7-d5", "e4xd5", "e7-e6", "d5xe6", "Bf8-b4", "e6xf7+", "Ke8-e7", "f7xg8=N+"};
+		String[] moves = {"Ng1-f3", "d7-d5", "c2-c4", "e7-e6", "g2-g3", "Ng8-f6", "Bf1-g2", "Bf8-e7", "0-0"};
 		game.addMoves(moves);
 		game.gotoStartPosition();
 		

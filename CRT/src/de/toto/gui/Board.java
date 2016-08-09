@@ -56,7 +56,7 @@ public class Board extends JPanel {
 		int canvasSize = Math.min(pref.height, pref.width);
 		canvasSize = canvasSize / 8 * 8; 
 		boardCanvas.setPreferredSize(new Dimension(canvasSize, canvasSize));
-		invalidate();
+		revalidate();
 	}
 	
 	public void addBoardListener(BoardListener boardListener) {
