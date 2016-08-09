@@ -103,6 +103,7 @@ public class Board extends JPanel {
 		private int scaleSize;
 		
 		private Color squareSelectionColor = new Color(.3f, .4f, .5f, .6f); //new Color(200, 255, 200);
+		private Color squareHighlightColor = new Color(200, 255, 200);
 		private Color squareColorWhite = Color.LIGHT_GRAY;
 		private Color squareColorBlack = Color.GRAY;
 
@@ -223,8 +224,8 @@ public class Board extends JPanel {
 
 		private void loadImages() {
 			try {
-				boardImage = ImageIO.read(Board.class
-						.getResource("/images/board/wood-1024.jpg"));
+//				boardImage = ImageIO.read(Board.class
+//						.getResource("/images/board/wood-1024.jpg"));
 				wK = ImageIO.read(Board.class
 						.getResource("/images/pieces/png/Chess_klt60.png"));
 				wQ = ImageIO.read(Board.class
@@ -400,12 +401,22 @@ public class Board extends JPanel {
 						g2.drawImage(getScaledPiece(square.gameSquare.piece),
 								square.topLeftOnBoard.x,
 								square.topLeftOnBoard.y, null);
-					}
+					}					
 					
 					// draw square coordinates?					
 //					g2.setColor(Color.BLACK);
 //					g2.drawString(square.getName(), square.topLeftOnBoard.x + 3, square.topLeftOnBoard.y+13);
 				}
+			}
+			
+			// draw last move highlight
+			String[] squareNames = board.getCurrentPosition().getMoveSquareNames();
+			if (squareNames != null) {
+				g2.setColor(squareHighlightColor);
+				Square s = getSquare(squareNames[0]);
+				g2.drawRect(s.topLeftOnBoard.x, s.topLeftOnBoard.y, squareSize, squareSize);
+				s = getSquare(squareNames[1]);
+				g2.drawRect(s.topLeftOnBoard.x, s.topLeftOnBoard.y, squareSize, squareSize);						
 			}
 			
 			// Drag&Drop decoration

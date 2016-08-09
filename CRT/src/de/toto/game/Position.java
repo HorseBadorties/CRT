@@ -7,21 +7,20 @@ import de.toto.game.Rules.Piece;
 
 public class Position {
 	
-	int variationLevel = 0; //0 = main line, 1 = variation, 2 = variation of variation ...
-	Position previous = null;
-	List<Position> next = new ArrayList<Position>(); 
-	String fen = null;
-	String move = null;
-	boolean whiteToMove = true;
-	String comment = null; // may contain graphics token such as [%csl Ge5][%cal Ge5b2]
-	List<String> nags = new ArrayList<String>(); // !, ?, ?? ...
-	
 	private Square[][] squares;
-	
-	
+	private boolean whiteToMove = true;
+	private Position previous = null;
+	private List<Position> next = new ArrayList<Position>(); 
+	private int variationLevel = 0; //0 = main line, 1 = variation, 2 = variation of variation ...
+	private String fen = null;
+	private String move = null;
+	private String comment = null; // may contain graphics token such as [%csl Ge5][%cal Ge5b2]
+	private List<String> nags = new ArrayList<String>(); // !, ?, ?? ...
+		
 	// Startposition
 	public Position() {		
 		setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		whiteToMove = true;
 	}
 
 	public Position(Position previous, String move) {
@@ -29,20 +28,80 @@ public class Position {
 	}
 	
 	public Position(Position previous, String move, String fen) {
+		this(previous, move, fen, false);
+	}
+	
+	public Position(Position previous, String move, String fen, boolean asVariation) {
 		this.previous = previous;
-		previous.addNextPosition(this);
+		previous.addNextPosition(this, asVariation);
 		this.whiteToMove = !previous.whiteToMove;
 		this.move = move;
-		this.variationLevel = previous.variationLevel;
+		this.variationLevel = asVariation ? previous.variationLevel+1 : previous.variationLevel;
 		if (fen != null) {
 			setFen(fen);
 		} else if (move != null) {
 			setMove(move);
 		}
+	}	
+	
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+	public int getVariationLevel() {
+		return variationLevel;
+	}
+
+	public Position getPrevious() {
+		return previous;
 	}
 	
+	public boolean hasPrevious() {
+		return previous == null;
+	}
+
+	public Position getNext() {
+		return next.get(0);
+	}
+	
+	public boolean hasNext() {
+		return !next.isEmpty();
+	}
+	
+	public int getVariationCount() {
+		return next.isEmpty() ? 0 : next.size() - 1;
+	}
+	
+	public boolean hasVariations() {
+		return getVariationCount() > 0;
+	}
+	
+	public String getFen() {
+		return fen;
+	}
+
+	public String getMove() {
+		return move;
+	}
+
+	public boolean isWhiteToMove() {
+		return whiteToMove;
+	}
+
+	public Square[][] getSquares() {
+		return squares;
+	}
+
 	public boolean wasCapture() {
 		return move != null && move.contains("x");
+	}
+	
+	public boolean wasCastling() {
+		return ("0-0".equals(move) || "0-0-0".equals(move));
 	}
 	
 	public boolean isCheck() {
@@ -51,10 +110,6 @@ public class Position {
 	
 	public boolean isMate() {
 		return move != null && move.endsWith("#");
-	}
-	
-	public boolean isStartPosition() {
-		return previous == null;
 	}
 	
 	public int getMoveNumber() {
@@ -67,15 +122,11 @@ public class Position {
 		return moveCount;
 		
 	}
-	
-	private void addNextPosition(Position nextPosition) {
-		next.add(nextPosition);
+		
+	private void addNextPosition(Position nextPosition, boolean asVariation) {
+		next.add(asVariation ? next.size() : 0, nextPosition);			
 	}
-	
-	public String getFEN() {
-		return fen;
-	}
-	
+		
 	private void initSquares() {
 		squares = new Square[8][8];
 		boolean isWhite;
@@ -102,7 +153,7 @@ public class Position {
 	private void setFen(String fen) {
 		this.fen = fen;
 		try {
-			String[] fenFields = getFenFields(fen);
+			String[] fenFields = fen.split(" ");
 			initSquares();
 			int rank = 8;
 			int file = 1;			
@@ -132,13 +183,8 @@ public class Position {
 			throw new IllegalArgumentException("failed to parse FEN: " + fen, ex);
 		}
 	}
-		
-	private static String[] getFenFields(String fen) {
-		String[] result = fen.split(" ");
-		return result;
-	}
 
-	public String toFen() {
+	private void createFen() {
 		StringBuilder fen = new StringBuilder();
 		for (int rank = 8; rank >= 1; rank--) {
 			int emptySquareCounter = 0;
@@ -163,7 +209,7 @@ public class Position {
 		fen.append(" 0");
 		// TODO Fullmove number field
 		fen.append(" 0");
-		return fen.toString();
+		this.fen = fen.toString();
 	}
 	
 	
@@ -197,19 +243,50 @@ public class Position {
 			getSquare(from).piece = null;
 			getSquare(to).piece = piece;
 		}
-		this.fen = toFen();
+		createFen();
+	}
+	
+	public String[] getMoveSquareNames() {
+		String[] result = null;
+		if (move != null) {
+			if (wasCastling()) {
+				result = getCastlingSquareNames();			
+			} else {
+				result = move.split("x|-");		
+				if (result[0].length() > 2) { //e.g. "Ng1"
+					result[0] = result[0].substring(result[0].length()-2, result[0].length());
+				}
+				if (result[1].length() > 2) { //e.g. "d8Q"
+					result[1] = result[0].substring(0, 2);
+				}
+			}
+		}	
+		return result;
+	}
+	
+	private String[] getCastlingSquareNames() {
+		String[] result = new String[2];
+		int rank = whiteToMove ? 8 : 1;
+		result[0] = "e" + rank;
+		result[1] = ("0-0".equals(move) ? "g" : "c") + rank;
+		return result;
 	}
 	
 	@Override
 	public String toString() {
-		return move + "; " + dumpSquares();
+		return move + "\n" + dumpSquares();
 	}
 	
 	private String dumpSquares() {
 		StringBuilder result = new StringBuilder();
-		for (int rank = 0; rank < 8; rank++) {
+		for (int rank = 7; rank >= 0; rank--) {
 			for (int file = 0; file < 8; file++) {
-				result.append(squares[rank][file].getNameWithPieceSuffix()).append(" ");
+				String s = squares[rank][file].getNameWithPieceSuffix();
+				if (s.length() == 2) {
+					result.append(" ");
+				}
+				result.append(s).append(" ");
+				
 			}
 			result.append("\n");
 		}
@@ -220,7 +297,8 @@ public class Position {
 		String fen = "r1bqkb1r/pp1ppp1p/2n2np1/8/1PpPP3/5N2/P1P1BPPP/RNBQK1R1 b Qkq - 1 6";
 		Position p = new Position();
 		p.setFen(fen);
-		System.out.println(p.toFen());
+		p.createFen();
+		System.out.println(p.getFen());
 	}
 	
 }

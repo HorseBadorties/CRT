@@ -23,28 +23,39 @@ public class Game {
 		return currentPosition;
 	}
 	
+	public Position addMoves(List<String> moves) {
+		return addMoves(moves.toArray(new String[0]));		
+	}
+	
+	public Position addMoves(String[] moves) {
+		for (String move : moves) {
+			addMove(move);
+		}
+		return currentPosition;
+	}
+	
 	public Position getPosition() {
 		return currentPosition;
 	}
 	
 	public Position gotoStartPosition() {
-		while (!currentPosition.isStartPosition()) {
-			currentPosition = currentPosition.previous;
+		while (!currentPosition.hasPrevious()) {
+			currentPosition = currentPosition.getPrevious();
 		}
 		return currentPosition;
 	}
 	
 	public Position goForward() {
-		if (!currentPosition.next.isEmpty()) {
-			currentPosition = currentPosition.next.get(0);
+		if (currentPosition.hasNext()) {
+			currentPosition = currentPosition.getNext();
 			return currentPosition;
 		} else return null;
 		
 	}
 	
 	public Position goBack() {
-		if (!currentPosition.isStartPosition()) {
-			currentPosition = currentPosition.previous;
+		if (!currentPosition.hasPrevious()) {
+			currentPosition = currentPosition.getPrevious();
 			return currentPosition;
 		} else return null;
 	}
@@ -52,13 +63,13 @@ public class Game {
 	public List<String> dumpMoves() {
 		List<String> result = new ArrayList<String>();
 		Position p = currentPosition;
-		while (!p.isStartPosition()) {
-			p = p.previous;
+		while (!p.hasPrevious()) {
+			p = p.getPrevious();
 		}
 		for(;;) {
-			result.add(p.move);
-			if (p.next.isEmpty()) break;
-			p = p.next.get(0);
+			result.add(p.getMove());
+			if (!p.hasNext()) break;
+			p = p.getNext();
 		}
 		return result;
 	}

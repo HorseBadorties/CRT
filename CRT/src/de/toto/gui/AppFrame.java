@@ -63,7 +63,6 @@ public class AppFrame extends JFrame implements BoardListener {
 	
 	private void updateBoard(boolean playSound) {
 		board.setCurrentPosition(game.getPosition());
-		System.out.println(game.getPosition());
 		if (playSound) {
 			if (game.getPosition().wasCapture()) {
 				Sounds.capture();
@@ -75,8 +74,7 @@ public class AppFrame extends JFrame implements BoardListener {
 
 	@Override
 	public void userMove(String move) {
-		game.addMove(move);
-		System.out.println(game.getPosition());
+		game.addMove(move);		
 		updateBoard(true);
 	}
 
