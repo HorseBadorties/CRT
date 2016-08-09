@@ -101,7 +101,22 @@ public class Position {
 	}
 	
 	public boolean wasCastling() {
-		return ("0-0".equals(move) || "0-0-0".equals(move));
+		return move != null && move.startsWith("0-0");
+	}
+	
+	public boolean wasPromotion() {
+		return move != null && move.contains("=");
+	}
+	
+	private Piece getPromotionPiece() {
+		if (wasPromotion()) {
+			boolean checkOrMate = isCheck() || isMate();
+			int promotionPiecePosition = checkOrMate ? move.length() - 2 : move.length() - 1;
+			String promotionPiece = move.substring(promotionPiecePosition, move.length());
+			if (whiteToMove) promotionPiece.toLowerCase();
+			return Piece.getByFenChar(promotionPiece.charAt(0));			
+		}		
+		return null;
 	}
 	
 	public boolean isCheck() {
@@ -212,7 +227,7 @@ public class Position {
 		this.fen = fen.toString();
 	}
 	
-	
+	// move in LAN, e.g. "Ng1-f3"
 	private void setMove(String move) {
 		initSquares();
 		for (int rank = 1; rank <= 8; rank++) {
@@ -220,28 +235,28 @@ public class Position {
 				squares[rank - 1][file - 1].piece = previous.getSquare(rank, file).piece;
 			}
 		}
-		if ("0-0".equals(move)) {
-			int rank = whiteToMove ? 8 : 1;
-			getSquare(rank, 5).piece = null;
-			getSquare(rank, 6).piece = previous.getSquare(rank, 8).piece;
-			getSquare(rank, 7).piece = previous.getSquare(rank, 5).piece;
-			getSquare(rank, 8).piece = null;
-		} else if ("0-0-0".equals(move)) {
-			int rank = whiteToMove ? 8 : 1;
-			getSquare(rank, 5).piece = null;
-			getSquare(rank, 4).piece = previous.getSquare(rank, 1).piece;
-			getSquare(rank, 3).piece = previous.getSquare(rank, 5).piece;
-			getSquare(rank, 1).piece = null;
-		} else {
-			String[] m = move.split("x|-");
-			String from = m[0];
-			if (from.length() > 2) {
-				from = from.substring(from.length()-2, from.length());
+		if (move != null) {
+			if (wasCastling()) {
+				String[] castlingSquareNames = getCastlingSquareNames();				
+				getSquare(castlingSquareNames[0]).piece = null;
+				getSquare(castlingSquareNames[1]).piece = previous.getSquare(castlingSquareNames[3]).piece;
+				getSquare(castlingSquareNames[2]).piece = previous.getSquare(castlingSquareNames[0]).piece;
+				getSquare(castlingSquareNames[3]).piece = null;		
+			} else {
+				String[] m = move.split("x|-");
+				String from = m[0];
+				if (from.length() > 2) {
+					from = from.substring(from.length()-2, from.length());
+				}
+				String to = m[1];
+				Piece piece = getSquare(from).piece;
+				getSquare(from).piece = null;
+				if (wasPromotion()) {
+					getSquare(to).piece = getPromotionPiece();
+				} else {
+					getSquare(to).piece = piece;
+				}
 			}
-			String to = m[1];
-			Piece piece = getSquare(from).piece;
-			getSquare(from).piece = null;
-			getSquare(to).piece = piece;
 		}
 		createFen();
 	}
@@ -250,25 +265,38 @@ public class Position {
 		String[] result = null;
 		if (move != null) {
 			if (wasCastling()) {
-				result = getCastlingSquareNames();			
+				String[] castlingSquareNames = getCastlingSquareNames();
+				result = new String[2];
+				result[0] = castlingSquareNames[0];
+				result[1] = castlingSquareNames[2];
 			} else {
 				result = move.split("x|-");		
 				if (result[0].length() > 2) { //e.g. "Ng1"
 					result[0] = result[0].substring(result[0].length()-2, result[0].length());
 				}
-				if (result[1].length() > 2) { //e.g. "d8Q"
-					result[1] = result[0].substring(0, 2);
+				if (result[1].length() > 2) { //e.g. "d8=Q"
+					result[1] = result[1].substring(0, 2);
 				}
 			}
 		}	
 		return result;
 	}
 	
+	/*
+	 * result[0] = king position before castling
+	 * result[1] = rook position after castling
+	 * result[2] = king position after castling
+	 * result[3] = rook position before castling
+	 * 
+	 */
 	private String[] getCastlingSquareNames() {
-		String[] result = new String[2];
+		String[] result = new String[4];
 		int rank = whiteToMove ? 8 : 1;
+		boolean longCastles = move.startsWith("0-0-0");
 		result[0] = "e" + rank;
-		result[1] = ("0-0".equals(move) ? "g" : "c") + rank;
+		result[1] = (longCastles ? "d" : "f") + rank;
+		result[2] = (longCastles ? "c" : "g") + rank;
+		result[3] = (longCastles ? "a" : "h") + rank;		
 		return result;
 	}
 	
