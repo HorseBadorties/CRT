@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.toto.game.Rules.Piece;
+import de.toto.game.Rules.PieceType;
 
 public class Position {
 	
@@ -18,7 +19,7 @@ public class Position {
 		
 	// Startposition
 	public Position() {		
-		setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", true);
 	}
 
 	public Position(Position previous, String move) {
@@ -31,16 +32,34 @@ public class Position {
 	
 	public Position(Position previous, String move, String fen, boolean asVariation) {
 		this.previous = previous;
-		previous.addNextPosition(this, asVariation);
-		this.move = move;
+		previous.addNextPosition(this, asVariation);		
 		this.variationLevel = asVariation ? previous.variationLevel+1 : previous.variationLevel;
 		if (fen != null) {
-			setFen(fen);
+			setMove(move, false);
+			setFen(fen, true);		
 		} else if (move != null) {
-			setMove(move);
+			setMove(move, true);
 		}
 	}	
 	
+	
+	// Compute the hashCode using it's FEN, ignoring the Halfmove and Fullmove fields	
+	@Override
+	public int hashCode() {
+		if (fen == null) {
+			return super.hashCode();
+		} else {
+			String[] fenFields = fen.split(" ");
+			return (fenFields[0]+fenFields[1]+fenFields[2]+fenFields[3]).hashCode();
+		}
+	}
+	
+	@Override
+	public boolean equals(Object obj) {		
+		if (!(obj instanceof Position)) return false;
+		return this.hashCode() == obj.hashCode();
+	}
+
 	public String getComment() {
 		return comment;
 	}
@@ -170,35 +189,37 @@ public class Position {
 		return getSquare(rank, file);
 	}
 	
-	private void setFen(String fen) {
+	private void setFen(String fen, boolean setupPosition) {
 		this.fen = fen;
-		try {
-			String[] fenFields = fen.split(" ");
-			initSquares();
-			int rank = 8;
-			int file = 1;			
-			for (int i = 0; i < fenFields[0].length(); i++) {
-				char fenChar = fen.charAt(i);			
-				if ('/' == fenChar) {
-					rank--;
-					file = 1;
-					continue;
-				}
-				int numericValue = Character.getNumericValue(fenChar);
-				if (numericValue > 0 && numericValue <= 8) {
-					file += numericValue;
-					continue;
-				}
-				Piece piece = Piece.getByFenChar(fenChar);
-				if (piece != null) {
-					getSquare(rank, file).piece = piece;
-					file++;
-				} else {
-					throw new IllegalArgumentException("failed to parse FEN: " + fen);
-				}				
-			}	
-		} catch (Exception ex) {
-			throw new IllegalArgumentException("failed to parse FEN: " + fen, ex);
+		if (setupPosition) {
+			try {
+				String[] fenFields = fen.split(" ");
+				initSquares();
+				int rank = 8;
+				int file = 1;			
+				for (int i = 0; i < fenFields[0].length(); i++) {
+					char fenChar = fen.charAt(i);			
+					if ('/' == fenChar) {
+						rank--;
+						file = 1;
+						continue;
+					}
+					int numericValue = Character.getNumericValue(fenChar);
+					if (numericValue > 0 && numericValue <= 8) {
+						file += numericValue;
+						continue;
+					}
+					Piece piece = Piece.getByFenChar(fenChar);
+					if (piece != null) {
+						getSquare(rank, file).piece = piece;
+						file++;
+					} else {
+						throw new IllegalArgumentException("failed to parse FEN: " + fen);
+					}				
+				}	
+			} catch (Exception ex) {
+				throw new IllegalArgumentException("failed to parse FEN: " + fen, ex);
+			}
 		}
 	}
 
@@ -258,37 +279,40 @@ public class Position {
 	}
 	
 	// move in LAN, e.g. "Ng1-f3"
-	private void setMove(String move) {
-		initSquares();
-		for (int rank = 1; rank <= 8; rank++) {
-			for (int file = 1; file <= 8; file++) {
-				squares[rank - 1][file - 1].piece = previous.getSquare(rank, file).piece;
-			}
-		}
-		if (move != null) {
-			if (wasCastling()) {
-				String[] castlingSquareNames = getCastlingSquareNames();				
-				getSquare(castlingSquareNames[0]).piece = null;
-				getSquare(castlingSquareNames[1]).piece = previous.getSquare(castlingSquareNames[3]).piece;
-				getSquare(castlingSquareNames[2]).piece = previous.getSquare(castlingSquareNames[0]).piece;
-				getSquare(castlingSquareNames[3]).piece = null;		
-			} else {
-				String[] m = move.split("x|-");
-				String from = m[0];
-				if (from.length() > 2) {
-					from = from.substring(from.length()-2, from.length());
+	private void setMove(String move, boolean setupPosition) {
+		this.move = move;
+		if (setupPosition) {
+			initSquares();
+			for (int rank = 1; rank <= 8; rank++) {
+				for (int file = 1; file <= 8; file++) {
+					squares[rank - 1][file - 1].piece = previous.getSquare(rank, file).piece;
 				}
-				String to = m[1];
-				Piece piece = getSquare(from).piece;
-				getSquare(from).piece = null;
-				if (wasPromotion()) {
-					getSquare(to).piece = getPromotionPiece();
+			}
+			if (move != null) {
+				if (wasCastling()) {
+					String[] castlingSquareNames = getCastlingSquareNames();				
+					getSquare(castlingSquareNames[0]).piece = null;
+					getSquare(castlingSquareNames[1]).piece = previous.getSquare(castlingSquareNames[3]).piece;
+					getSquare(castlingSquareNames[2]).piece = previous.getSquare(castlingSquareNames[0]).piece;
+					getSquare(castlingSquareNames[3]).piece = null;		
 				} else {
-					getSquare(to).piece = piece;
+					String[] m = move.split("x|-");
+					String from = m[0];
+					if (from.length() > 2) {
+						from = from.substring(from.length()-2, from.length());
+					}
+					String to = m[1];
+					Piece piece = getSquare(from).piece;
+					getSquare(from).piece = null;
+					if (wasPromotion()) {
+						getSquare(to).piece = getPromotionPiece();
+					} else {
+						getSquare(to).piece = piece;
+					}
 				}
 			}
+			createFen();
 		}
-		createFen();
 	}
 	
 	public String[] getMoveSquareNames() {
@@ -351,12 +375,47 @@ public class Position {
 		return result.toString();
 	}
 	
-	public static void main(String[] args) {
-		String fen = "r1bqkb1r/pp1ppp1p/2n2np1/8/1PpPP3/5N2/P1P1BPPP/RNBQK1R1 b Qkq - 1 6";
-		Position p = new Position();
-		p.setFen(fen);
-		p.createFen();
-		System.out.println(p.getFen());
+	// find the matching starting square for a SAN move String
+	private Square findMatchingSquare(String san) {
+		Square result = null;
+		boolean whiteToMove = isWhiteToMove();
+		Piece piece = whiteToMove ? Piece.BLACK_PAWN : Piece.WHITE_PAWN;
+		switch (san.charAt(0)) {
+			case 'K' : piece = whiteToMove ? Piece.BLACK_KING : Piece.WHITE_KING; break;
+			case 'Q' : piece = whiteToMove ? Piece.BLACK_QUEEN : Piece.WHITE_QUEEN; break;
+			case 'R' : piece = whiteToMove ? Piece.BLACK_ROOK : Piece.WHITE_ROOK; break;
+			case 'B' : piece = whiteToMove ? Piece.BLACK_BISHOP : Piece.WHITE_BISHOP; break;
+			case 'N' : piece = whiteToMove ? Piece.BLACK_KNIGHT : Piece.WHITE_KNIGHT; break;
+		}
+		
+		// KING - return the lone King-Square		 
+		if (piece.type == PieceType.KING) {
+			return getSquaresWithPiece(piece).get(0);
+		}
+		
+		// QUEEN
+		
+		// ROOK
+		
+		// BISHOP
+		
+		// KNIGHT
+		
+		// PAWN
+		
+		return result;
 	}
 	
+	private List<Square> getSquaresWithPiece(Piece piece) {
+		List<Square> matchingSquares = new ArrayList<Square>();
+		for (int rank = 1; rank <= 8; rank++) {
+			for (int file = 1; file <= 8; file++) {
+				if (squares[rank - 1][file - 1].piece == piece) {
+					matchingSquares.add(squares[rank - 1][file - 1]);
+				}
+			}
+		}
+		return matchingSquares;
+	}
+		
 }
