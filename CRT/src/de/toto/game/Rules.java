@@ -7,25 +7,27 @@ public class Rules {
 	}
 	
 	public enum Piece {			
-		WHITE_KING(PieceType.KING, 'K', 'K'), 
-		WHITE_QUEEN(PieceType.QUEEN, 'Q', 'Q'), 
-		WHITE_ROOK(PieceType.ROOK, 'R', 'R'), 
-		WHITE_BISHOP(PieceType.BISHOP, 'B', 'B'), 
-		WHITE_KNIGHT(PieceType.KNIGHT, 'N', 'N'), 
-		WHITE_PAWN(PieceType.PAWN, 'P', ' '), 
-		BLACK_KING(PieceType.KING, 'k', 'K'), 
-		BLACK_QUEEN(PieceType.QUEEN, 'q', 'Q'), 
-		BLACK_ROOK(PieceType.ROOK, 'r', 'R'), 
-		BLACK_BISHOP(PieceType.BISHOP, 'b', 'B'), 
-		BLACK_KNIGHT(PieceType.KNIGHT, 'n', 'N'), 
-		BLACK_PAWN(PieceType.PAWN, 'p', ' ');
+		WHITE_KING(PieceType.KING, true, 'K', 'K'), 
+		WHITE_QUEEN(PieceType.QUEEN, true, 'Q', 'Q'), 
+		WHITE_ROOK(PieceType.ROOK, true, 'R', 'R'), 
+		WHITE_BISHOP(PieceType.BISHOP, true, 'B', 'B'), 
+		WHITE_KNIGHT(PieceType.KNIGHT, true, 'N', 'N'), 
+		WHITE_PAWN(PieceType.PAWN, true, 'P', ' '), 
+		BLACK_KING(PieceType.KING, false, 'k', 'K'), 
+		BLACK_QUEEN(PieceType.QUEEN, false, 'q', 'Q'), 
+		BLACK_ROOK(PieceType.ROOK, false, 'r', 'R'), 
+		BLACK_BISHOP(PieceType.BISHOP, false, 'b', 'B'), 
+		BLACK_KNIGHT(PieceType.KNIGHT, false, 'n', 'N'), 
+		BLACK_PAWN(PieceType.PAWN, false, 'p', ' ');
 		
 		public PieceType type;
+		public final boolean isWhite; 
 		public final char fenChar;
 		public final char pgnChar;
 		
-		Piece(PieceType type, char fenChar, char pgnChar) {
+		Piece(PieceType type, boolean isWhite, char fenChar, char pgnChar) {
 			this.type = type;
+			this.isWhite = isWhite;
 			this.fenChar = fenChar;
 			this.pgnChar = pgnChar;
 		}

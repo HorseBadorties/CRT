@@ -104,6 +104,10 @@ public class Position {
 		return move;
 	}
 
+	/**
+	 * 
+	 * @return true, if White is to move to reach the next Position
+	 */
 	public boolean isWhiteToMove() {
 		if (fen != null) {
 			return "w".equals(fen.split(" ")[1]);
@@ -112,6 +116,14 @@ public class Position {
 		} else {
 			return true;
 		}
+	}
+	
+	/**
+	 * 
+	 * @return true, if White moved to reach this Position
+	 */
+	public boolean whiteMoved() {
+		return !isWhiteToMove();
 	}
 
 	public Square[][] getSquares() {
@@ -184,7 +196,7 @@ public class Position {
 
 	// e.g. "a1"
 	private Square getSquare(String squarename) {
-		int file = squarename.charAt(0) - 96;
+		int file = Square.filenumberForName(squarename);
 		int rank = Character.getNumericValue(squarename.charAt(1));
 		return getSquare(rank, file);
 	}
@@ -280,7 +292,6 @@ public class Position {
 	
 	// move in LAN, e.g. "Ng1-f3"
 	private void setMove(String move, boolean setupPosition) {
-		this.move = move;
 		if (setupPosition) {
 			initSquares();
 			for (int rank = 1; rank <= 8; rank++) {
@@ -288,6 +299,10 @@ public class Position {
 					squares[rank - 1][file - 1].piece = previous.getSquare(rank, file).piece;
 				}
 			}
+			if (!isLanMove(move)) {
+				move = sanToLan(move);
+			}
+			this.move = move;
 			if (move != null) {
 				if (wasCastling()) {
 					String[] castlingSquareNames = getCastlingSquareNames();				
@@ -313,6 +328,14 @@ public class Position {
 			}
 			createFen();
 		}
+	}
+	
+	private boolean isLanMove(String move) {
+		if (move.startsWith("0-0")) return true;
+		String[] m = move.split("x|-");
+		if (m.length < 2) return false;
+		if (m[0].length() == 3) return true;
+		return m[0].length() == 2 && Character.isDigit(m[0].charAt(1)) && m[0].charAt(0) >= 'a' && m[0].charAt(0) <= 'h';
 	}
 	
 	public String[] getMoveSquareNames() {
@@ -375,50 +398,67 @@ public class Position {
 		return result.toString();
 	}
 	
-	// find the matching starting square for a SAN move 
-	private Square findMatchingSquare(String san) {		
+	// construct a LAN move out of a SAN for this position 
+	private String sanToLan(String san) {		
+		if (san.startsWith("0-0")) return san;
 		String _san = san;
 		// strip potential '+', '#' and promotion info
-		_san = _san.replaceAll("\\+|#", "");
+		_san = _san.replaceAll("\\+|#", "");		
 		if (_san.charAt(_san.length()-2) == '=') {
 			_san = _san.substring(0, _san.length()-2);
 		}
+		int suffixLength = san.length() - _san.length();
+		String suffix = san.substring(san.length() - suffixLength, san.length());
 		// get target square and strip from san
-		Square targetSquare = getSquare(_san.substring(san.length()-2, _san.length()));
+		Square targetSquare = getSquare(_san.substring(_san.length()-2, _san.length()));
 		_san = _san.substring(0, _san.length()-2);
 		// get Piece to move and strip from san
-		boolean whiteToMove = isWhiteToMove();
-		Piece piece = whiteToMove ? Piece.BLACK_PAWN : Piece.WHITE_PAWN;
-		switch (_san.charAt(0)) {
-			case 'K' : piece = whiteToMove ? Piece.BLACK_KING : Piece.WHITE_KING; break;
-			case 'Q' : piece = whiteToMove ? Piece.BLACK_QUEEN : Piece.WHITE_QUEEN; break;
-			case 'R' : piece = whiteToMove ? Piece.BLACK_ROOK : Piece.WHITE_ROOK; break;
-			case 'B' : piece = whiteToMove ? Piece.BLACK_BISHOP : Piece.WHITE_BISHOP; break;
-			case 'N' : piece = whiteToMove ? Piece.BLACK_KNIGHT : Piece.WHITE_KNIGHT; break;
+		boolean whiteMoved = whiteMoved();
+		Piece piece = whiteMoved ? Piece.WHITE_PAWN : Piece.BLACK_PAWN;
+		if (_san.length() > 0) {
+			switch (_san.charAt(0)) {
+				case 'K' : piece = whiteMoved ? Piece.WHITE_KING : Piece.BLACK_KING; break;
+				case 'Q' : piece = whiteMoved ? Piece.WHITE_QUEEN : Piece.BLACK_QUEEN; break;
+				case 'R' : piece = whiteMoved ? Piece.WHITE_ROOK : Piece.BLACK_ROOK; break;
+				case 'B' : piece = whiteMoved ? Piece.WHITE_BISHOP : Piece.BLACK_BISHOP; break;
+				case 'N' : piece = whiteMoved ? Piece.WHITE_KNIGHT : Piece.BLACK_KNIGHT; break;
+			}
 		}
 		if (piece.type != PieceType.PAWN) {
 			_san = _san.substring(1, _san.length());
 		}
 		// strip potential 'x'
+		boolean isCapture = _san.contains("x");
 		_san = _san.replace("x", "");
 		// parse potential source square info 
 		List<Square> potentialMatches = null;
 		if (_san.length() == 2) {
-			return getSquare(_san);
+			return buildLanMove(getSquare(_san), targetSquare, isCapture, suffix);
 		} else if (_san.length() == 1) {
 			if (Character.isDigit(_san.charAt(0))) {
-				potentialMatches = getSquaresWithPieceOnFile(piece, Integer.parseInt(_san));
+				potentialMatches = getSquaresWithPieceOnRank(piece, Integer.parseInt(_san));
 			} else {
-				
+				potentialMatches = getSquaresWithPieceOnFile(piece,  Square.filenumberForName(_san));
 			}
 		} else if (_san.length() == 0) {
 			potentialMatches = getSquaresWithPiece(piece);
 		} else throw new IllegalArgumentException("failed to parse SAN: " + san);
 		
 		
-		if (potentialMatches.size() == 1) return potentialMatches.get(0);
-				
-		return null;
+		if (potentialMatches.size() == 1) {
+			Square match = potentialMatches.get(0);
+			if (!match.attacks(targetSquare, this)) throw new IllegalArgumentException("failed to parse SAN: " + san);
+			return buildLanMove(match, targetSquare, isCapture, suffix);
+		} else {
+			for (Square s : potentialMatches) {
+				if (s.attacks(targetSquare, this)) return buildLanMove(s, targetSquare, isCapture, suffix);
+			}			
+		}
+		throw new IllegalArgumentException("failed to parse SAN: " + san);		
+	}
+	
+	private String buildLanMove(Square from, Square to, boolean isCapture, String suffix) {
+		return from.getNameWithPieceSuffix() + (isCapture ? "x" : "-") + to.getName() + suffix;
 	}
 	
 	private List<Square> getSquaresWithPiece(Piece piece) {
@@ -452,15 +492,10 @@ public class Position {
 		}		
 		return matchingSquares;
 	}
-	
-	
 		
-	public static void main(String[] args) {
-		String san = "fxg8=R#";
-		san = san.replaceAll("\\+|#", "");
-		System.out.println(san);
+	public static void main(String[] args) {		
 		Position p = new Position();
-		System.out.println(p.getSquaresWithPiece(Piece.WHITE_KING));
+		System.out.println(p.isLanMove("wxd5+"));
 	}
 		
 }
