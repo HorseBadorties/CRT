@@ -63,6 +63,24 @@ public class Square {
 			Square other = (Square)obj;
 			return this.rank == other.rank && this.file == other.file;
 		}
+		
+		public boolean isEnPassantPossible(Square to, Position p) {			
+			try {							
+				if (p.whiteMoved() && rank - to.rank == -2) {
+					Square epSquare = getSquare(p, rank + 2, file -1);
+					if (epSquare != null && epSquare.piece == Piece.BLACK_PAWN) return true;
+					epSquare = getSquare(p, rank + 2, file +1);
+					if (epSquare != null && epSquare.piece == Piece.BLACK_PAWN) return true;
+				} else if (!p.whiteMoved() && rank - to.rank == 2) {
+					Square epSquare = getSquare(p, rank - 2, file -1);
+					if (epSquare != null && epSquare.piece == Piece.WHITE_PAWN) return true;
+					epSquare = getSquare(p, rank - 2, file +1);
+					if (epSquare != null && epSquare.piece == Piece.WHITE_PAWN) return true;
+				}
+			} catch (Exception ignore) {}
+			return false;
+			
+		}
 
 		/**
 		 * Does the piece on this Square attack the other square?
@@ -191,7 +209,10 @@ public class Square {
 			s = getSquare(p, p.whiteMoved() ? rank+1 : rank-1, file-1);
 			if (other.equals(s) && s.piece != null && s.piece.isWhite != p.whiteMoved()) return true;	
 			// en passant
-			// TODO en passant 
+			String enPassantField = p.getPrevious().getFen().split(" ")[3]; 
+			if (!"-".equals(enPassantField)) {
+				if (other.getName().equals(enPassantField)) return true;
+			} 
 			return false;
 		}
 		

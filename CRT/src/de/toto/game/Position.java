@@ -279,8 +279,8 @@ public class Position {
 		}
 		if (castleField.length() == 0) castleField = "-";
 		fen.append(" ").append(castleField);
-		// TODO En passant square field
-		fen.append(" -");
+		// En passant square field
+		fen.append(" ").append(getEnPassantFenField());
 		// TODO Halfmove clock field
 		fen.append(" 0");
 		// Fullmove number field		
@@ -288,6 +288,21 @@ public class Position {
 		if (whiteToMove && previous != null) moveNumber++;
 		fen.append(" ").append(moveNumber);
 		this.fen = fen.toString();
+	}
+	
+	// TODO En passant square field
+	private String getEnPassantFenField() {
+		// an en passant move must be something like "d2-d4"
+		String[] m = move.replaceAll("\\+|#", "").split("-");
+		try {
+			Square from = getSquare(m[0]);
+			Square to = getSquare(m[1]);
+			if (from.isEnPassantPossible(to, this)) {
+				return getSquare((whiteMoved() ? from.rank + 1 : from.rank -1), from.file).getName();
+			}			
+		} catch (Exception ignore) {}
+		return "-";
+		
 	}
 	
 	// move in LAN, e.g. "Ng1-f3"
@@ -302,7 +317,7 @@ public class Position {
 			if (!isLanMove(move)) {
 				move = sanToLan(move);
 			}
-			this.move = move;
+			this.move = move.trim();
 			if (move != null) {
 				if (wasCastling()) {
 					String[] castlingSquareNames = getCastlingSquareNames();				
@@ -316,14 +331,22 @@ public class Position {
 					if (from.length() > 2) {
 						from = from.substring(from.length()-2, from.length());
 					}
-					String to = m[1];
-					Piece piece = getSquare(from).piece;
-					getSquare(from).piece = null;
-					if (wasPromotion()) {
-						getSquare(to).piece = getPromotionPiece();
-					} else {
-						getSquare(to).piece = piece;
+					Square fromSquare = getSquare(from);
+					Square toSquare = getSquare(m[1]);
+					Piece piece = fromSquare.piece;
+					fromSquare.piece = null;
+					// En Passant?
+					if (wasCapture() && piece.type == PieceType.PAWN) {
+						if (toSquare.piece == null) {
+							getSquare(whiteMoved() ? toSquare.rank-1 : toSquare.rank+1, toSquare.file).piece = null;
+						}
 					}
+					if (wasPromotion()) {
+						toSquare.piece = getPromotionPiece();
+					} else {
+						toSquare.piece = piece;
+					}
+					
 				}
 			}
 			createFen();

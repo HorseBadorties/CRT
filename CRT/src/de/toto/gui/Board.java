@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 
 import de.toto.game.Position;
 import de.toto.game.Rules.Piece;
+import de.toto.game.Rules.PieceType;
 import de.toto.sound.Sounds;
 
 @SuppressWarnings("serial")
@@ -158,7 +159,12 @@ public class Board extends JPanel {
 				Square dropSquare = getSquareAt(e.getPoint());
 				if (dropSquare != null && dropSquare != dragSquare) {
 					String move = dragSquare.gameSquare.piece.pgnChar + dragSquare.getName();
-					if (dropSquare.gameSquare.piece != null) {
+					boolean isCapture = dropSquare.gameSquare.piece != null;
+					// consider En Passant for pawn moves...
+					if (dragSquare.gameSquare.piece.type == PieceType.PAWN) {
+						isCapture = dragSquare.file != dropSquare.file;
+					}
+					if (isCapture) {
 						Sounds.capture();
 						move += "x";
 					} else {
@@ -166,7 +172,7 @@ public class Board extends JPanel {
 						move += "-";
 					}
 					move += dropSquare.getName();
-					//Castles?
+					// Castles?
 					if (dragSquare.gameSquare.piece.type == de.toto.game.Rules.PieceType.KING
 							&& dragSquare.file == 5) 
 					{
@@ -176,9 +182,8 @@ public class Board extends JPanel {
 							move = "0-0";
 						}
 					}
+					// TODO check, mate, promotion
 					board.fireUserMoved(move.trim());
-//					dropSquare.gameSquare.piece = dragSquare.gameSquare.piece;
-//					dragSquare.gameSquare.piece = null;
 				}
 				isDragging = false;
 				cursorLocation = null;
