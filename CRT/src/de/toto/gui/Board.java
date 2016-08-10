@@ -395,36 +395,47 @@ public class Board extends JPanel {
 
 			int squareSize = getSquareSize();
 
-			for (int rank = 1; rank <= 8; rank++) {
-				for (int file = 1; file <= 8; file++) {
-					Square square = getSquare(rank, file);
-					// draw square background if no boardImage is loaded
-					if (boardImageScaled == null) {
-						g2.setColor(square.isWhite ? squareColorWhite : squareColorBlack);
-						g2.fillRect(square.topLeftOnBoard.x, square.topLeftOnBoard.y, squareSize, squareSize);
-					}					
-					
-					if (square.gameSquare.piece != null && !square.isDragSource) {
-						g2.drawImage(getScaledPiece(square.gameSquare.piece),
-								square.topLeftOnBoard.x,
-								square.topLeftOnBoard.y, null);
-					}					
-					
-					// draw square coordinates?					
-//					g2.setColor(Color.BLACK);
-//					g2.drawString(square.getName(), square.topLeftOnBoard.x + 3, square.topLeftOnBoard.y+13);
+			
+			// draw square background if no boardImage is loaded
+			if (boardImageScaled == null) {
+				for (int rank = 1; rank <= 8; rank++) {
+					for (int file = 1; file <= 8; file++) {
+						Square square = getSquare(rank, file);
+						// draw square background if no boardImage is loaded
+						if (boardImageScaled == null) {
+							g2.setColor(square.isWhite ? squareColorWhite : squareColorBlack);
+							g2.fillRect(square.topLeftOnBoard.x, square.topLeftOnBoard.y, squareSize, squareSize);
+						}	
+						// draw square coordinates?					
+//						g2.setColor(Color.BLACK);
+//						g2.drawString(square.getName(), square.topLeftOnBoard.x + 3, square.topLeftOnBoard.y+13);
+					}
 				}
 			}
 			
 			// draw last move highlight
 			String[] squareNames = board.getCurrentPosition().getMoveSquareNames();
 			if (squareNames != null) {
-				g2.setColor(squareHighlightColor);
+				g2.setColor(squareSelectionColor);
 				Square s = getSquare(squareNames[0]);
-				g2.drawRect(s.topLeftOnBoard.x, s.topLeftOnBoard.y, squareSize, squareSize);
+				g2.fillRect(s.topLeftOnBoard.x, s.topLeftOnBoard.y, squareSize, squareSize);
 				s = getSquare(squareNames[1]);
-				g2.drawRect(s.topLeftOnBoard.x, s.topLeftOnBoard.y, squareSize, squareSize);						
+				g2.fillRect(s.topLeftOnBoard.x, s.topLeftOnBoard.y, squareSize, squareSize);
+				
 			}
+						
+			for (int rank = 1; rank <= 8; rank++) {
+				for (int file = 1; file <= 8; file++) {
+					Square square = getSquare(rank, file);
+					if (square.gameSquare.piece != null && !square.isDragSource) {
+						g2.drawImage(getScaledPiece(square.gameSquare.piece),
+								square.topLeftOnBoard.x,
+								square.topLeftOnBoard.y, null);
+					}	
+				}
+			}
+			
+			
 			
 			// Drag&Drop decoration
 			if (isDragging) {

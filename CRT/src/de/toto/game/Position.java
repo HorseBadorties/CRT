@@ -307,6 +307,8 @@ public class Position {
 	
 	// move in LAN, e.g. "Ng1-f3"
 	private void setMove(String move, boolean setupPosition) {
+		// ChessBase PGNs contain "O-O" rather than "0-0"...
+		move = move.replaceAll("O-O-O", "0-0-0").replaceAll("O-O", "0-0");
 		if (setupPosition) {
 			initSquares();
 			for (int rank = 1; rank <= 8; rank++) {
