@@ -4,16 +4,18 @@ import de.toto.game.Rules.Piece;
 
 public class Square {
 	
-		public boolean isWhite;
-		public int rank;
-		public int file;
+		public byte rank;
+		public byte file;
 		public Piece piece;
 
-		public Square(int rank, int file, boolean isWhite) {
-			super();
-			this.isWhite = isWhite;
+		public Square(byte rank, byte file) {
 			this.rank = rank;
 			this.file = file;
+		
+		}
+		
+		public boolean isWhite() {
+			return (file % 2 == 0 && rank % 2 != 0) || (file % 2 != 0 && rank % 2 == 0);
 		}
 
 		// e.g. "f3"
@@ -36,8 +38,13 @@ public class Square {
 		@Override
 		public String toString() {
 			return String.format("%s, %s, %s", getName(),
-					isWhite ? "white" : "black", piece != null ? piece : "empty");
+					isWhite() ? "white" : "black", piece != null ? piece : "empty");
 		}
-
+		
+		public boolean attacks(Square other, Position p) {
+			//TODO attacks
+			return false;
+		}
+		
 	
 }

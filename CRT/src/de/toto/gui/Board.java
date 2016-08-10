@@ -78,7 +78,8 @@ public class Board extends JPanel {
 		private static class Square {	
 			de.toto.game.Square gameSquare;
 			int rank;
-			int file;			
+			int file;
+			boolean isWhite; //cache value rather than use de.toto.game.Square.isWhite() over and over again during paint()
 			Point topLeftOnBoard;
 			boolean isDragSource = false;
 			boolean isDragTarget = false;
@@ -86,6 +87,7 @@ public class Board extends JPanel {
 			public Square(int rank, int file) {
 				this.rank = rank;
 				this.file = file;
+				isWhite = (file % 2 == 0 && rank % 2 != 0) || (file % 2 != 0 && rank % 2 == 0);
 			}
 
 			// e.g. "a1"
@@ -393,7 +395,7 @@ public class Board extends JPanel {
 					Square square = getSquare(rank, file);
 					// draw square background if no boardImage is loaded
 					if (boardImageScaled == null) {
-						g2.setColor(square.gameSquare.isWhite ? squareColorWhite : squareColorBlack);
+						g2.setColor(square.isWhite ? squareColorWhite : squareColorBlack);
 						g2.fillRect(square.topLeftOnBoard.x, square.topLeftOnBoard.y, squareSize, squareSize);
 					}					
 					

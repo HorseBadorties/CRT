@@ -172,7 +172,7 @@ public class Position {
 		for (int rank = 1; rank <= 8; rank++) {
 			isWhite = rank % 2 == 0 ? true : false;
 			for (int file = 1; file <= 8; file++) {
-				squares[rank - 1][file - 1] = new Square(rank, file, isWhite);
+				squares[rank - 1][file - 1] = new Square((byte)rank, (byte)file);
 				isWhite = !isWhite;
 			}
 		}
@@ -375,35 +375,50 @@ public class Position {
 		return result.toString();
 	}
 	
-	// find the matching starting square for a SAN move String
-	private Square findMatchingSquare(String san) {
-		Square result = null;
+	// find the matching starting square for a SAN move 
+	private Square findMatchingSquare(String san) {		
+		String _san = san;
+		// strip potential '+', '#' and promotion info
+		_san = _san.replaceAll("\\+|#", "");
+		if (_san.charAt(_san.length()-2) == '=') {
+			_san = _san.substring(0, _san.length()-2);
+		}
+		// get target square and strip from san
+		Square targetSquare = getSquare(_san.substring(san.length()-2, _san.length()));
+		_san = _san.substring(0, _san.length()-2);
+		// get Piece to move and strip from san
 		boolean whiteToMove = isWhiteToMove();
 		Piece piece = whiteToMove ? Piece.BLACK_PAWN : Piece.WHITE_PAWN;
-		switch (san.charAt(0)) {
+		switch (_san.charAt(0)) {
 			case 'K' : piece = whiteToMove ? Piece.BLACK_KING : Piece.WHITE_KING; break;
 			case 'Q' : piece = whiteToMove ? Piece.BLACK_QUEEN : Piece.WHITE_QUEEN; break;
 			case 'R' : piece = whiteToMove ? Piece.BLACK_ROOK : Piece.WHITE_ROOK; break;
 			case 'B' : piece = whiteToMove ? Piece.BLACK_BISHOP : Piece.WHITE_BISHOP; break;
 			case 'N' : piece = whiteToMove ? Piece.BLACK_KNIGHT : Piece.WHITE_KNIGHT; break;
 		}
-		
-		// KING - return the lone King-Square		 
-		if (piece.type == PieceType.KING) {
-			return getSquaresWithPiece(piece).get(0);
+		if (piece.type != PieceType.PAWN) {
+			_san = _san.substring(1, _san.length());
 		}
+		// strip potential 'x'
+		_san = _san.replace("x", "");
+		// parse potential source square info 
+		List<Square> potentialMatches = null;
+		if (_san.length() == 2) {
+			return getSquare(_san);
+		} else if (_san.length() == 1) {
+			if (Character.isDigit(_san.charAt(0))) {
+				potentialMatches = getSquaresWithPieceOnFile(piece, Integer.parseInt(_san));
+			} else {
+				
+			}
+		} else if (_san.length() == 0) {
+			potentialMatches = getSquaresWithPiece(piece);
+		} else throw new IllegalArgumentException("failed to parse SAN: " + san);
 		
-		// QUEEN
 		
-		// ROOK
-		
-		// BISHOP
-		
-		// KNIGHT
-		
-		// PAWN
-		
-		return result;
+		if (potentialMatches.size() == 1) return potentialMatches.get(0);
+				
+		return null;
 	}
 	
 	private List<Square> getSquaresWithPiece(Piece piece) {
@@ -416,6 +431,36 @@ public class Position {
 			}
 		}
 		return matchingSquares;
+	}
+	
+	private List<Square> getSquaresWithPieceOnRank(Piece piece, int rank) {
+		List<Square> matchingSquares = new ArrayList<Square>();		
+		for (int file = 1; file <= 8; file++) {
+			if (squares[rank - 1][file - 1].piece == piece) {
+				matchingSquares.add(squares[rank - 1][file - 1]);
+			}
+		}		
+		return matchingSquares;
+	}
+	
+	private List<Square> getSquaresWithPieceOnFile(Piece piece, int file) {
+		List<Square> matchingSquares = new ArrayList<Square>();		
+		for (int rank = 1; rank <= 8; rank++) {
+			if (squares[rank - 1][file - 1].piece == piece) {
+				matchingSquares.add(squares[rank - 1][file - 1]);
+			}
+		}		
+		return matchingSquares;
+	}
+	
+	
+		
+	public static void main(String[] args) {
+		String san = "fxg8=R#";
+		san = san.replaceAll("\\+|#", "");
+		System.out.println(san);
+		Position p = new Position();
+		System.out.println(p.getSquaresWithPiece(Piece.WHITE_KING));
 	}
 		
 }
