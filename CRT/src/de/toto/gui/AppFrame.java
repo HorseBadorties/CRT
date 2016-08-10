@@ -81,8 +81,12 @@ public class AppFrame extends JFrame implements BoardListener {
 
 	@Override
 	public void userMove(String move) {
-		game.addMove(move);		
-		updateBoard(true);
+		if (game.getPosition().getNext().getMove().startsWith(move)) {
+			game.goForward();
+			updateBoard(true);
+		}
+//		game.addMove(move);		
+//		updateBoard(true);
 	}
 
 }
