@@ -67,6 +67,10 @@ public class Position {
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
+	
+	public void addNag(String value) {
+		nags.add(value);
+	}
 
 	public int getVariationLevel() {
 		return variationLevel;
@@ -170,7 +174,7 @@ public class Position {
 	}
 	
 	public int getMoveNumber() {		
-		return Integer.parseInt(previous.getFen().split(" ")[5]);
+		return previous != null ? Integer.parseInt(previous.getFen().split(" ")[5]) : 0;
 		
 	}
 		

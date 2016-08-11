@@ -1,23 +1,46 @@
 package de.toto.game;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Game {
-	private Position currentPosition;
 	
+	private Position currentPosition;
+	private Map<String, String> tags;
+	
+	
+	public Game() {
+		tags = new HashMap<String, String>();
+	}
+
 	public void start() {
 		currentPosition = new Position();
 	}
 	
-	public Position startNewVariation() {
-		return null;
+	/**
+	 * Starts a new variation for the last move
+	 * 
+	 */
+	public Position newVariation(String move) {
+		currentPosition = new Position(currentPosition.getPrevious(), move, null, true);		
+		return currentPosition;
+	}
+	
+	/**
+	 * Go back to last move of parent variation 
+	 */
+	public Position endVariation() {
+		int variationLevel = currentPosition.getVariationLevel();
+		do {
+			goBack();
+		} while (variationLevel == currentPosition.getVariationLevel());
+		goForward();
+		return currentPosition;
 	}
 	
 	public Position addMove(String move) {
 		return addMove(move, null);
 	}
-	
+		
 	public Position addMove(String move, String fen) {
 		currentPosition = new Position(currentPosition, move, fen);
 		return currentPosition;
@@ -74,9 +97,18 @@ public class Game {
 		return result;
 	}
 	
+	public void addTag(String name, String value) {
+		tags.put(name, value);
+	}
+	
+	public String getTagValue(String tagName) {
+		return tags.get(tagName);
+	}
+	
 	@Override
 	public String toString() {
-		return dumpMoves().toString(); 
+		return getTagValue("Event"); 
 	}
+	
 	
 }

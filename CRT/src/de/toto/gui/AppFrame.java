@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 
 import de.toto.game.Game;
 //import chesspresso.game.Game;
@@ -57,6 +59,9 @@ public class AppFrame extends JFrame implements BoardListener {
 		pnlSouth.add(txtFen);
 		getContentPane().add(pnlSouth, BorderLayout.PAGE_END);
 		
+		JTree tree = new JTree(createMoveTree());
+		getContentPane().add(new JScrollPane(tree), BorderLayout.LINE_START);
+		
 		KeyStroke keyNext = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0);
 		pnlSouth.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyNext, "next");
 		pnlSouth.getActionMap().put("next",actionNext);
@@ -65,6 +70,15 @@ public class AppFrame extends JFrame implements BoardListener {
 		pnlSouth.getActionMap().put("back",actionBack);
 		
 		updateBoard(false);
+	}
+	
+	private TreeNode createMoveTree() {
+		DefaultMutableTreeNode result = new DefaultMutableTreeNode(game.toString()); 
+		DefaultMutableTreeNode node = result; 
+		game.gotoStartPosition();
+		
+		
+		return result;
 	}
 	
 	private void updateBoard(boolean playSound) {
