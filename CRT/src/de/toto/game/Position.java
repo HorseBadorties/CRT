@@ -476,11 +476,11 @@ public class Position {
 		
 		if (potentialMatches.size() == 1) {
 			Square match = potentialMatches.get(0);
-			if (!match.attacks(targetSquare, this)) throw new IllegalArgumentException("failed to parse SAN: " + san);
+			if (!match.attacks(targetSquare, this, null)) throw new IllegalArgumentException("failed to parse SAN: " + san);
 			return buildLanMove(match, targetSquare, isCapture, suffix);
 		} else {
 			for (Square s : potentialMatches) {
-				if (s.attacks(targetSquare, this)) return buildLanMove(s, targetSquare, isCapture, suffix);
+				if (s.attacks(targetSquare, this, null)) return buildLanMove(s, targetSquare, isCapture, suffix);
 			}			
 		}
 		throw new IllegalArgumentException("failed to parse SAN: " + san);		
@@ -520,6 +520,18 @@ public class Position {
 			}
 		}		
 		return matchingSquares;
+	}
+	
+	public Square findOurKing() {
+		Piece ourKing = whiteMoved() ? Piece.WHITE_KING : Piece.BLACK_KING;
+		for (int _rank = 1; _rank <= 8; _rank++) {
+			for (int _file = 1; _file <= 8; _file++) {
+				if (squares[_rank - 1][_file - 1].piece == ourKing) {
+					return squares[_rank - 1][_file - 1];
+				}
+			}
+		}
+		return null;	
 	}
 		
 	public static void main(String[] args) {		

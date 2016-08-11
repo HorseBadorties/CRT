@@ -1,5 +1,8 @@
 package de.toto.game;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import de.toto.game.Rules.Piece;
 import de.toto.game.Rules.PieceType;
 
@@ -86,14 +89,14 @@ public class Square {
 		/**
 		 * Does the piece on this Square attack the other square?
 		 */
-		public boolean attacks(Square other, Position p) {
+		public boolean attacks(Square other, Position p, Square ignore) {
 			if (piece == null) return false;
-			if (isPinned(p)) return false;
+			if (ignore == null && isPinned(p)) return false;
 			switch (piece.type) {
 				case KING: return kingAttacks(other, p);
-				case QUEEN: return queenAttacks(other, p);
-				case ROOK: return rookAttacks(other, p);
-				case BISHOP: return bishopAttacks(other, p);
+				case QUEEN: return queenAttacks(other, p, ignore);
+				case ROOK: return rookAttacks(other, p, ignore);
+				case BISHOP: return bishopAttacks(other, p, ignore);
 				case KNIGHT: return knightAttacks(other, p);
 				case PAWN: return pawnAttacks(other, p);				
 			}
@@ -112,71 +115,71 @@ public class Square {
 			return false;
 		}
 		
-		private boolean queenAttacks(Square other, Position p) {
-			return rookAttacks(other, p) || bishopAttacks(other, p);
+		private boolean queenAttacks(Square other, Position p, Square ignore) {
+			return rookAttacks(other, p, ignore) || bishopAttacks(other, p, ignore);
 		}
 		
-		private boolean rookAttacks(Square other, Position p) {
+		private boolean rookAttacks(Square other, Position p, Square ignore) {
 			int _rank = rank, _file = file;
 			Square s = this;
 			while (s != null) { //go up
 				s = getSquare(p, _rank+1, _file);
 				if (other.equals(s)) return true;
-				if (s != null && s.piece != null) break;
+				if (s != null && s.piece != null && s != ignore) break;
 				_rank++; 
 			}
 			s = this; _rank = rank; _file = file;
 			while (s != null) { //go right
 				s = getSquare(p, _rank, _file+1);
 				if (other.equals(s)) return true;
-				if (s != null && s.piece != null) break;
+				if (s != null && s.piece != null && s != ignore) break;
 				_file++;
 			}
 			s = this;  _rank = rank; _file = file;
 			while (s != null) { //go down
 				s = getSquare(p, _rank-1, _file);
 				if (other.equals(s)) return true;
-				if (s != null && s.piece != null) break;
+				if (s != null && s.piece != null && s != ignore) break;
 				_rank--;
 			}
 			s = this;  _rank = rank; _file = file;
 			while (s != null) { //go left
 				s = getSquare(p, _rank, _file-1);
 				if (other.equals(s)) return true;
-				if (s != null && s.piece != null) break;
+				if (s != null && s.piece != null && s != ignore) break;
 				_file--;
 			}
 			return false;
 		}
 		
-		private boolean bishopAttacks(Square other, Position p) {
+		private boolean bishopAttacks(Square other, Position p, Square ignore) {
 			int _rank = rank, _file = file;
 			Square s = this;
 			while (s != null) { //go up-right
 				s = getSquare(p, _rank+1, _file+1);
 				if (other.equals(s)) return true;
-				if (s != null && s.piece != null) break;
+				if (s != null && s.piece != null && s != ignore) break;
 				_rank++; _file++;
 			}
 			s = this; _rank = rank; _file = file;
 			while (s != null) { //go up-left
 				s = getSquare(p, _rank+1, _file-1);
 				if (other.equals(s)) return true;
-				if (s != null && s.piece != null) break;
+				if (s != null && s.piece != null && s != ignore) break;
 				_rank++; _file--;
 			}
 			s = this;  _rank = rank; _file = file;
 			while (s != null) { //go down-right
 				s = getSquare(p, _rank-1, _file+1);
 				if (other.equals(s)) return true;
-				if (s != null && s.piece != null) break;
+				if (s != null && s.piece != null && s != ignore) break;
 				_rank--; _file++;
 			}
 			s = this;  _rank = rank; _file = file;
 			while (s != null) { //go down-left
 				s = getSquare(p, _rank-1, _file-1);
 				if (other.equals(s)) return true;
-				if (s != null && s.piece != null) break;
+				if (s != null && s.piece != null && s != ignore) break;
 				_rank--; _file--;
 			}
 			return false;
@@ -225,12 +228,82 @@ public class Square {
 		//TODO isPinned
 		public boolean isPinned(Position p) {			
 			if (piece.type == PieceType.KING) return false;
-			/*
-			 * 1. check if king is on same rank, file or diagonal
-			 * 2. if so, make new position without this piece and check if any enemy piece on our rank/square/diagonal 
-			 * attacks the king's square...
-			 */
+			Square kingsSquare = p.findOurKing();
+			List<Square> potentialAttackers = new ArrayList<Square>();
+			Piece enemyQueen = piece.isWhite ? Piece.BLACK_QUEEN : Piece.WHITE_QUEEN;
+			Piece enemyRook = piece.isWhite ? Piece.BLACK_ROOK : Piece.WHITE_ROOK;
+			Piece enemyBishop = piece.isWhite ? Piece.BLACK_BISHOP : Piece.WHITE_BISHOP;
+			// find potential pinning squares on same rank, file or diagonal behind us and our king...
+			if (kingsSquare.rank == this.rank) {
+				if (kingsSquare.file < this.file) {
+					for (int _file = this.file+1; _file <= 8; _file++) {
+						Square s = p.getSquare(rank, _file);
+						if (s.piece == enemyQueen || s.piece == enemyRook) {
+							potentialAttackers.add(s);
+						} else if (s.piece != null) break;
+					}
+				} else {
+					for (int _file = this.file-1; _file >=1 ; _file--) {
+						Square s = p.getSquare(rank, _file);
+						if (s.piece == enemyQueen || s.piece == enemyRook) {
+							potentialAttackers.add(s);
+						} else if (s.piece != null) break;
+					}
+				}
+			} else if (kingsSquare.file == this.file) {
+				if (kingsSquare.rank < this.rank) {
+					for (int _rank = this.rank+1; _rank <= 8; _rank++) {
+						Square s = p.getSquare(_rank, this.file);
+						if (s.piece == enemyQueen || s.piece == enemyRook) {
+							potentialAttackers.add(s);
+						} else if (s.piece != null) break;
+					}
+				} else {
+					for (int _rank = this.rank-1; _rank >=1 ; _rank--) {
+						Square s = p.getSquare(_rank, this.file);
+						if (s.piece == enemyQueen || s.piece == enemyRook) {
+							potentialAttackers.add(s);
+						} else if (s.piece != null) break;
+					}
+				}
+			} else { //check diagonals..
+				int _rank = kingsSquare.rank, _file = kingsSquare.file;
+				Square s = kingsSquare;
+				while (s != null) { //go up-right
+					s = getSquare(p, _rank+1, _file+1);
+					if we find another piece but us - break
+					if we find us, look for an enemy queen or bishop ..
+					if (this.equals(s)) return true;
+					if (s != null && s.piece != null && s != ignore) break;
+					_rank++; _file++;
+				}
+				s = kingsSquare; _rank = rank; _file = file;
+				while (s != null) { //go up-left
+					s = getSquare(p, _rank+1, _file-1);
+					if (other.equals(s)) return true;
+					if (s != null && s.piece != null && s != ignore) break;
+					_rank++; _file--;
+				}
+				s = kingsSquare;  _rank = rank; _file = file;
+				while (s != null) { //go down-right
+					s = getSquare(p, _rank-1, _file+1);
+					if (other.equals(s)) return true;
+					if (s != null && s.piece != null && s != ignore) break;
+					_rank--; _file++;
+				}
+				s = kingsSquare;  _rank = rank; _file = file;
+				while (s != null) { //go down-left
+					s = getSquare(p, _rank-1, _file-1);
+					if (other.equals(s)) return true;
+					if (s != null && s.piece != null && s != ignore) break;
+					_rank--; _file--;
+				}
+			}
+			// does any potential attacker in fact pin us?
+			for (Square potentialAttacker : potentialAttackers) {
+				if (potentialAttacker.attacks(kingsSquare, p, this)) return true;
+			}
 			return false;
 		}
-	
+		
 }
