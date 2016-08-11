@@ -49,6 +49,13 @@ public class AppFrame extends JFrame implements BoardListener {
 		};
 		JButton btnBack = new JButton(actionBack);
 		
+		Action actionFlip = new AbstractAction("flip") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				board.flip();
+			}
+		};
+		
 		txtFen = new JTextField();
 		txtFen.setEditable(false);
 		txtFen.setColumns(50);
@@ -68,6 +75,9 @@ public class AppFrame extends JFrame implements BoardListener {
 		KeyStroke keyBack = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0);
 		pnlSouth.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyBack, "back");
 		pnlSouth.getActionMap().put("back",actionBack);
+		KeyStroke keyControlF = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK);
+		pnlSouth.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlF, "flip");
+		pnlSouth.getActionMap().put("flip",actionFlip);
 		
 		updateBoard(false);
 	}
@@ -95,7 +105,7 @@ public class AppFrame extends JFrame implements BoardListener {
 
 	@Override
 	public void userMove(String move) {
-		if (game.getPosition().getNext().getMove().startsWith(move)) {
+		if (game.getPosition().hasNext() && game.getPosition().getNext().getMove().startsWith(move)) {
 			game.goForward();
 			game.goForward();
 			updateBoard(true);

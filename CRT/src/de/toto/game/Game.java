@@ -68,11 +68,25 @@ public class Game {
 		return currentPosition;
 	}
 	
+	/**
+	 * Go forward one move, not following variations
+	 * @return
+	 */
 	public Position goForward() {
-		if (currentPosition.hasNext()) {
-			currentPosition = currentPosition.getNext();
-			return currentPosition;
-		} else return null;
+		return goForward(false);		
+	}
+	
+	/**
+	 * Go forward one move, possibly following variations
+	 */
+	public Position goForward(boolean followVariations) {
+		if (!currentPosition.hasNext()) return null;
+		if (!followVariations) {
+			currentPosition = currentPosition.getNext();			
+		} else {
+			
+		}
+		return currentPosition; 
 		
 	}
 	

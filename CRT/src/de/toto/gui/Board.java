@@ -32,6 +32,10 @@ public class Board extends JPanel {
 		boardCanvas.positionChanged();
 		repaint();		
 	}
+	
+	public void flip() {
+		boardCanvas.flip();
+	}
 
 	public Board() {
 		super();

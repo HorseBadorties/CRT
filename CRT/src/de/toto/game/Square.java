@@ -1,6 +1,7 @@
 package de.toto.game;
 
 import de.toto.game.Rules.Piece;
+import de.toto.game.Rules.PieceType;
 
 public class Square {
 	
@@ -223,9 +224,13 @@ public class Square {
 		
 		//TODO isPinned
 		public boolean isPinned(Position p) {			
+			if (piece.type == PieceType.KING) return false;
+			/*
+			 * 1. check if king is on same rank, file or diagonal
+			 * 2. if so, make new position without this piece and check if any enemy piece on our rank/square/diagonal 
+			 * attacks the king's square...
+			 */
 			return false;
 		}
-				
-		
 	
 }

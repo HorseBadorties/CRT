@@ -159,7 +159,7 @@ public class Position {
 			boolean checkOrMate = isCheck() || isMate();
 			int promotionPiecePosition = checkOrMate ? move.length() - 2 : move.length() - 1;
 			String promotionPiece = move.substring(promotionPiecePosition, move.length());
-			if (isWhiteToMove()) promotionPiece.toLowerCase();
+			if (!whiteMoved()) promotionPiece = promotionPiece.toLowerCase();
 			return Piece.getByFenChar(promotionPiece.charAt(0));			
 		}		
 		return null;
