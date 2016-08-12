@@ -156,8 +156,6 @@ public class AppFrame extends JFrame implements BoardListener {
 				
 			}.execute();
 		}
-//		game.addMove(move);		
-//		updateBoard(true);
 	}
 
 }

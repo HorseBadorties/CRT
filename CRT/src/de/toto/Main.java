@@ -18,7 +18,7 @@ public class Main {
 	
 	public static void main(String[] args) {
 		
-		File pgn = new File("C:/Users/080064/Downloads/Repertoire.pgn"); //Repertoire.pgn");
+		File pgn = new File("C:/Users/Torsten/Documents/Repertoire.pgn"); //Repertoire.pgn");
 		List<Game> games = PGNReader.parse(pgn);
 		int positionCount = 0;
 		for (Game g : games) {
@@ -51,7 +51,7 @@ public class Main {
 			games.remove(game);			
 		}
 		
-//		System.out.println(String.format("merged games to %d positions ", repertoire.getAllPositions().size()));
+		System.out.println(String.format("merged games to %d positions ", repertoire.getAllPositions().size()));
 		
 		game = repertoire;
 		

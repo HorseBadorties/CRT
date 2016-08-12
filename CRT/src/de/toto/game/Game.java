@@ -164,9 +164,15 @@ public class Game {
 	
 	public Position gotoNextPosition() {
 		Position next = findNextPosition(currentPosition);
-//		if (next != null) {
-			currentPosition = next;
-//		}
+//		System.out.println(String.format("findNextPosition for %s: %s with previous %s", currentPosition, next, next.getPrevious()));
+		if (next == null) {
+			System.out.println("reached end of variation tree with last position " + currentPosition);
+			return currentPosition;
+		}
+		if (currentPosition != next.getPrevious()) {
+			System.out.println("jumpt to next variation with " + next);
+		}
+		currentPosition = next;
 		return currentPosition;
 	}
 	

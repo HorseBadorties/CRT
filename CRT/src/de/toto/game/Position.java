@@ -93,9 +93,10 @@ public class Position {
 	}
 	
 	public void addVariation(Position variation) {
-		addNextPosition(variation, true);
+		boolean asVariation = hasNext();
+		addNextPosition(variation, asVariation);
 		variation.setPrevious(this);
-		variation.setVariationLevel(this.variationLevel+1);		
+		variation.setVariationLevel(asVariation ? this.variationLevel+1 : this.variationLevel);		
 	}
 	
 	public boolean hasPrevious() {
