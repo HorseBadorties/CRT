@@ -207,16 +207,13 @@ public class Square {
 				s = getSquare(p, p.whiteMoved() ? rank+2 : rank-2, file);
 				if (other.equals(s)) return true;	
 			}
-			// try captures
-			s = getSquare(p, p.whiteMoved() ? rank+1 : rank-1, file+1);
-			if (other.equals(s) && s.piece != null && s.piece.isWhite != p.whiteMoved()) return true;	
-			s = getSquare(p, p.whiteMoved() ? rank+1 : rank-1, file-1);
-			if (other.equals(s) && s.piece != null && s.piece.isWhite != p.whiteMoved()) return true;	
-			// en passant
+			// try captures (with en passant)
 			String enPassantField = p.getPrevious().getFen().split(" ")[3]; 
-			if (!"-".equals(enPassantField)) {
-				if (other.getName().equals(enPassantField)) return true;
-			} 
+			s = getSquare(p, p.whiteMoved() ? rank+1 : rank-1, file+1);
+			if (other.equals(s) && ((s.piece != null && s.piece.isWhite != p.whiteMoved()) || s.getName().equals(enPassantField))) return true;	
+			s = getSquare(p, p.whiteMoved() ? rank+1 : rank-1, file-1);
+			if (other.equals(s) && ((s.piece != null && s.piece.isWhite != p.whiteMoved()) || s.getName().equals(enPassantField))) return true;	
+			 
 			return false;
 		}
 		

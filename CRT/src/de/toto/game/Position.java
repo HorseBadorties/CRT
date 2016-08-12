@@ -75,9 +75,27 @@ public class Position {
 	public int getVariationLevel() {
 		return variationLevel;
 	}
-
+	
+	private void setVariationLevel(int level) {
+		variationLevel = level;
+		for (int i = 0; i < next.size(); i++) {
+			int newChildLevel = i == 0 ? level : level+1;
+			next.get(i).setVariationLevel(newChildLevel);
+		}
+	}
+	
 	public Position getPrevious() {
 		return previous;
+	}
+	
+	void setPrevious(Position newPrevious) {
+		previous = newPrevious;
+	}
+	
+	public void addVariation(Position variation) {
+		addNextPosition(variation, true);
+		variation.setPrevious(this);
+		variation.setVariationLevel(this.variationLevel+1);		
 	}
 	
 	public boolean hasPrevious() {
@@ -98,10 +116,21 @@ public class Position {
 	
 	public boolean hasVariations() {
 		return getVariationCount() > 0;
-	}
+	}	
 	
 	public List<Position> getVariations() {
 		return next;
+	}
+	
+	public boolean hasVariation(Position variation) {
+		return getVariation(variation) != null;
+	}
+	
+	public Position getVariation(Position variation) {
+		for (Position aVariation : next) {
+			if (aVariation.equals(variation)) return aVariation;
+		}
+		return null;
 	}
 	
 	public String getFen() {
@@ -324,6 +353,11 @@ public class Position {
 					squares[rank - 1][file - 1].piece = previous.getSquare(rank, file).piece;
 				}
 			}
+			if ("--".equals(move)) { // handle null move
+				this.move = move;
+				createFen();
+				return;
+			}
 			if (!isLanMove(move)) {
 				move = sanToLan(move);
 			}
@@ -373,7 +407,7 @@ public class Position {
 	
 	public String[] getMoveSquareNames() {
 		String[] result = null;
-		if (move != null) {
+		if (move != null && !("--".equals(move))) {
 			if (wasCastling()) {
 				String[] castlingSquareNames = getCastlingSquareNames();
 				result = new String[2];
@@ -435,7 +469,7 @@ public class Position {
 	}
 	
 	// construct a LAN move out of a SAN for this position 
-	private String sanToLan(String san) {		
+	private String sanToLan(String san) {
 		if (san.startsWith("0-0")) return san;
 		String _san = san;
 		// strip potential '+', '#' and promotion info

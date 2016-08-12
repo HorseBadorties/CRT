@@ -50,8 +50,8 @@ public class PGNReader {
 		boolean isBeginOfGame = true;
 		StringBuilder movetext = null;
 		Game currentGame = null;
-		for (String _line : pgnLines) {			
-			String line = _line.trim();
+		for (int i = 0; i < pgnLines.size(); i++) {			
+			String line = pgnLines.get(i).trim();
 			if (line.isEmpty()) {
 				continue;
 			}
@@ -74,8 +74,18 @@ public class PGNReader {
 			} else {
 				movetext.append(line).append(" ");
 				if (line.endsWith(currentGame.getTagValue("Result"))) {
-					parseMovetext(movetext.toString(), currentGame);
-					isBeginOfGame = true;
+					//EOF or next line is either empty or start with a "["?
+					if (i < pgnLines.size()-1) {
+						String nextLine = pgnLines.get(i+1).trim();
+						if (nextLine.isEmpty() || nextLine.startsWith("[")) {							
+							parseMovetext(movetext.toString(), currentGame);
+							isBeginOfGame = true;
+						}
+					} else {
+						parseMovetext(movetext.toString(), currentGame);
+						isBeginOfGame = true;
+					}
+					
 				}
 			}
 		}
@@ -104,7 +114,8 @@ public class PGNReader {
 				token = token.substring(1);
 				moveComment = new StringBuilder();			
 			}
-			while (token.endsWith(")")) {
+//			when insideComment, check if we really are at an "})" or just inside the comment without an "}"
+			while (token.endsWith(")") && (!insideComment || token.contains("}"))) {
 				endVariation++;
 				token = token.substring(0, token.length()-1);
 			}
@@ -169,9 +180,39 @@ public class PGNReader {
 	}
 	
 	public static void main(String[] args) {		
-		File pgn = new File("C:/Users/080064/Downloads/Kasparov.pgn"); //Repertoire.pgn");
+		File pgn = new File("C:/Users/080064/Downloads/test.pgn"); //Repertoire.pgn");
 		List<Game> games = PGNReader.parse(pgn);
-		System.out.println(games);
+		int positionCount = 0;
+		for (Game g : games) {
+			positionCount += g.getAllPositions().size();
+		}
+		System.out.println(String.format("Successfully parsed %d games with %d positions", games.size(), positionCount));
+		
+		Game repertoire = games.get(0);
+		games.remove(repertoire);
+		while (!games.isEmpty()) {
+			Game game = games.get(0);
+			game.gotoStartPosition(); 
+			repertoire.gotoStartPosition();
+			
+			Position first = repertoire.getPosition();
+			Position second = game.getPosition();
+			
+			for (;;) {
+				second = second.getNext();
+				if (second == null) break;
+				if (!first.hasVariation(second)) {
+					first.addVariation(second);
+					break;
+				} else {
+					first = first.getVariation(second);
+				}				
+			}
+			games.remove(game);			
+		}
+		
+		
+		System.out.println(String.format("merged games to %d positions ",repertoire.getAllPositions().size()));
 	}
 	
 	

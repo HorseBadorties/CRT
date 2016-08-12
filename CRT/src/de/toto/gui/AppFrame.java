@@ -2,6 +2,8 @@ package de.toto.gui;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -14,15 +16,35 @@ import de.toto.sound.Sounds;
 @SuppressWarnings("serial")
 public class AppFrame extends JFrame implements BoardListener {
 	
-	private Game game;
+	private List<Game> games = new ArrayList<Game>();
+	private Game currentGame;
 	private Board board;
 	private JTextField txtFen;
 	
-	public AppFrame(Game game) throws HeadlessException {
-		this.game = game;
+	public AppFrame() throws HeadlessException {
+		Game dummy = new Game();
+		dummy.start();
+		setGame(dummy);
 		board = new Board();
 		board.addBoardListener(this);		
 		doUI();
+	}
+
+	public AppFrame(Game game) throws HeadlessException {
+		this();
+		games.add(game);
+		setGame(game);
+	}
+	
+	public AppFrame(List<Game> games) throws HeadlessException {
+		this();
+		this.games.addAll(games);
+		setGame(games.get(0));
+	}
+	
+	private void setGame(Game g) {
+		currentGame = g;
+		g.gotoStartPosition();
 	}
 	
 	private void doUI() {
@@ -33,9 +55,16 @@ public class AppFrame extends JFrame implements BoardListener {
 		Action actionNext = new AbstractAction("next") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (game.gotoNextPosition() != null) {
+				if (currentGame.gotoNextPosition() != null) {
 //				if (game.goForward() != null) {
 					updateBoard(true);
+				} else {
+					int i = games.indexOf(currentGame);
+					if (i < games.size()-1) {
+						currentGame = games.get(i+1);
+						currentGame.gotoStartPosition();
+						updateBoard(true);						
+					}
 				};
 			}
 		};		
@@ -43,7 +72,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		Action actionBack = new AbstractAction("back") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (game.goBack() != null) {
+				if (currentGame.goBack() != null) {
 					updateBoard(true);
 				};
 			}
@@ -84,19 +113,19 @@ public class AppFrame extends JFrame implements BoardListener {
 	}
 	
 	private TreeNode createMoveTree() {
-		DefaultMutableTreeNode result = new DefaultMutableTreeNode(game.toString()); 
+		DefaultMutableTreeNode result = new DefaultMutableTreeNode(currentGame.toString()); 
 		DefaultMutableTreeNode node = result; 
-		game.gotoStartPosition();
+		currentGame.gotoStartPosition();
 		
 		
 		return result;
 	}
 	
-	private void updateBoard(boolean playSound) {
-		board.setCurrentPosition(game.getPosition());
-		txtFen.setText(game.getPosition().getFen());
+	private void updateBoard(boolean playSound) {		
+		board.setCurrentPosition(currentGame.getPosition());
+		txtFen.setText(currentGame.getPosition().getFen());
 		if (playSound) {
-			if (game.getPosition().wasCapture()) {
+			if (currentGame.getPosition().wasCapture()) {
 				Sounds.capture();
 			} else {
 				Sounds.move();
@@ -106,8 +135,8 @@ public class AppFrame extends JFrame implements BoardListener {
 
 	@Override
 	public void userMove(String move) {
-		if (game.getPosition().hasNext() && game.getPosition().getNext().getMove().startsWith(move)) {
-			game.goForward();		
+		if (currentGame.getPosition().hasNext() && currentGame.getPosition().getNext().getMove().startsWith(move)) {
+			currentGame.goForward();		
 			updateBoard(true);
 			new SwingWorker<Void,Void>() {
 
@@ -119,7 +148,7 @@ public class AppFrame extends JFrame implements BoardListener {
 
 				@Override
 				protected void done() {
-					game.goForward();		
+					currentGame.goForward();		
 					updateBoard(true);
 				}
 				

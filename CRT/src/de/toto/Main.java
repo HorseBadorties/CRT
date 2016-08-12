@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.List;
 
 import de.toto.game.Game;
+import de.toto.game.Position;
 //import chesspresso.game.Game;
 //import chesspresso.pgn.PGNReader;
 //import chesspresso.pgn.PGNSimpleErrorHandler;
@@ -17,24 +18,42 @@ public class Main {
 	
 	public static void main(String[] args) {
 		
-		File pgn = new File("C:/Users/080064/Downloads/test.pgn");
-		List<Game> games = PGNReader.parse(pgn);		
-		if (!games.isEmpty()) {
-			game = games.get(0);
-		} else {
-			game = new Game();
+		File pgn = new File("C:/Users/080064/Downloads/Repertoire.pgn"); //Repertoire.pgn");
+		List<Game> games = PGNReader.parse(pgn);
+		int positionCount = 0;
+		for (Game g : games) {
+			positionCount += g.getAllPositions().size();
+		}
+		System.out.println(String.format("Successfully parsed %d games with %d positions", games.size(), positionCount));
+		
+		Game repertoire = games.get(0);
+		games.remove(repertoire);
+		while (!games.isEmpty()) {
+			Game game = games.get(0);
+			System.out.println("merging " + game);
+			game.gotoStartPosition(); 
+			repertoire.gotoStartPosition();
+			
+			Position first = repertoire.getPosition();
+			Position second = game.getPosition();
+			
+			for (;;) {
+				second = second.getNext();
+				if (second == null) break;
+				if (!first.hasVariation(second)) {
+					first.addVariation(second);
+					System.out.println(String.format("merged %s as variation of %s", second, first));
+					break;
+				} else {
+					first = first.getVariation(second);
+				}				
+			}
+			games.remove(game);			
 		}
 		
-//		game = new Game();
-//		game.start();
-//		game.addMove("nn", "6k1/8/8/8/8/5PR1/8/1rn1R1K1 w - - 0 1"); //"6k1/5ppp/8/8/8/6R1/5PPP/1r2R1K1 w - - 0 1"); 
-//		game.addMove("Re3"); //Ne4 
-//		game.addMove("nn", "rnbqk1nr/pppp1ppp/8/4p3/1b6/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1"); 
-//		game.addMove("Ne4");
+		//System.out.println(String.format("merged games to %d positions ",repertoire.getAllPositions().size()));
 		
-		System.out.println("Number of positions: " + game.getAllPositions().size());
-		
-		game.gotoStartPosition();
+		game = repertoire;
 		
 		java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {

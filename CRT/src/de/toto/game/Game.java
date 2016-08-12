@@ -111,6 +111,7 @@ public class Game {
 		return result;
 	}
 	
+	
 	public void addTag(String name, String value) {
 		tags.put(name, value);
 	}
@@ -163,9 +164,9 @@ public class Game {
 	
 	public Position gotoNextPosition() {
 		Position next = findNextPosition(currentPosition);
-		if (next != null) {
+//		if (next != null) {
 			currentPosition = next;
-		}
+//		}
 		return currentPosition;
 	}
 	
