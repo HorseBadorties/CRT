@@ -100,6 +100,10 @@ public class Position {
 		return getVariationCount() > 0;
 	}
 	
+	public List<Position> getVariations() {
+		return next;
+	}
+	
 	public String getFen() {
 		return fen;
 	}

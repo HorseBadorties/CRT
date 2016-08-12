@@ -119,6 +119,56 @@ public class Game {
 		return tags.get(tagName);
 	}
 	
+	public Set<Position> getAllPositions() {
+		Set<Position> result = new HashSet<Position>();
+		Position p = gotoStartPosition();
+		result.add(p);
+		p = findNextPosition(p);
+		while (p != null) {
+			result.add(p);
+			p = findNextPosition(p);
+		}		
+		return result;
+	}
+	
+	private Position findNextPosition(Position p) {
+		if (p.hasVariations()) {
+			// enter first variation 
+			return p.getVariations().get(1);
+		} else if (p.hasNext()) {
+			return p.getNext();
+		} else {
+			if (p.getVariationLevel() == 0) {
+				// end of game
+				return null;
+			} else {
+				// end of variation - go back to start of variation and look for the next
+				Position headOfVariation = p;
+				Position previous = p.getPrevious();
+				while (previous.getVariationLevel() != p.getVariationLevel()-1) {
+					if (previous.getVariationLevel() == p.getVariationLevel()) headOfVariation = previous;
+					previous = previous.getPrevious();
+				}
+				// now look for the next variation
+				List<Position> variations = previous.getVariations();
+				int indexOfHeadOfVariation = variations.indexOf(headOfVariation);
+				if (indexOfHeadOfVariation < variations.size()-1) {
+					return variations.get(indexOfHeadOfVariation+1);
+				} else {
+					return previous.getNext();
+				}				
+			}			 
+		}
+	}
+	
+	public Position gotoNextPosition() {
+		Position next = findNextPosition(currentPosition);
+		if (next != null) {
+			currentPosition = next;
+		}
+		return currentPosition;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("%s - %s: %s", getTagValue("White"), getTagValue("Black"), getTagValue("Event")); 

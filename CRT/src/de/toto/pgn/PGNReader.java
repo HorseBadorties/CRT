@@ -12,7 +12,7 @@ import de.toto.game.*;
 
 public class PGNReader {
 		
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	
 	public static List<Game> parse(File pgn) {	
 		List<String> pgnLines = new ArrayList<String>();
@@ -118,7 +118,7 @@ public class PGNReader {
 				}
 				game.getPosition().setComment( moveComment == null ? null : moveComment.toString());
 				for (int i = 0; i < endVariation; i++) {				
-					System.out.println("ending variation" + " at move " + game.getPosition().getMoveNumber());
+					if (DEBUG) System.out.println("ending variation" + " at move " + game.getPosition().getMoveNumber());
 					game.endVariation();					
 				}
 				endVariation = 0;
@@ -138,7 +138,7 @@ public class PGNReader {
 				if (DEBUG) System.out.println("adding nag " + token + " at move " + game.getPosition().getMoveNumber());
 				game.getPosition().addNag(token);
 				for (int i = 0; i < endVariation; i++) {				
-					System.out.println("ending variation" + " at move " + game.getPosition().getMoveNumber());
+					if (DEBUG) System.out.println("ending variation" + " at move " + game.getPosition().getMoveNumber());
 					game.endVariation();					
 				}
 				endVariation = 0;
@@ -154,7 +154,7 @@ public class PGNReader {
 				game.addMove(stripPossibleMoveNumber(token));
 			}			
 			for (int i = 0; i < endVariation; i++) {				
-				System.out.println("ending variation" + " at move " + game.getPosition().getMoveNumber());
+				if (DEBUG) System.out.println("ending variation" + " at move " + game.getPosition().getMoveNumber());
 				game.endVariation();					
 			}
 			endVariation = 0;		

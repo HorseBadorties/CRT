@@ -17,8 +17,8 @@ public class Main {
 	
 	public static void main(String[] args) {
 		
-		File pgn = new File("C:/Users/Torsten/Documents/big.pgn");
-		List<Game> games = PGNReader.parse(pgn);
+		File pgn = new File("C:/Users/080064/Downloads/test.pgn");
+		List<Game> games = PGNReader.parse(pgn);		
 		if (!games.isEmpty()) {
 			game = games.get(0);
 		} else {
@@ -31,6 +31,8 @@ public class Main {
 //		game.addMove("Re3"); //Ne4 
 //		game.addMove("nn", "rnbqk1nr/pppp1ppp/8/4p3/1b6/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1"); 
 //		game.addMove("Ne4");
+		
+		System.out.println("Number of positions: " + game.getAllPositions().size());
 		
 		game.gotoStartPosition();
 		

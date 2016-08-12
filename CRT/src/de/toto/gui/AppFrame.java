@@ -21,7 +21,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	public AppFrame(Game game) throws HeadlessException {
 		this.game = game;
 		board = new Board();
-		board.addBoardListener(this);
+		board.addBoardListener(this);		
 		doUI();
 	}
 	
@@ -33,7 +33,8 @@ public class AppFrame extends JFrame implements BoardListener {
 		Action actionNext = new AbstractAction("next") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (game.goForward() != null) {
+				if (game.gotoNextPosition() != null) {
+//				if (game.goForward() != null) {
 					updateBoard(true);
 				};
 			}
@@ -66,8 +67,8 @@ public class AppFrame extends JFrame implements BoardListener {
 		pnlSouth.add(txtFen);
 		getContentPane().add(pnlSouth, BorderLayout.PAGE_END);
 		
-		JTree tree = new JTree(createMoveTree());
-		getContentPane().add(new JScrollPane(tree), BorderLayout.LINE_START);
+//		JTree tree = new JTree(createMoveTree());
+//		getContentPane().add(new JScrollPane(tree), BorderLayout.LINE_START);
 		
 		KeyStroke keyNext = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0);
 		pnlSouth.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyNext, "next");
@@ -106,9 +107,23 @@ public class AppFrame extends JFrame implements BoardListener {
 	@Override
 	public void userMove(String move) {
 		if (game.getPosition().hasNext() && game.getPosition().getNext().getMove().startsWith(move)) {
-			game.goForward();
-			game.goForward();
+			game.goForward();		
 			updateBoard(true);
+			new SwingWorker<Void,Void>() {
+
+				@Override
+				protected Void doInBackground() throws Exception {
+					Thread.sleep(500);
+					return null;
+				}
+
+				@Override
+				protected void done() {
+					game.goForward();		
+					updateBoard(true);
+				}
+				
+			}.execute();
 		}
 //		game.addMove(move);		
 //		updateBoard(true);
