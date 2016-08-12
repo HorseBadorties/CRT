@@ -51,7 +51,7 @@ public class Main {
 			games.remove(game);			
 		}
 		
-		//System.out.println(String.format("merged games to %d positions ",repertoire.getAllPositions().size()));
+//		System.out.println(String.format("merged games to %d positions ", repertoire.getAllPositions().size()));
 		
 		game = repertoire;
 		

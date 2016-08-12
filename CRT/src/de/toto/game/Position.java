@@ -446,7 +446,8 @@ public class Position {
 	
 	@Override
 	public String toString() {
-		return move + "\n" + dumpSquares();
+//		return move + "\n" + dumpSquares();
+		return getMoveNumber() + (whiteMoved() ? "." : "...") + move;
 	}
 	
 	private String dumpSquares() {

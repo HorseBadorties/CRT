@@ -64,6 +64,8 @@ public class AppFrame extends JFrame implements BoardListener {
 						currentGame = games.get(i+1);
 						currentGame.gotoStartPosition();
 						updateBoard(true);						
+					} else {
+						System.out.println("End of moves");
 					}
 				};
 			}
@@ -148,7 +150,7 @@ public class AppFrame extends JFrame implements BoardListener {
 
 				@Override
 				protected void done() {
-					currentGame.goForward();		
+					currentGame.gotoNextPosition();		
 					updateBoard(true);
 				}
 				
