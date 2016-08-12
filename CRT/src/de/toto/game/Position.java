@@ -415,7 +415,10 @@ public class Position {
 		StringBuilder result = new StringBuilder();
 		for (int rank = 7; rank >= 0; rank--) {
 			for (int file = 0; file < 8; file++) {
-				String s = squares[rank][file].getNameWithPieceSuffix();
+				String s = squares[rank][file].getName();
+				if (squares[rank][file].piece != null) {
+					s = squares[rank][file].piece.fenChar + s;
+				}
 				if (s.length() == 2) {
 					result.append(" ");
 				}

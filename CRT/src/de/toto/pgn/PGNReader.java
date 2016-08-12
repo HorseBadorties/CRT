@@ -169,7 +169,7 @@ public class PGNReader {
 	}
 	
 	public static void main(String[] args) {		
-		File pgn = new File("C:/Users/080064/Downloads/big.pgn"); //Repertoire.pgn");
+		File pgn = new File("C:/Users/080064/Downloads/Kasparov.pgn"); //Repertoire.pgn");
 		List<Game> games = PGNReader.parse(pgn);
 		System.out.println(games);
 	}

@@ -121,7 +121,7 @@ public class Game {
 	
 	@Override
 	public String toString() {
-		return getTagValue("Event"); 
+		return String.format("%s - %s: %s", getTagValue("White"), getTagValue("Black"), getTagValue("Event")); 
 	}
 	
 	
