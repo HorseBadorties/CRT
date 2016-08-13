@@ -71,6 +71,15 @@ public class Position {
 	public void addNag(String value) {
 		nags.add(value);
 	}
+	
+	public String getNagsAsString() {
+		if (nags.isEmpty()) return "";
+		StringBuilder result = new StringBuilder();
+		for (String nag : nags) {
+			result.append(NAG.getByNag(nag).toString());
+		}
+		return result.toString();
+	}
 
 	public int getVariationLevel() {
 		return variationLevel;
@@ -140,6 +149,14 @@ public class Position {
 
 	public String getMove() {
 		return move;
+	}
+	
+	/**
+	 * 
+	 * @return the move including possible NAGs
+	 */
+	public String getMoveNotation() {
+		return move + getNagsAsString();
 	}
 
 	/**
@@ -579,7 +596,11 @@ public class Position {
 		
 	public static void main(String[] args) {		
 		Position p = new Position();
-		System.out.println(p.isLanMove("wxd5+"));
+		p.move = "e2-e4";
+		p.nags.add(NAG.GOOD_MOVE.nag);
+		p.nags.add(NAG.FORCED_MOVE.nag);
+		p.nags.add(NAG.COUNTERPLAY_WHITE.nag);
+		System.out.println(p.getMoveNotation());
 	}
 		
 }

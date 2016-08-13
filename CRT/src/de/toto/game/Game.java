@@ -176,6 +176,28 @@ public class Game {
 		return currentPosition;
 	}
 	
+	public void mergeIn(Game other) {
+		other.gotoStartPosition(); 
+		gotoStartPosition();
+		
+		Position first = getPosition();
+		Position second = other.getPosition();
+		
+		for (;;) {
+			if (!second.hasNext()) break;
+			second = second.getNext();
+			if (second == null) break;
+			if (!first.hasVariation(second)) {
+				first.addVariation(second);
+				second.setComment(other.toString());
+				System.out.println(String.format("merged %s as variation of %s", second, first));
+				break;
+			} else {
+				first = first.getVariation(second);
+			}				
+		}
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("%s - %s: %s", getTagValue("White"), getTagValue("Black"), getTagValue("Event")); 

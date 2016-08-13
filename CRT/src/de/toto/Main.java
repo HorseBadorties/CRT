@@ -4,6 +4,8 @@ package de.toto;
 import java.io.File;
 import java.util.List;
 
+import javax.swing.UIManager;
+
 import de.toto.game.Game;
 import de.toto.game.Position;
 //import chesspresso.game.Game;
@@ -17,6 +19,11 @@ public class Main {
 	public static Game game;
 	
 	public static void main(String[] args) {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+	    } catch (Exception ex) {
+	       ex.printStackTrace();
+		}
 		
 		File pgn = new File("C:/Users/Torsten/Documents/Repertoire.pgn"); //Repertoire.pgn");
 		List<Game> games = PGNReader.parse(pgn);
@@ -28,27 +35,9 @@ public class Main {
 		
 		Game repertoire = games.get(0);
 		games.remove(repertoire);
-		while (!games.isEmpty()) {
-			Game game = games.get(0);
+		for (Game game : games) {
 			System.out.println("merging " + game);
-			game.gotoStartPosition(); 
-			repertoire.gotoStartPosition();
-			
-			Position first = repertoire.getPosition();
-			Position second = game.getPosition();
-			
-			for (;;) {
-				second = second.getNext();
-				if (second == null) break;
-				if (!first.hasVariation(second)) {
-					first.addVariation(second);
-					System.out.println(String.format("merged %s as variation of %s", second, first));
-					break;
-				} else {
-					first = first.getVariation(second);
-				}				
-			}
-			games.remove(game);			
+			repertoire.mergeIn(game);
 		}
 		
 		System.out.println(String.format("merged games to %d positions ", repertoire.getAllPositions().size()));

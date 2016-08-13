@@ -1,9 +1,7 @@
 package de.toto.pgn;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.LineNumberReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,7 +15,7 @@ public class PGNReader {
 	public static List<Game> parse(File pgn) {	
 		List<String> pgnLines = new ArrayList<String>();
 		try {
-			LineNumberReader reader = new LineNumberReader(new BufferedReader(new FileReader(pgn)));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(pgn), StandardCharsets.UTF_8));
 			try {
 				String line = null;
 				for(;;) {
@@ -44,9 +42,7 @@ public class PGNReader {
 		List<Game> result = new ArrayList<Game>();
 		if (pgnLines == null || pgnLines.isEmpty()) return result;
 		// Handle first 3 ChessBase special characters
-		if (pgnLines.get(0).startsWith("﻿")) {
-			pgnLines.set(0, pgnLines.get(0).substring(3,pgnLines.get(0).length()));
-		}
+		pgnLines.set(0, pgnLines.get(0).substring(pgnLines.get(0).indexOf('[')));
 		boolean isBeginOfGame = true;
 		StringBuilder movetext = null;
 		Game currentGame = null;

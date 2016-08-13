@@ -6,11 +6,9 @@ import java.util.List;
 import java.util.ArrayList;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
 
 import de.toto.game.Game;
-//import chesspresso.game.Game;
+import de.toto.game.Position;
 import de.toto.sound.Sounds;
 
 @SuppressWarnings("serial")
@@ -20,6 +18,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Game currentGame;
 	private Board board;
 	private JTextField txtFen;
+	private JTextField txtComment;
 	
 	public AppFrame() throws HeadlessException {
 		Game dummy = new Game();
@@ -92,14 +91,16 @@ public class AppFrame extends JFrame implements BoardListener {
 		txtFen.setEditable(false);
 		txtFen.setColumns(50);
 		
+		txtComment = new JTextField();
+		txtComment.setEditable(false);
+		txtComment.setColumns(50);
+		
+		
 		JPanel pnlSouth = new JPanel();
 		pnlSouth.add(btnBack);
 		pnlSouth.add(btnNext);
-		pnlSouth.add(txtFen);
+		pnlSouth.add(txtComment);
 		getContentPane().add(pnlSouth, BorderLayout.PAGE_END);
-		
-//		JTree tree = new JTree(createMoveTree());
-//		getContentPane().add(new JScrollPane(tree), BorderLayout.LINE_START);
 		
 		KeyStroke keyNext = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0);
 		pnlSouth.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyNext, "next");
@@ -113,21 +114,18 @@ public class AppFrame extends JFrame implements BoardListener {
 		
 		updateBoard(false);
 	}
-	
-	private TreeNode createMoveTree() {
-		DefaultMutableTreeNode result = new DefaultMutableTreeNode(currentGame.toString()); 
-		DefaultMutableTreeNode node = result; 
-		currentGame.gotoStartPosition();
-		
-		
-		return result;
-	}
-	
-	private void updateBoard(boolean playSound) {		
-		board.setCurrentPosition(currentGame.getPosition());
-		txtFen.setText(currentGame.getPosition().getFen());
+
+	private void updateBoard(boolean playSound) {	
+		Position p = currentGame.getPosition();
+		board.setCurrentPosition(p);
+		txtFen.setText(p.getFen());
+		String comment = p.getMoveNotation();
+		if (p.getComment() != null) {
+			comment += " " + p.getComment();
+		}
+		txtComment.setText(comment);
 		if (playSound) {
-			if (currentGame.getPosition().wasCapture()) {
+			if (p.wasCapture()) {
 				Sounds.capture();
 			} else {
 				Sounds.move();
@@ -155,6 +153,8 @@ public class AppFrame extends JFrame implements BoardListener {
 				}
 				
 			}.execute();
+		} else if (currentGame.getPosition().hasNext()) {
+			Sounds.wrong();
 		}
 	}
 
