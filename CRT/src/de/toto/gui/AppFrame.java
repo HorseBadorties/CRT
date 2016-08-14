@@ -3,10 +3,12 @@ package de.toto.gui;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.ArrayList;
 
 import javax.swing.*;
 
+import de.toto.engine.Stockfish;
 import de.toto.game.Game;
 import de.toto.game.Position;
 import de.toto.sound.Sounds;
@@ -19,6 +21,9 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Board board;
 	private JTextField txtFen;
 	private JTextField txtComment;
+	private Stockfish stockfish;
+	
+	private static final String PATH_TO_STOCKFISH = "C://Program Files//Stockfish//stockfish 7 x64.exe";
 	
 	public AppFrame() throws HeadlessException {
 		Game dummy = new Game();
@@ -27,6 +32,16 @@ public class AppFrame extends JFrame implements BoardListener {
 		board = new Board();
 		board.addBoardListener(this);		
 		doUI();
+		addWindowListener(new WindowAdapter() {
+				
+			@Override
+			public void windowClosing(WindowEvent e) {
+				if (stockfish != null) {
+					stockfish.stopEngine();
+				}
+			}
+			
+		});
 	}
 
 	public AppFrame(Game game) throws HeadlessException {
@@ -100,10 +115,34 @@ public class AppFrame extends JFrame implements BoardListener {
 			}
 		};
 		
+		Action actionEval = new AbstractAction("get Stockfish eval") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<String, String>() {
 
-		JButton btnNext = new JButton(actionBeginDrill);
-		JButton btnBack = new JButton(actionEndDrill);
-		
+					@Override
+					protected String doInBackground() throws Exception {
+						if (stockfish == null) {
+							stockfish = new Stockfish(PATH_TO_STOCKFISH);
+						}
+						return stockfish.getBestMove(currentGame.getPosition().getFen(), 5000);
+					}
+
+					@Override
+					protected void done() {
+						try {
+							JOptionPane.showMessageDialog(AppFrame.this, this.get());
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
+					
+					
+					
+				}.run();
+			}
+		};
+
 		txtFen = new JTextField();
 		txtFen.setEditable(false);
 		txtFen.setColumns(50);
@@ -114,8 +153,9 @@ public class AppFrame extends JFrame implements BoardListener {
 		
 		
 		JPanel pnlSouth = new JPanel();
-		pnlSouth.add(btnBack);
-		pnlSouth.add(btnNext);
+		pnlSouth.add(new JButton(actionBeginDrill));
+		pnlSouth.add(new JButton(actionEndDrill));
+		pnlSouth.add(new JButton(actionEval));
 		pnlSouth.add(txtComment);
 		getContentPane().add(pnlSouth, BorderLayout.PAGE_END);
 		
