@@ -472,15 +472,13 @@ public class Position {
 		StringBuilder result = new StringBuilder();
 		for (int rank = 7; rank >= 0; rank--) {
 			for (int file = 0; file < 8; file++) {
-				String s = squares[rank][file].getName();
+				String s = null;
 				if (squares[rank][file].piece != null) {
-					s = squares[rank][file].piece.fenChar + s;
+					s = squares[rank][file].piece.getColoredFigurine();
+				} else {
+					s = " "; //squares[rank][file].isWhite() ? "⬜" : "⬛"; // "⬜" "⬛"  "◻" : "◼"
 				}
-				if (s.length() == 2) {
-					result.append(" ");
-				}
-				result.append(s).append(" ");
-				
+				result.append(s);
 			}
 			result.append("\n");
 		}
@@ -595,12 +593,12 @@ public class Position {
 	}
 		
 	public static void main(String[] args) {		
-		Position p = new Position();
-		p.move = "e2-e4";
+		Position p = new Position(new Position(), "e2-e4", "1nb1kb1r/3ppp1p/5p2/2pP4/r7/2B5/PP3PPP/R3KBNR w KQk - 0 12");
 		p.nags.add(NAG.GOOD_MOVE.nag);
 		p.nags.add(NAG.FORCED_MOVE.nag);
 		p.nags.add(NAG.COUNTERPLAY_WHITE.nag);
 		System.out.println(p.getMoveNotation());
+		System.out.println(p.dumpSquares());
 	}
 		
 }

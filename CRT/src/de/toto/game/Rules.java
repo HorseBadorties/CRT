@@ -25,6 +25,7 @@ public class Rules {
 		public final char fenChar;
 		public final char pgnChar;
 		
+		
 		Piece(PieceType type, boolean isWhite, char fenChar, char pgnChar) {
 			this.type = type;
 			this.isWhite = isWhite;
@@ -39,5 +40,28 @@ public class Rules {
 			throw new IllegalArgumentException("unknown Piece.fenChar: " + fenChar);
 		}
 		
+		public String getFigurine() {
+			switch (type) {
+				case KING: return "♔";
+				case QUEEN: return "♕";
+				case ROOK: return "♖";
+				case BISHOP: return "♗";
+				case KNIGHT: return "♘";
+				case PAWN: return "♙";
+			}
+			return null;
+		}
+		
+		public String getColoredFigurine() {
+			switch (type) {
+				case KING: return isWhite ? "♔" : "♚";
+				case QUEEN: return isWhite ? "♕" : "♛";
+				case ROOK: return isWhite ? "♖" : "♜";
+				case BISHOP: return isWhite ? "♗" : "♝";
+				case KNIGHT: return isWhite ? "♘" : "♞";
+				case PAWN: return isWhite ? "♙" : "♟";
+			}
+			return null;
+		}
 	}
 }

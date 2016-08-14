@@ -12,10 +12,18 @@ import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import com.kitfox.svg.SVGDiagram;
+import com.kitfox.svg.SVGException;
+import com.kitfox.svg.SVGUniverse;
+import com.kitfox.svg.app.beans.SVGIcon;
+
 import de.toto.game.Position;
 import de.toto.game.Rules.Piece;
 import de.toto.game.Rules.PieceType;
 import de.toto.sound.Sounds;
+
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel {
@@ -123,6 +131,8 @@ public class Board extends JPanel {
 		private Board board;
 		private Square[][] squares = new Square[8][8];
 		private boolean isOrientationWhite = true;
+		
+		SVGIcon icon = new SVGIcon();
 		
 		private void positionChanged() {
 			for (int rank = 1; rank <= 8; rank++) {
@@ -261,6 +271,10 @@ public class Board extends JPanel {
 						.getResource("/images/pieces/png/Chess_ndt60.png"));
 				bP = ImageIO.read(Board.class
 						.getResource("/images/pieces/png/Chess_pdt60.png"));
+				icon.setSvgURI(new SVGUniverse().loadSVG(Board.class
+						.getResource("/images/pieces/merida/bK.svg")));
+				icon.setScaleToFit(true);
+				icon.setAntiAlias(true);
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -348,6 +362,7 @@ public class Board extends JPanel {
 			bBs = scaleImage(bB, squareSize);
 			bNs = scaleImage(bN, squareSize);
 			bPs = scaleImage(bP, squareSize);
+			icon.setPreferredSize(new Dimension(squareSize, squareSize));
 			scaleSize = squareSize;
 		}
 
@@ -455,6 +470,19 @@ public class Board extends JPanel {
 				g2.drawImage(getScaledPiece(dragSquare.gameSquare.piece), cursorLocation.x
 						- squareSize / 2, cursorLocation.y - squareSize / 2, null);
 			}
+			
+			
+			icon.paintIcon(this, g2, squareSize*3, squareSize*3);
+			
+			
+			//Line from c3 to e5;
+//			int x1 = squareSize*2 + squareSize/3*2;
+//			int y1 = squareSize*5 + squareSize/3;
+//			int x2 = squareSize*4 + squareSize/3;
+//			int y2 = squareSize*3 + squareSize/3*2;
+//			g2.setPaint(new GradientPaint(x1,y1,Color.ORANGE,x2, y2,Color.RED));
+//			g2.setStroke(new BasicStroke(squareSize/20));
+//			g2.drawLine(x1, y1, x2, y2);
 
 		}
 		
