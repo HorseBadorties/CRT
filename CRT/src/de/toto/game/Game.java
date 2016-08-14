@@ -203,5 +203,20 @@ public class Game {
 		return String.format("%s - %s: %s", getTagValue("White"), getTagValue("Black"), getTagValue("Event")); 
 	}
 	
+	public static void main(String[] args) {
+		Game g1 = new Game();
+		g1.start();
+		g1.addMove("d4"); g1.addMove("Nf6");
+		
+		Game g2 = new Game();
+		g2.start();
+		g2.addMove("e4"); g2.addMove("c5");
+		
+		g1.mergeIn(g2);
+		
+		System.out.println(g1.dumpMoves());
+		
+	}
+	
 	
 }

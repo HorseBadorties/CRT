@@ -7,6 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.*;
 import java.io.IOException;
+import java.net.URL;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
@@ -111,10 +112,7 @@ public class Board extends JPanel {
 		}
 
 		private Image boardImage, boardImageScaled;
-		// unscaled
-		private Image wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP; 
-		// scaled
-		private Image wKs, wQs, wRs, wBs, wNs, wPs, bKs, bQs, bRs, bBs, bNs, bPs; 
+		private SVGIcon wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP; 
 		private int scaleSize;
 		
 		private Color squareSelectionColor = new Color(.3f, .4f, .5f, .6f); //new Color(200, 255, 200);
@@ -131,8 +129,6 @@ public class Board extends JPanel {
 		private Board board;
 		private Square[][] squares = new Square[8][8];
 		private boolean isOrientationWhite = true;
-		
-		SVGIcon icon = new SVGIcon();
 		
 		private void positionChanged() {
 			for (int rank = 1; rank <= 8; rank++) {
@@ -245,40 +241,34 @@ public class Board extends JPanel {
 
 		private void loadImages() {
 			try {
-//				boardImage = ImageIO.read(Board.class
-//						.getResource("/images/board/wood-1024.jpg"));
-				wK = ImageIO.read(Board.class
-						.getResource("/images/pieces/png/Chess_klt60.png"));
-				wQ = ImageIO.read(Board.class
-						.getResource("/images/pieces/png/Chess_qlt60.png"));
-				wR = ImageIO.read(Board.class
-						.getResource("/images/pieces/png/Chess_rlt60.png"));
-				wB = ImageIO.read(Board.class
-						.getResource("/images/pieces/png/Chess_blt60.png"));
-				wN = ImageIO.read(Board.class
-						.getResource("/images/pieces/png/Chess_nlt60.png"));
-				wP = ImageIO.read(Board.class
-						.getResource("/images/pieces/png/Chess_plt60.png"));
-				bK = ImageIO.read(Board.class
-						.getResource("/images/pieces/png/Chess_kdt60.png"));
-				bQ = ImageIO.read(Board.class
-						.getResource("/images/pieces/png/Chess_qdt60.png"));
-				bR = ImageIO.read(Board.class
-						.getResource("/images/pieces/png/Chess_rdt60.png"));
-				bB = ImageIO.read(Board.class
-						.getResource("/images/pieces/png/Chess_bdt60.png"));
-				bN = ImageIO.read(Board.class
-						.getResource("/images/pieces/png/Chess_ndt60.png"));
-				bP = ImageIO.read(Board.class
-						.getResource("/images/pieces/png/Chess_pdt60.png"));
-				icon.setSvgURI(new SVGUniverse().loadSVG(Board.class
-						.getResource("/images/pieces/merida/bK.svg")));
-				icon.setScaleToFit(true);
-				icon.setAntiAlias(true);
-
-			} catch (IOException e) {
-				e.printStackTrace();
+				//maple.jpg wood-1024.jpg metal-1024.jpg
+				boardImage = ImageIO.read(Board.class.getResource("/images/board/maple.jpg"));
+				SVGUniverse svgUniverse = new SVGUniverse();
+				String folder = "merida"; //"merida";
+				wK = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wK.svg"));
+				wQ = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wQ.svg"));
+				wR = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wR.svg"));
+				wB = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wB.svg"));
+				wN = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wN.svg"));
+				wP = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wP.svg"));
+				bK = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bK.svg"));
+				bQ = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bQ.svg"));
+				bR = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bR.svg"));
+				bB = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bB.svg"));
+				bN = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bN.svg"));
+				bP = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bP.svg"));
+				
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
+		}
+		
+		private SVGIcon loadIcon(SVGUniverse svgUniverse, URL url) {
+			SVGIcon result = new SVGIcon();
+			result.setSvgURI(svgUniverse.loadSVG(url));
+			result.setScaleToFit(true);
+			result.setAntiAlias(true);
+			return result;
 		}
 
 		private Square getSquareAt(Point p) {
@@ -350,49 +340,48 @@ public class Board extends JPanel {
 			if (boardImage != null) {
 				boardImageScaled = scaleImage(boardImage, getSize().height);
 			}
-			wKs = scaleImage(wK, squareSize);
-			wQs = scaleImage(wQ, squareSize);
-			wRs = scaleImage(wR, squareSize);
-			wBs = scaleImage(wB, squareSize);
-			wNs = scaleImage(wN, squareSize);
-			wPs = scaleImage(wP, squareSize);
-			bKs = scaleImage(bK, squareSize);
-			bQs = scaleImage(bQ, squareSize);
-			bRs = scaleImage(bR, squareSize);
-			bBs = scaleImage(bB, squareSize);
-			bNs = scaleImage(bN, squareSize);
-			bPs = scaleImage(bP, squareSize);
-			icon.setPreferredSize(new Dimension(squareSize, squareSize));
+			wK.setPreferredSize(new Dimension(squareSize, squareSize));
+			wQ.setPreferredSize(new Dimension(squareSize, squareSize));
+			wR.setPreferredSize(new Dimension(squareSize, squareSize));
+			wB.setPreferredSize(new Dimension(squareSize, squareSize));
+			wN.setPreferredSize(new Dimension(squareSize, squareSize));
+			wP.setPreferredSize(new Dimension(squareSize, squareSize));
+			bK.setPreferredSize(new Dimension(squareSize, squareSize));
+			bQ.setPreferredSize(new Dimension(squareSize, squareSize));
+			bR.setPreferredSize(new Dimension(squareSize, squareSize));
+			bB.setPreferredSize(new Dimension(squareSize, squareSize));
+			bN.setPreferredSize(new Dimension(squareSize, squareSize));
+			bP.setPreferredSize(new Dimension(squareSize, squareSize)); 
 			scaleSize = squareSize;
 		}
 
-		private Image getScaledPiece(Piece p) {
-			Image result = null;
+		private SVGIcon getScaledPiece(Piece p) {
+			SVGIcon result = null;
 			switch (p) {
 			case WHITE_KING:
-				return wKs;
+				return wK;
 			case WHITE_QUEEN:
-				return wQs;
+				return wQ;
 			case WHITE_ROOK:
-				return wRs;
+				return wR;
 			case WHITE_BISHOP:
-				return wBs;
+				return wB;
 			case WHITE_KNIGHT:
-				return wNs;
+				return wN;
 			case WHITE_PAWN:
-				return wPs;
+				return wP;
 			case BLACK_KING:
-				return bKs;
+				return bK;
 			case BLACK_QUEEN:
-				return bQs;
+				return bQ;
 			case BLACK_ROOK:
-				return bRs;
+				return bR;
 			case BLACK_BISHOP:
-				return bBs;
+				return bB;
 			case BLACK_KNIGHT:
-				return bNs;
+				return bN;
 			case BLACK_PAWN:
-				return bPs;
+				return bP;
 			}
 			return result;
 		}
@@ -447,9 +436,9 @@ public class Board extends JPanel {
 				for (int file = 1; file <= 8; file++) {
 					Square square = getSquare(rank, file);
 					if (square.gameSquare.piece != null && !square.isDragSource) {
-						g2.drawImage(getScaledPiece(square.gameSquare.piece),
-								square.topLeftOnBoard.x,
-								square.topLeftOnBoard.y, null);
+						getScaledPiece(square.gameSquare.piece).paintIcon(this, g2, 
+								square.topLeftOnBoard.x, square.topLeftOnBoard.y);
+						
 					}	
 				}
 			}
@@ -467,13 +456,9 @@ public class Board extends JPanel {
 						}
 					}
 				}
-				g2.drawImage(getScaledPiece(dragSquare.gameSquare.piece), cursorLocation.x
-						- squareSize / 2, cursorLocation.y - squareSize / 2, null);
+				getScaledPiece(dragSquare.gameSquare.piece).paintIcon(this, g2, 
+						cursorLocation.x - squareSize / 2, cursorLocation.y - squareSize / 2);
 			}
-			
-			
-			icon.paintIcon(this, g2, squareSize*3, squareSize*3);
-			
 			
 			//Line from c3 to e5;
 //			int x1 = squareSize*2 + squareSize/3*2;

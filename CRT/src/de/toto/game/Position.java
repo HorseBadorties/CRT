@@ -20,6 +20,7 @@ public class Position {
 	// Startposition
 	public Position() {		
 		setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", true);
+		move = "";
 	}
 
 	public Position(Position previous, String move) {
@@ -425,7 +426,7 @@ public class Position {
 	
 	public String[] getMoveSquareNames() {
 		String[] result = null;
-		if (move != null && !("--".equals(move))) {
+		if (move != null && !move.isEmpty() && !("--".equals(move))) {
 			if (wasCastling()) {
 				String[] castlingSquareNames = getCastlingSquareNames();
 				result = new String[2];
