@@ -69,7 +69,7 @@ public class AppFrame extends JFrame implements BoardListener {
 				};
 			}
 		};		
-		JButton btnNext = new JButton(actionNext);
+		
 		Action actionBack = new AbstractAction("back") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -78,7 +78,6 @@ public class AppFrame extends JFrame implements BoardListener {
 				};
 			}
 		};
-		JButton btnBack = new JButton(actionBack);
 		
 		Action actionFlip = new AbstractAction("flip") {
 			@Override
@@ -86,6 +85,24 @@ public class AppFrame extends JFrame implements BoardListener {
 				board.flip();
 			}
 		};
+		
+		Action actionBeginDrill = new AbstractAction("begin drill") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				currentGame.beginDrill();
+			}
+		};
+		
+		Action actionEndDrill = new AbstractAction("end drill") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				currentGame.endDrill();
+			}
+		};
+		
+
+		JButton btnNext = new JButton(actionBeginDrill);
+		JButton btnBack = new JButton(actionEndDrill);
 		
 		txtFen = new JTextField();
 		txtFen.setEditable(false);

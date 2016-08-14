@@ -5,13 +5,12 @@ import java.util.*;
 public class Game {
 	
 	private Position currentPosition;
-	private Map<String, String> tags;
+	private Map<String, String> tags = new HashMap<String, String>();
 	
+	private Set<Position> drilledVariations = new HashSet<Position>();
+	private boolean isDrilling = false;
+	private boolean drillingWhite = true;
 	
-	public Game() {
-		tags = new HashMap<String, String>();
-	}
-
 	public void start() {
 		currentPosition = new Position();
 	}
@@ -133,6 +132,7 @@ public class Game {
 	}
 	
 	private Position findNextPosition(Position p) {
+		if (isDrilling) return findNextPosition2(p);
 		if (p.hasVariations()) {
 			// enter first variation 
 			return p.getVariations().get(1);
@@ -162,6 +162,46 @@ public class Game {
 		}
 	}
 	
+	private Position findNextPosition2(Position p) {
+		if (p.hasVariations()) {
+			if (p.isWhiteToMove() == drillingWhite) return p.getNext();
+			System.out.println(p + " hasVariations " + p.getVariations());
+			List<Position> candidates = new ArrayList<Position>(p.getVariations());
+			candidates.removeAll(drilledVariations);
+			if (candidates.isEmpty()) {
+				Position previous = p.getPrevious();
+				while (!previous.hasVariations() || previous.isWhiteToMove() == drillingWhite) {
+					previous = previous.getPrevious();
+					if (previous == null) {
+						System.out.println("end of lines reached");
+						return null;
+					}
+				}
+				return findNextPosition2(previous);
+			} else {
+				if (candidates.size() > 1) {
+					Collections.shuffle(candidates);
+				}
+				drilledVariations.add(candidates.get(0));
+				Position result = candidates.get(0);
+				System.out.println("returning " + result);
+				return result;
+			}
+		} else if (p.hasNext()) {
+			Position result = p.getNext();
+			System.out.println(p + " no variations - returning next: " + result);
+			return result;
+		} else {
+			System.out.println(p + " end of line");
+			Position previous = p.getPrevious();
+			while (!previous.hasVariations() || previous.isWhiteToMove() == drillingWhite) {
+				previous = previous.getPrevious();
+			}
+			System.out.println("finding next for " + previous);
+			return findNextPosition2(previous);
+		}
+	}
+	
 	public Position gotoNextPosition() {
 		Position next = findNextPosition(currentPosition);
 //		System.out.println(String.format("findNextPosition for %s: %s with previous %s", currentPosition, next, next.getPrevious()));
@@ -174,6 +214,17 @@ public class Game {
 		}
 		currentPosition = next;
 		return currentPosition;
+	}
+	
+	public void beginDrill() {
+		drilledVariations.clear();
+		isDrilling = true;
+		drillingWhite = getPosition().isWhiteToMove();
+		System.out.println(String.format("Drilling %s now", drillingWhite ? "White" : "Black"));
+	}
+	
+	public void endDrill() {
+		isDrilling = false;
 	}
 	
 	public void mergeIn(Game other) {
@@ -207,15 +258,11 @@ public class Game {
 		Game g1 = new Game();
 		g1.start();
 		g1.addMove("d4"); g1.addMove("Nf6");
-		
 		Game g2 = new Game();
 		g2.start();
 		g2.addMove("e4"); g2.addMove("c5");
-		
 		g1.mergeIn(g2);
-		
-		System.out.println(g1.dumpMoves());
-		
+		System.out.println(g1.gotoStartPosition().getVariationCount());
 	}
 	
 	

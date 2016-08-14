@@ -26,6 +26,8 @@ public enum NAG {
 	INITIATIVE_BLACK("$37", "→"),
 	ATTACK_WHITE("$40", "↑"),
 	ATTACK_BLACK("$41", "↑"),
+	COMPENSATION_WHITE("$44", "∞="), //Unicode symbol missing
+	COMPENSATION_BLACK("$45", "∞="), //Unicode symbol missing
 	COUNTERPLAY_WHITE("$132", "⇆"),
 	COUNTERPLAY_BLACK("$133", "⇆"),
 	WITH_THE_IDEA("$140", "∆"),
