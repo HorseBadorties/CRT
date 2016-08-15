@@ -7,10 +7,6 @@ import java.util.List;
 import javax.swing.UIManager;
 
 import de.toto.game.Game;
-import de.toto.game.Position;
-//import chesspresso.game.Game;
-//import chesspresso.pgn.PGNReader;
-//import chesspresso.pgn.PGNSimpleErrorHandler;
 import de.toto.gui.AppFrame;
 import de.toto.pgn.PGNReader;
 
@@ -25,7 +21,7 @@ public class Main {
 	       ex.printStackTrace();
 		}
 		
-		File pgn = new File("C:/Users/Torsten/Documents/Repertoire.pgn"); //Repertoire.pgn");
+		File pgn = new File("C:/Users/080064/Downloads/Repertoire.pgn"); // C:/Users/Torsten/Documents/Repertoire.pgn
 		List<Game> games = PGNReader.parse(pgn);
 		int positionCount = 0;
 		for (Game g : games) {

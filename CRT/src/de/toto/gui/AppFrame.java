@@ -37,7 +37,11 @@ public class AppFrame extends JFrame implements BoardListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				if (stockfish != null) {
-					stockfish.stopEngine();
+					try {
+						stockfish.stopEngine();
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
 				}
 			}
 			

@@ -1,7 +1,6 @@
 package de.toto.pgn;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,7 +14,7 @@ public class PGNReader {
 	public static List<Game> parse(File pgn) {	
 		List<String> pgnLines = new ArrayList<String>();
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(pgn), StandardCharsets.UTF_8));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(pgn), "UTF-8"));
 			try {
 				String line = null;
 				for(;;) {

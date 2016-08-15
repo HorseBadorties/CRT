@@ -1,7 +1,12 @@
 package de.toto.game;
 
+import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import de.toto.game.Rules.Piece;
 import de.toto.game.Rules.PieceType;
@@ -13,9 +18,11 @@ public class Position {
 	private List<Position> next = new ArrayList<Position>(); 
 	private int variationLevel = 0; //0 = main line, 1 = variation, 2 = variation of variation ...
 	private String fen = null;
-	private String move = null;
-	private String comment = null; // may contain graphics token such as [%csl Ge5][%cal Ge5b2]
+	private String move = null; //in Long Algebraic Notation, or "" for the starting position or "--" for a null move  
+	private String comment = null; // may contain graphics comments such as [%csl Ge5][%cal Ge5b2]
 	private List<String> nags = new ArrayList<String>(); // !, ?, ?? ...
+	
+	private static final Pattern graphicsCommentPattern = Pattern.compile("\\[(.*?)\\]");
 		
 	// Startposition
 	public Position() {		
@@ -64,6 +71,45 @@ public class Position {
 	public String getComment() {
 		return comment;
 	}
+	
+	public List<GraphicsComment> getGraphicsComments() {
+		List<GraphicsComment> result = new ArrayList<GraphicsComment>();
+		if (comment != null && !comment.isEmpty()) {			
+			Matcher matcher = graphicsCommentPattern.matcher(comment);
+			while (matcher.find()) {				
+				String graphicsComment = matcher.group(1);
+				if (graphicsComment.startsWith("%csl")) {
+					graphicsComment = graphicsComment.split(" ")[1];
+					for (String squareHighlight : graphicsComment.split(",")) {
+						Color c = null;
+						switch (squareHighlight.charAt(0)) {
+						case 'G' : c = Color.GREEN; break;
+						case 'R' : c = Color.RED; break;
+						case 'Y' : c = Color.YELLOW; break;
+						}
+						Square square = getSquare(squareHighlight.substring(1));
+						result.add(new GraphicsComment(square, null, c));
+					}
+				} else if (graphicsComment.startsWith("%cal")) {
+					graphicsComment = graphicsComment.split(" ")[1];
+					for (String arrow : graphicsComment.split(",")) {
+						Color c = null;
+						switch (arrow.charAt(0)) {
+						case 'G' : c = Color.GREEN; break;
+						case 'R' : c = Color.RED; break;
+						case 'Y' : c = Color.YELLOW; break;
+						}
+						Square squareFrom = getSquare(arrow.substring(1,3));
+						Square squareTo = getSquare(arrow.substring(3,5));
+						result.add(new GraphicsComment(squareFrom, squareTo, c));
+					}
+				} //TODO add other like Scid / Scid vs PC ...
+			}
+		}
+		return result;
+	}
+	
+	
 
 	public void setComment(String comment) {
 		this.comment = comment;
@@ -592,14 +638,41 @@ public class Position {
 		}
 		return null;	
 	}
+	
+	public static class GraphicsComment {
+		public Square firstSquare;
+		public Square secondSquare;
+		public Color color;
 		
-	public static void main(String[] args) {		
-		Position p = new Position(new Position(), "e2-e4", "1nb1kb1r/3ppp1p/5p2/2pP4/r7/2B5/PP3PPP/R3KBNR w KQk - 0 12");
-		p.nags.add(NAG.GOOD_MOVE.nag);
-		p.nags.add(NAG.FORCED_MOVE.nag);
-		p.nags.add(NAG.COUNTERPLAY_WHITE.nag);
-		System.out.println(p.getMoveNotation());
-		System.out.println(p.dumpSquares());
+		public GraphicsComment(Square firstSquare, Square secondSquare,	Color color) {
+			this.firstSquare = firstSquare;
+			this.secondSquare = secondSquare;
+			this.color = color;
+		}
+
+		@Override
+		public String toString() {
+			return firstSquare + "; " + secondSquare + "; " + color;
+		}
+		
+		
+		
+	}
+		
+	public static void main(String[] args) {
+		Position p = new Position();
+		p.comment = "[%csl Ra5,Rb7,Re5,Rf3,Rf6,Gf7,Rg3,Rg6,Gg7,Rh3,Rh6,Rh7]";
+		System.out.println(p.getGraphicsComments());
+		p.comment = "[%cal Gc5c4,Gc4e4,Ge4e3,Ge3f3,Gf3f1]";
+		System.out.println(p.getGraphicsComments());
+		
+//		Position p = new Position(new Position(), "e2-e4", "1nb1kb1r/3ppp1p/5p2/2pP4/r7/2B5/PP3PPP/R3KBNR w KQk - 0 12");
+//		p.nags.add(NAG.GOOD_MOVE.nag);
+//		p.nags.add(NAG.FORCED_MOVE.nag);
+//		p.nags.add(NAG.COUNTERPLAY_WHITE.nag);
+//		System.out.println(p.getMoveNotation());
+//		System.out.println(p.dumpSquares());
+
 	}
 		
 }

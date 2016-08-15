@@ -6,15 +6,12 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.*;
-import java.io.IOException;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import com.kitfox.svg.SVGDiagram;
-import com.kitfox.svg.SVGException;
 import com.kitfox.svg.SVGUniverse;
 import com.kitfox.svg.app.beans.SVGIcon;
 
@@ -22,9 +19,6 @@ import de.toto.game.Position;
 import de.toto.game.Rules.Piece;
 import de.toto.game.Rules.PieceType;
 import de.toto.sound.Sounds;
-
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel {
@@ -116,7 +110,9 @@ public class Board extends JPanel {
 		private int scaleSize;
 		
 		private Color squareSelectionColor = new Color(.3f, .4f, .5f, .6f); //new Color(200, 255, 200);
-		private Color squareHighlightColor = new Color(200, 255, 200);
+		private Color highlightColorGreen = new Color(0f, 1f, 0f, .4f);
+		private Color highlightColorRed = new Color(1f, 0f, 0f, .4f);
+		private Color highlightColorYellow = new Color(1f, 1f, 0f, .4f);
 		private Color squareColorWhite = Color.LIGHT_GRAY;
 		private Color squareColorBlack = Color.GRAY;
 
@@ -355,7 +351,7 @@ public class Board extends JPanel {
 			scaleSize = squareSize;
 		}
 
-		private SVGIcon getScaledPiece(Piece p) {
+		private SVGIcon getIconFor(Piece p) {
 			SVGIcon result = null;
 			switch (p) {
 			case WHITE_KING:
@@ -402,7 +398,7 @@ public class Board extends JPanel {
 			}
 
 			int squareSize = getSquareSize();
-
+			Position position = board.getCurrentPosition();
 			
 			// draw square background if no boardImage is loaded
 			if (boardImageScaled == null) {
@@ -422,28 +418,36 @@ public class Board extends JPanel {
 			}
 			
 			// draw last move highlight
-			String[] squareNames = board.getCurrentPosition().getMoveSquareNames();
-			if (squareNames != null) {
-				g2.setColor(squareSelectionColor);
-				Square s = getSquare(squareNames[0]);
-				g2.fillRect(s.topLeftOnBoard.x, s.topLeftOnBoard.y, squareSize, squareSize);
-				s = getSquare(squareNames[1]);
-				g2.fillRect(s.topLeftOnBoard.x, s.topLeftOnBoard.y, squareSize, squareSize);
-				
+			String[] squareNames = position.getMoveSquareNames();
+			if (squareNames != null) {				
+				colorSquare(g2, getSquare(squareNames[0]), squareSelectionColor, squareSize);
+				colorSquare(g2, getSquare(squareNames[1]), squareSelectionColor, squareSize);				
+			}
+			
+			if (!isDragging) {
+				for (Position.GraphicsComment gc : position.getGraphicsComments()) {
+					if (gc.secondSquare == null) {
+						Color c = highlightColorGreen;
+						if (gc.color == Color.RED) c = highlightColorRed; 
+						else if  (gc.color == Color.YELLOW) c = highlightColorYellow;  
+						colorSquare(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file), c, squareSize);
+					} else {
+						drawArrow(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file),
+								getSquare(gc.secondSquare.rank, gc.secondSquare.file), gc.color, squareSize);
+					}
+				}
 			}
 						
 			for (int rank = 1; rank <= 8; rank++) {
 				for (int file = 1; file <= 8; file++) {
 					Square square = getSquare(rank, file);
 					if (square.gameSquare.piece != null && !square.isDragSource) {
-						getScaledPiece(square.gameSquare.piece).paintIcon(this, g2, 
+						getIconFor(square.gameSquare.piece).paintIcon(this, g2, 
 								square.topLeftOnBoard.x, square.topLeftOnBoard.y);
 						
 					}	
 				}
 			}
-			
-			
 			
 			// Drag&Drop decoration
 			if (isDragging) {
@@ -451,24 +455,29 @@ public class Board extends JPanel {
 					for (int file = 1; file <= 8; file++) {
 						Square square = getSquare(rank, file);
 						if (square.isDragSource || square.isDragTarget) {
-							g2.setColor(squareSelectionColor);
-							g2.fillRect(square.topLeftOnBoard.x, square.topLeftOnBoard.y, squareSize, squareSize);
+							colorSquare(g2, square, squareSelectionColor, squareSize);
 						}
 					}
 				}
-				getScaledPiece(dragSquare.gameSquare.piece).paintIcon(this, g2, 
+				getIconFor(dragSquare.gameSquare.piece).paintIcon(this, g2, 
 						cursorLocation.x - squareSize / 2, cursorLocation.y - squareSize / 2);
-			}
-			
-			//Line from c3 to e5;
-//			int x1 = squareSize*2 + squareSize/3*2;
-//			int y1 = squareSize*5 + squareSize/3;
-//			int x2 = squareSize*4 + squareSize/3;
-//			int y2 = squareSize*3 + squareSize/3*2;
-//			g2.setPaint(new GradientPaint(x1,y1,Color.ORANGE,x2, y2,Color.RED));
-//			g2.setStroke(new BasicStroke(squareSize/20));
-//			g2.drawLine(x1, y1, x2, y2);
-
+			} 
+		}
+		
+		private void colorSquare(Graphics2D g2, Square s, Color color, int squareSize) {			
+			g2.setColor(color);
+			g2.fillRect(s.topLeftOnBoard.x, s.topLeftOnBoard.y, squareSize, squareSize);
+		}
+		
+		private void drawArrow(Graphics2D g2, Square from, Square to, Color color, int squareSize) {			
+			int x1 = from.topLeftOnBoard.x + squareSize/2;
+			int y1 = from.topLeftOnBoard.y + squareSize/2;;
+			int x2 = to.topLeftOnBoard.x + squareSize/2;
+			int y2 = to.topLeftOnBoard.y + squareSize/2;
+//			g2.setPaint(new GradientPaint(x1,y1,highlightColorRed,x2, y2,Color.RED));
+			g2.setColor(color);
+			g2.setStroke(new BasicStroke(squareSize/30));
+			g2.drawLine(x1, y1, x2, y2);
 		}
 		
 	}
