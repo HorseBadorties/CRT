@@ -2,28 +2,38 @@ package de.toto.gui;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.ArrayList;
+import java.util.prefs.Preferences;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 
 import de.toto.engine.Stockfish;
 import de.toto.game.Game;
 import de.toto.game.Position;
+import de.toto.pgn.PGNReader;
 import de.toto.sound.Sounds;
 
 @SuppressWarnings("serial")
 public class AppFrame extends JFrame implements BoardListener {
 	
+	private File pgn = null;
 	private List<Game> games = new ArrayList<Game>();
 	private Game currentGame;
 	private Board board;
 	private JTextField txtFen;
 	private JTextField txtComment;
+	private JTextField txtStatus;
 	private Stockfish stockfish;
+	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
 	
 	private static final String PATH_TO_STOCKFISH = "C://Program Files//Stockfish//stockfish 7 x64.exe";
+	private static final String PREFS_FRAME_WIDTH = "FRAME_WIDTH";
+	private static final String PREFS_FRAME_HEIGHT = "FRAME_HEIGHT";
+	private static final String PREFS_FRAME_EXTENDED_STATE = "FRAME_EXTENDED_STATE";
+	private static final String PREFS_PGN_FILE = "PGN_FILE";
 	
 	public AppFrame() throws HeadlessException {
 		Game dummy = new Game();
@@ -36,6 +46,7 @@ public class AppFrame extends JFrame implements BoardListener {
 				
 			@Override
 			public void windowClosing(WindowEvent e) {
+				savePrefs();
 				if (stockfish != null) {
 					try {
 						stockfish.stopEngine();
@@ -47,17 +58,39 @@ public class AppFrame extends JFrame implements BoardListener {
 			
 		});
 	}
-
-	public AppFrame(Game game) throws HeadlessException {
-		this();
-		games.add(game);
-		setGame(game);
+	
+	private void savePrefs() {
+		boolean maximized = getExtendedState() == JFrame.MAXIMIZED_BOTH;
+		if (!maximized) {
+			prefs.putInt(PREFS_FRAME_WIDTH, getSize().width);
+			prefs.putInt(PREFS_FRAME_HEIGHT, getSize().height);
+		} 
+		prefs.putBoolean(PREFS_FRAME_EXTENDED_STATE, maximized);
+		if (pgn != null) {
+			prefs.put(PREFS_PGN_FILE, pgn.getAbsolutePath());
+		}
 	}
 	
-	public AppFrame(List<Game> games) throws HeadlessException {
-		this();
-		this.games.addAll(games);
-		setGame(games.get(0));
+	
+	private void loadPgn(File pgn) {
+		List<Game> games = PGNReader.parse(pgn);
+		int positionCount = 0;
+		for (Game g : games) {
+			positionCount += g.getAllPositions().size();
+		}
+		System.out.println(String.format("Successfully parsed %d games with %d positions", games.size(), positionCount));
+		
+		Game repertoire = games.get(0);
+		games.remove(repertoire);
+		for (Game game : games) {
+			System.out.println("merging " + game);
+			repertoire.mergeIn(game);
+		}		
+		System.out.println(String.format("merged games to %d positions ", repertoire.getAllPositions().size()));
+		this.pgn = pgn;
+		
+		setGame(repertoire);	
+		updateBoard(false);
 	}
 	
 	private void setGame(Game g) {
@@ -67,8 +100,14 @@ public class AppFrame extends JFrame implements BoardListener {
 	
 	private void doUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		getContentPane().add(board, BorderLayout.CENTER);
-		board.setPreferredSize(new Dimension(800, 800));
+		
+		JPanel pnlNorth = new JPanel();
+		JPanel pnlCenter = new JPanel(new BorderLayout());
+		JPanel pnlSouth = new JPanel(new BorderLayout());
+		
+		getContentPane().add(pnlNorth, BorderLayout.PAGE_START);		
+		getContentPane().add(pnlCenter, BorderLayout.CENTER);
+		getContentPane().add(pnlSouth, BorderLayout.PAGE_END);
 		
 		Action actionNext = new AbstractAction("next") {
 			@Override
@@ -146,6 +185,33 @@ public class AppFrame extends JFrame implements BoardListener {
 				}.run();
 			}
 		};
+		
+		Action actionLoadPGN = new AbstractAction("load PGN") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				File lastDir = pgn != null ? pgn.getParentFile() : null;
+				JFileChooser fc = new JFileChooser(lastDir);
+				fc.setDialogTitle("Choose a PGN file that contains your repertoire lines");
+				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				fc.addChoosableFileFilter(new FileFilter() {
+
+					@Override
+					public boolean accept(File f) {						
+						return f.isDirectory() || f.getName().toLowerCase().endsWith(".pgn");
+					}
+
+					@Override
+					public String getDescription() {						
+						return "*.pgn";
+					}
+					
+				});
+				int ok = fc.showOpenDialog(AppFrame.this);
+				if (ok == JFileChooser.APPROVE_OPTION) {
+					loadPgn(fc.getSelectedFile());
+				}
+			}
+		};
 
 		txtFen = new JTextField();
 		txtFen.setEditable(false);
@@ -155,13 +221,22 @@ public class AppFrame extends JFrame implements BoardListener {
 		txtComment.setEditable(false);
 		txtComment.setColumns(50);
 		
+				
+		pnlNorth.add(new JButton(actionBeginDrill));
+		pnlNorth.add(new JButton(actionEndDrill));
+		pnlNorth.add(new JButton(actionLoadPGN));
+		pnlNorth.add(txtComment);
+
+		JPanel pnlBoard = new JPanel(new BorderLayout());
+		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		pnlBoard.add(board, BorderLayout.CENTER);
+		pnlCenter.add(pnlBoard, BorderLayout.CENTER);
 		
-		JPanel pnlSouth = new JPanel();
-		pnlSouth.add(new JButton(actionBeginDrill));
-		pnlSouth.add(new JButton(actionEndDrill));
-		pnlSouth.add(new JButton(actionEval));
-		pnlSouth.add(txtComment);
-		getContentPane().add(pnlSouth, BorderLayout.PAGE_END);
+		txtStatus = new JTextField();
+		txtStatus.setEditable(false);
+		txtStatus.setBorder(BorderFactory.createLoweredBevelBorder());	
+		pnlSouth.add(txtStatus, BorderLayout.PAGE_END);
+		
 		
 		KeyStroke keyNext = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0);
 		pnlSouth.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyNext, "next");
@@ -172,6 +247,26 @@ public class AppFrame extends JFrame implements BoardListener {
 		KeyStroke keyControlF = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK);
 		pnlSouth.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlF, "flip");
 		pnlSouth.getActionMap().put("flip",actionFlip);
+		
+		Dimension prefSize = new Dimension(prefs.getInt(PREFS_FRAME_WIDTH, 800), prefs.getInt(PREFS_FRAME_HEIGHT, 800));		
+		this.setPreferredSize(prefSize);
+		pack();
+		if (prefs.getBoolean(PREFS_FRAME_EXTENDED_STATE, false)) {
+			setExtendedState(JFrame.MAXIMIZED_BOTH);
+		} else {
+			setLocationRelativeTo(null);
+		}
+		
+		String lastPGN = prefs.get(PREFS_PGN_FILE, null);
+		if (lastPGN != null) {
+			File f = new File(lastPGN);
+			if (f.exists()) {
+				loadPgn(f);
+			}			
+		} 
+		if (pgn == null) {
+			actionLoadPGN.actionPerformed(null);
+		}
 		
 		updateBoard(false);
 	}
@@ -196,26 +291,30 @@ public class AppFrame extends JFrame implements BoardListener {
 
 	@Override
 	public void userMove(String move) {
-		if (currentGame.getPosition().hasNext() && currentGame.getPosition().getNext().getMove().startsWith(move)) {
-			currentGame.goForward();		
-			updateBoard(true);
-			new SwingWorker<Void,Void>() {
-
-				@Override
-				protected Void doInBackground() throws Exception {
-					Thread.sleep(500);
-					return null;
-				}
-
-				@Override
-				protected void done() {
-					currentGame.gotoNextPosition();		
-					updateBoard(true);
-				}
-				
-			}.execute();
-		} else if (currentGame.getPosition().hasNext()) {
-			Sounds.wrong();
+		if (currentGame.isDrilling()) {
+			if (currentGame.getPosition().hasNext() && currentGame.getPosition().getNext().getMove().startsWith(move)) {
+				currentGame.goForward();		
+				updateBoard(true);
+				new SwingWorker<Void,Void>() {
+	
+					@Override
+					protected Void doInBackground() throws Exception {
+						Thread.sleep(500);
+						return null;
+					}
+	
+					@Override
+					protected void done() {
+						currentGame.gotoNextPosition();		
+						updateBoard(true);
+					}
+					
+				}.execute();
+			} else if (currentGame.getPosition().hasNext()) {
+				Sounds.wrong();
+			}
+		} else {
+			//TODO accept if the user's move is part of the game
 		}
 	}
 

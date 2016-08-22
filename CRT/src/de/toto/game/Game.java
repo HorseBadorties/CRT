@@ -210,7 +210,7 @@ public class Game {
 			return currentPosition;
 		}
 		if (currentPosition != next.getPrevious()) {
-			System.out.println("jumpt to next variation with " + next);
+			System.out.println("jumped to next variation with " + next);
 		}
 		currentPosition = next;
 		return currentPosition;
@@ -225,6 +225,10 @@ public class Game {
 	
 	public void endDrill() {
 		isDrilling = false;
+	}
+	
+	public boolean isDrilling() {
+		return isDrilling;
 	}
 	
 	public void mergeIn(Game other) {
