@@ -77,50 +77,27 @@ public class Game {
 		return currentPosition;
 	}
 	
+	public Position gotoPosition(Position p) {		
+		currentPosition = p;		
+		return currentPosition;
+	}
+	
 	/**
-	 * Go forward one move, not following variations
-	 * @return
+	 * Go forward one move, following the main line 
 	 */
 	public Position goForward() {
-		return goForward(false);		
-	}
-	
-	/**
-	 * Go forward one move, possibly following variations
-	 */
-	public Position goForward(boolean followVariations) {
 		if (!currentPosition.hasNext()) return null;
-		if (!followVariations) {
-			currentPosition = currentPosition.getNext();			
-		} else {
-			
-		}
-		return currentPosition; 
-		
+		currentPosition = currentPosition.getNext();		
+		return currentPosition; 	
 	}
-	
+		
 	public Position goBack() {
 		if (!currentPosition.hasPrevious()) {
 			currentPosition = currentPosition.getPrevious();
 			return currentPosition;
 		} else return null;
 	}
-	
-	public List<String> dumpMoves() {
-		List<String> result = new ArrayList<String>();
-		Position p = currentPosition;
-		while (!p.hasPrevious()) {
-			p = p.getPrevious();
-		}
-		for(;;) {
-			result.add(p.getMove());
-			if (!p.hasNext()) break;
-			p = p.getNext();
-		}
-		return result;
-	}
-	
-	
+		
 	public void addTag(String name, String value) {
 		tags.put(name, value);
 	}

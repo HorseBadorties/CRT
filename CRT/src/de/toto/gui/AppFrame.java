@@ -13,6 +13,7 @@ import javax.swing.filechooser.FileFilter;
 
 import de.toto.engine.Stockfish;
 import de.toto.game.Game;
+import de.toto.game.Game.DrillStats;
 import de.toto.game.Position;
 import de.toto.pgn.PGNReader;
 import de.toto.sound.Sounds;
@@ -314,7 +315,13 @@ public class AppFrame extends JFrame implements BoardListener {
 	
 					@Override
 					protected void done() {
-						currentGame.gotoNextPosition();		
+						Position current = currentGame.getPosition();
+						Position newPosition = currentGame.gotoNextPosition();
+						if (current == newPosition) {
+							DrillStats drillStats = currentGame.endDrill();
+							JOptionPane.showMessageDialog(AppFrame.this, String.format("Drill ended for %d positions", drillStats.drilledPositions));
+							currentGame.gotoStartPosition();
+						} 
 						updateBoard(true);
 					}
 					
