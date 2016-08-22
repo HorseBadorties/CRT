@@ -4,12 +4,15 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 import de.toto.game.*;
 
 public class PGNReader {
 		
 	private static final boolean DEBUG = false;
+	
+	private static Logger log = Logger.getLogger("PGNReader");
 	
 	public static List<Game> parse(File pgn) {	
 		List<String> pgnLines = new ArrayList<String>();
@@ -52,7 +55,7 @@ public class PGNReader {
 			}
 			if (isBeginOfGame) {				
 				if (currentGame != null) {
-					if (DEBUG) System.out.println("adding game " + currentGame);
+					if (DEBUG) log.info("adding game " + currentGame);
 					result.add(currentGame);
 				}
 				currentGame = new Game();
@@ -86,7 +89,7 @@ public class PGNReader {
 		}
 		//add last game
 		if (currentGame != null) {
-			if (DEBUG) System.out.println("adding game " + currentGame);
+			if (DEBUG) log.info("adding game " + currentGame);
 			result.add(currentGame);
 		}
 		return result;
@@ -120,11 +123,11 @@ public class PGNReader {
 				moveComment.append(token);
 				insideComment = false;
 				if (DEBUG && moveComment != null && moveComment.length() > 0) {
-					System.out.println("adding comment " + moveComment + " at move " + game.getPosition().getMoveNumber());
+					log.info("adding comment " + moveComment + " at move " + game.getPosition().getMoveNumber());
 				}
 				game.getPosition().setComment( moveComment == null ? null : moveComment.toString());
 				for (int i = 0; i < endVariation; i++) {				
-					if (DEBUG) System.out.println("ending variation" + " at move " + game.getPosition().getMoveNumber());
+					if (DEBUG) log.info("ending variation" + " at move " + game.getPosition().getMoveNumber());
 					game.endVariation();					
 				}
 				endVariation = 0;
@@ -141,10 +144,10 @@ public class PGNReader {
 			}
 			 
 			if (token.startsWith("$")) {
-				if (DEBUG) System.out.println("adding nag " + token + " at move " + game.getPosition().getMoveNumber());
+				if (DEBUG) log.info("adding nag " + token + " at move " + game.getPosition().getMoveNumber());
 				game.getPosition().addNag(token);
 				for (int i = 0; i < endVariation; i++) {				
-					if (DEBUG) System.out.println("ending variation" + " at move " + game.getPosition().getMoveNumber());
+					if (DEBUG) log.info("ending variation" + " at move " + game.getPosition().getMoveNumber());
 					game.endVariation();					
 				}
 				endVariation = 0;
@@ -152,15 +155,15 @@ public class PGNReader {
 			}			
 			//actual move
 			if (startVariation) {
-				if (DEBUG) System.out.println("adding variation " + token + " at move " + game.getPosition().getMoveNumber());
+				if (DEBUG) log.info("adding variation " + token + " at move " + game.getPosition().getMoveNumber());
 				game.newVariation(stripPossibleMoveNumber(token));
 				startVariation = false;
 			} else if (!token.isEmpty()) {
-				if (DEBUG) System.out.println("adding move " + token + " at move " + game.getPosition().getMoveNumber());
+				if (DEBUG) log.info("adding move " + token + " at move " + game.getPosition().getMoveNumber());
 				game.addMove(stripPossibleMoveNumber(token));
 			}			
 			for (int i = 0; i < endVariation; i++) {				
-				if (DEBUG) System.out.println("ending variation" + " at move " + game.getPosition().getMoveNumber());
+				if (DEBUG) log.info("ending variation" + " at move " + game.getPosition().getMoveNumber());
 				game.endVariation();					
 			}
 			endVariation = 0;		
@@ -181,7 +184,7 @@ public class PGNReader {
 		for (Game g : games) {
 			positionCount += g.getAllPositions().size();
 		}
-		System.out.println(String.format("Successfully parsed %d games with %d positions", games.size(), positionCount));
+		log.info(String.format("Successfully parsed %d games with %d positions", games.size(), positionCount));
 		
 		Game repertoire = games.get(0);
 		games.remove(repertoire);
@@ -207,7 +210,7 @@ public class PGNReader {
 		}
 		
 		
-		System.out.println(String.format("merged games to %d positions ",repertoire.getAllPositions().size()));
+		log.info(String.format("merged games to %d positions ",repertoire.getAllPositions().size()));
 	}
 	
 	

@@ -1,15 +1,25 @@
 package de.toto.game;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 public class Game {
+	
+	private static Logger log = Logger.getLogger("Game");
 	
 	private Position currentPosition;
 	private Map<String, String> tags = new HashMap<String, String>();
 	
+	private Position drillStartingPosition;
 	private Set<Position> drilledVariations = new HashSet<Position>();
 	private boolean isDrilling = false;
 	private boolean drillingWhite = true;
+	private DrillStats drillStats;
+	
+	public static class DrillStats {
+		public int drilledPositions;
+		public int correctPositions;
+	}
 	
 	public void start() {
 		currentPosition = new Position();
@@ -131,6 +141,33 @@ public class Game {
 		return result;
 	}
 	
+	public boolean hasNextPosition(String move) {
+		boolean result = false;
+		if (getPosition().hasNext()) {
+			for (Position p : getPosition().getVariations()) {
+				if (isDrilling && p.getNagsAsString().startsWith("?")) continue; //don't accept "?" or "?!" moves
+				if (p.getMove().startsWith(move)) {
+					result = true;
+					break;
+				}
+			}
+		}
+		if (isDrilling && result) drillStats.correctPositions++;
+		return result;
+	}
+	
+	public Position doMove(String move) {
+		if (getPosition().hasNext()) {
+			for (Position p : getPosition().getVariations()) {				
+				if (p.getMove().startsWith(move)) {
+					currentPosition = p;
+					return currentPosition;
+				}
+			}
+		}
+		return null;
+	}
+	
 	private Position findNextPosition(Position p) {
 		if (isDrilling) return findNextPosition2(p);
 		if (p.hasVariations()) {
@@ -165,15 +202,19 @@ public class Game {
 	private Position findNextPosition2(Position p) {
 		if (p.hasVariations()) {
 			if (p.isWhiteToMove() == drillingWhite) return p.getNext();
-			System.out.println(p + " hasVariations " + p.getVariations());
+			log.info(p + " hasVariations " + p.getVariations());
 			List<Position> candidates = new ArrayList<Position>(p.getVariations());
 			candidates.removeAll(drilledVariations);
 			if (candidates.isEmpty()) {
 				Position previous = p.getPrevious();
 				while (!previous.hasVariations() || previous.isWhiteToMove() == drillingWhite) {
+					if (previous.equals(drillStartingPosition)) {
+						log.info("end of lines reached");
+						return null;
+					}
 					previous = previous.getPrevious();
 					if (previous == null) {
-						System.out.println("end of lines reached");
+						log.info("end of lines reached");
 						return null;
 					}
 				}
@@ -184,47 +225,54 @@ public class Game {
 				}
 				drilledVariations.add(candidates.get(0));
 				Position result = candidates.get(0);
-				System.out.println("returning " + result);
+				log.info("returning " + result);
+				drillStats.drilledPositions++;
 				return result;
 			}
 		} else if (p.hasNext()) {
 			Position result = p.getNext();
-			System.out.println(p + " no variations - returning next: " + result);
+			log.info(p + " no variations - returning next: " + result);
+			drillStats.drilledPositions++;
 			return result;
 		} else {
-			System.out.println(p + " end of line");
+			log.info(p + " end of line");
 			Position previous = p.getPrevious();
 			while (!previous.hasVariations() || previous.isWhiteToMove() == drillingWhite) {
 				previous = previous.getPrevious();
 			}
-			System.out.println("finding next for " + previous);
+			log.info("finding next for " + previous);			
 			return findNextPosition2(previous);
 		}
 	}
 	
 	public Position gotoNextPosition() {
 		Position next = findNextPosition(currentPosition);
-//		System.out.println(String.format("findNextPosition for %s: %s with previous %s", currentPosition, next, next.getPrevious()));
+//		log.info(String.format("findNextPosition for %s: %s with previous %s", currentPosition, next, next.getPrevious()));
 		if (next == null) {
-			System.out.println("reached end of variation tree with last position " + currentPosition);
+			log.info("reached end of variation tree with last position " + currentPosition);
 			return currentPosition;
 		}
 		if (currentPosition != next.getPrevious()) {
-			System.out.println("jumped to next variation with " + next);
+			log.info("jumped to next variation with " + next);
 		}
 		currentPosition = next;
 		return currentPosition;
 	}
 	
 	public void beginDrill() {
+		drillStartingPosition = getPosition();
 		drilledVariations.clear();
+		drillStats = new DrillStats();
 		isDrilling = true;
 		drillingWhite = getPosition().isWhiteToMove();
-		System.out.println(String.format("Drilling %s now", drillingWhite ? "White" : "Black"));
+		log.info(String.format("Drilling %s now", drillingWhite ? "White" : "Black"));
 	}
 	
-	public void endDrill() {
+	public DrillStats endDrill() {
 		isDrilling = false;
+		log.info(String.format("Drill ended - %d of %d positions correct", drillStats.correctPositions, drillStats.drilledPositions));
+		return drillStats;
+		
 	}
 	
 	public boolean isDrilling() {
@@ -245,7 +293,7 @@ public class Game {
 			if (!first.hasVariation(second)) {
 				first.addVariation(second);
 				second.setComment(other.toString());
-				System.out.println(String.format("merged %s as variation of %s", second, first));
+				log.info(String.format("merged %s as variation of %s", second, first));
 				break;
 			} else {
 				first = first.getVariation(second);
@@ -257,17 +305,6 @@ public class Game {
 	public String toString() {
 		return String.format("%s - %s: %s", getTagValue("White"), getTagValue("Black"), getTagValue("Event")); 
 	}
-	
-	public static void main(String[] args) {
-		Game g1 = new Game();
-		g1.start();
-		g1.addMove("d4"); g1.addMove("Nf6");
-		Game g2 = new Game();
-		g2.start();
-		g2.addMove("e4"); g2.addMove("c5");
-		g1.mergeIn(g2);
-		System.out.println(g1.gotoStartPosition().getVariationCount());
-	}
-	
+		
 	
 }

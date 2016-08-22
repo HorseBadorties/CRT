@@ -1,12 +1,15 @@
 package de.toto.engine;
 
 import java.io.*;
+import java.util.logging.Logger;
 
 public class Stockfish {
 
 	private Process engineProcess;
 	private BufferedReader processReader;
 	private OutputStreamWriter processWriter;
+	
+	private static Logger log = Logger.getLogger("Stockfish");
 
 	public Stockfish(String pathToStockfish) {
 		startEngine(pathToStockfish);
@@ -127,7 +130,7 @@ public class Stockfish {
 		String[] rows = getOutput(0).split("\n");
 
 		for (int i = 1; i < 18; i++) {
-			System.out.println(rows[i]);
+			log.info(rows[i]);
 		}
 	}
 

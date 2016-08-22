@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 import javax.swing.*;
@@ -29,11 +30,14 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Stockfish stockfish;
 	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
 	
+	private static Logger log = Logger.getLogger("AppFrame");
+	
 	private static final String PATH_TO_STOCKFISH = "C://Program Files//Stockfish//stockfish 7 x64.exe";
 	private static final String PREFS_FRAME_WIDTH = "FRAME_WIDTH";
 	private static final String PREFS_FRAME_HEIGHT = "FRAME_HEIGHT";
 	private static final String PREFS_FRAME_EXTENDED_STATE = "FRAME_EXTENDED_STATE";
 	private static final String PREFS_PGN_FILE = "PGN_FILE";
+	private static final String PREFS_WHITE_PERSPECTIVE = "WHITE_PERSPECTIVE";
 	
 	public AppFrame() throws HeadlessException {
 		Game dummy = new Game();
@@ -69,6 +73,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		if (pgn != null) {
 			prefs.put(PREFS_PGN_FILE, pgn.getAbsolutePath());
 		}
+		prefs.putBoolean(PREFS_WHITE_PERSPECTIVE, board.isOrientationWhite());
 	}
 	
 	
@@ -78,19 +83,20 @@ public class AppFrame extends JFrame implements BoardListener {
 		for (Game g : games) {
 			positionCount += g.getAllPositions().size();
 		}
-		System.out.println(String.format("Successfully parsed %d games with %d positions", games.size(), positionCount));
+		log.info(String.format("Successfully parsed %d games with %d positions", games.size(), positionCount));
 		
 		Game repertoire = games.get(0);
 		games.remove(repertoire);
 		for (Game game : games) {
-			System.out.println("merging " + game);
+			log.info("merging " + game);
 			repertoire.mergeIn(game);
 		}		
-		System.out.println(String.format("merged games to %d positions ", repertoire.getAllPositions().size()));
+		log.info(String.format("merged games to %d positions ", repertoire.getAllPositions().size()));
 		this.pgn = pgn;
 		
 		setGame(repertoire);	
 		updateBoard(false);
+		txtStatus.setText(String.format("%s loaded with %d positions ", pgn, repertoire.getAllPositions().size()));
 	}
 	
 	private void setGame(Game g) {
@@ -122,7 +128,7 @@ public class AppFrame extends JFrame implements BoardListener {
 						currentGame.gotoStartPosition();
 						updateBoard(true);						
 					} else {
-						System.out.println("End of moves");
+						log.info("End of moves");
 					}
 				};
 			}
@@ -266,9 +272,12 @@ public class AppFrame extends JFrame implements BoardListener {
 		} 
 		if (pgn == null) {
 			actionLoadPGN.actionPerformed(null);
-		}
+		}	
 		
 		updateBoard(false);
+		if (!prefs.getBoolean(PREFS_WHITE_PERSPECTIVE, true)) {
+			board.flip();
+		}
 	}
 
 	private void updateBoard(boolean playSound) {	
@@ -292,8 +301,8 @@ public class AppFrame extends JFrame implements BoardListener {
 	@Override
 	public void userMove(String move) {
 		if (currentGame.isDrilling()) {
-			if (currentGame.getPosition().hasNext() && currentGame.getPosition().getNext().getMove().startsWith(move)) {
-				currentGame.goForward();		
+			if (currentGame.hasNextPosition(move)) {
+				currentGame.doMove(move);		
 				updateBoard(true);
 				new SwingWorker<Void,Void>() {
 	
@@ -314,7 +323,10 @@ public class AppFrame extends JFrame implements BoardListener {
 				Sounds.wrong();
 			}
 		} else {
-			//TODO accept if the user's move is part of the game
+			if (currentGame.hasNextPosition(move)) {
+				currentGame.doMove(move);		
+				updateBoard(true);
+			}
 		}
 	}
 

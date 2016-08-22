@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,6 +13,8 @@ import de.toto.game.Rules.Piece;
 import de.toto.game.Rules.PieceType;
 
 public class Position {
+	
+	private static Logger log = Logger.getLogger("Position");
 	
 	private Square[][] squares;	
 	private Position previous = null;
@@ -662,16 +665,16 @@ public class Position {
 	public static void main(String[] args) {
 		Position p = new Position();
 		p.comment = "[%csl Ra5,Rb7,Re5,Rf3,Rf6,Gf7,Rg3,Rg6,Gg7,Rh3,Rh6,Rh7]";
-		System.out.println(p.getGraphicsComments());
+		log.info(p.getGraphicsComments().toString());
 		p.comment = "[%cal Gc5c4,Gc4e4,Ge4e3,Ge3f3,Gf3f1]";
-		System.out.println(p.getGraphicsComments());
+		log.info(p.getGraphicsComments().toString());
 		
 //		Position p = new Position(new Position(), "e2-e4", "1nb1kb1r/3ppp1p/5p2/2pP4/r7/2B5/PP3PPP/R3KBNR w KQk - 0 12");
 //		p.nags.add(NAG.GOOD_MOVE.nag);
 //		p.nags.add(NAG.FORCED_MOVE.nag);
 //		p.nags.add(NAG.COUNTERPLAY_WHITE.nag);
-//		System.out.println(p.getMoveNotation());
-//		System.out.println(p.dumpSquares());
+//		log.info(p.getMoveNotation());
+//		log.info(p.dumpSquares());
 
 	}
 		

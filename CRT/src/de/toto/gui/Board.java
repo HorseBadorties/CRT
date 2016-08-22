@@ -39,6 +39,10 @@ public class Board extends JPanel {
 	public void flip() {
 		boardCanvas.flip();
 	}
+	
+	public boolean isOrientationWhite() {
+		return boardCanvas.isOrientationWhite();
+	}
 
 	public Board() {
 		super();
@@ -222,8 +226,10 @@ public class Board extends JPanel {
 		public void setOrientationWhite(boolean value) {
 			if (value != isOrientationWhite) {
 				isOrientationWhite = value;
-				rescaleAll();
-				repaint();
+				if (getSize().height > 0) {
+					rescaleAll();
+					repaint();
+				}
 			} 
 		}
 
