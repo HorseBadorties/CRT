@@ -25,9 +25,12 @@ public class AppFrame extends JFrame implements BoardListener {
 	private List<Game> games = new ArrayList<Game>();
 	private Game currentGame;
 	private Board board;
-	private JTextField txtFen;
 	private JTextField txtComment;
 	private JTextField txtStatus;
+	private JTable tblMoves;
+	private PositionTableModel modelMoves;
+	private JList lstVariations;
+	private DefaultListModel modelVariations;
 	private Stockfish stockfish;
 	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
 	
@@ -105,124 +108,140 @@ public class AppFrame extends JFrame implements BoardListener {
 		g.gotoStartPosition();
 	}
 	
+	private Action actionNext = new AbstractAction("next") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (currentGame.gotoNextPosition() != null) {
+//			if (game.goForward() != null) {
+				updateBoard(true);
+			} else {
+				int i = games.indexOf(currentGame);
+				if (i < games.size()-1) {
+					currentGame = games.get(i+1);
+					currentGame.gotoStartPosition();
+					updateBoard(true);						
+				} else {
+					log.info("End of moves");
+				}
+			};
+		}
+	};		
+	
+	private Action actionBack = new AbstractAction("back") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (currentGame.goBack() != null) {
+				updateBoard(true);
+			};
+		}
+	};
+	
+	private Action actionUp = new AbstractAction("up") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			lstVariations.setSelectedIndex(lstVariations.getSelectedIndex()+1);
+		}
+	};
+	
+	private Action actionDown = new AbstractAction("down") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			lstVariations.setSelectedIndex(lstVariations.getSelectedIndex()-1);
+		}
+	};
+	
+	
+	
+	private Action actionFlip = new AbstractAction("flip") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			board.flip();
+		}
+	};
+	
+	private Action actionBeginDrill = new AbstractAction("begin drill") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			currentGame.beginDrill();
+		}
+	};
+	
+	private Action actionEndDrill = new AbstractAction("end drill") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			currentGame.endDrill();
+		}
+	};
+	
+	private Action actionEval = new AbstractAction("get Stockfish eval") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			new SwingWorker<String, String>() {
+
+				@Override
+				protected String doInBackground() throws Exception {
+					if (stockfish == null) {
+						stockfish = new Stockfish(PATH_TO_STOCKFISH);
+					}
+					return stockfish.getBestMove(currentGame.getPosition().getFen(), 5000);
+				}
+
+				@Override
+				protected void done() {
+					try {
+						JOptionPane.showMessageDialog(AppFrame.this, this.get());
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+				
+				
+				
+			}.run();
+		}
+	};
+	
+	private Action actionLoadPGN = new AbstractAction("load PGN") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			File lastDir = pgn != null ? pgn.getParentFile() : null;
+			JFileChooser fc = new JFileChooser(lastDir);
+			fc.setDialogTitle("Choose a PGN file that contains your repertoire lines");
+			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			fc.addChoosableFileFilter(new FileFilter() {
+
+				@Override
+				public boolean accept(File f) {						
+					return f.isDirectory() || f.getName().toLowerCase().endsWith(".pgn");
+				}
+
+				@Override
+				public String getDescription() {						
+					return "*.pgn";
+				}
+				
+			});
+			int ok = fc.showOpenDialog(AppFrame.this);
+			if (ok == JFileChooser.APPROVE_OPTION) {
+				loadPgn(fc.getSelectedFile());
+			}
+		}
+	};
+	
 	private void doUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+		JPanel pnlAll = new JPanel(new BorderLayout());
 		JPanel pnlNorth = new JPanel();
 		JPanel pnlCenter = new JPanel(new BorderLayout());
+		JPanel pnlEast = new JPanel(new BorderLayout());
 		JPanel pnlSouth = new JPanel(new BorderLayout());
 		
-		getContentPane().add(pnlNorth, BorderLayout.PAGE_START);		
-		getContentPane().add(pnlCenter, BorderLayout.CENTER);
-		getContentPane().add(pnlSouth, BorderLayout.PAGE_END);
-		
-		Action actionNext = new AbstractAction("next") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (currentGame.gotoNextPosition() != null) {
-//				if (game.goForward() != null) {
-					updateBoard(true);
-				} else {
-					int i = games.indexOf(currentGame);
-					if (i < games.size()-1) {
-						currentGame = games.get(i+1);
-						currentGame.gotoStartPosition();
-						updateBoard(true);						
-					} else {
-						log.info("End of moves");
-					}
-				};
-			}
-		};		
-		
-		Action actionBack = new AbstractAction("back") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (currentGame.goBack() != null) {
-					updateBoard(true);
-				};
-			}
-		};
-		
-		Action actionFlip = new AbstractAction("flip") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				board.flip();
-			}
-		};
-		
-		Action actionBeginDrill = new AbstractAction("begin drill") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				currentGame.beginDrill();
-			}
-		};
-		
-		Action actionEndDrill = new AbstractAction("end drill") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				currentGame.endDrill();
-			}
-		};
-		
-		Action actionEval = new AbstractAction("get Stockfish eval") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				new SwingWorker<String, String>() {
-
-					@Override
-					protected String doInBackground() throws Exception {
-						if (stockfish == null) {
-							stockfish = new Stockfish(PATH_TO_STOCKFISH);
-						}
-						return stockfish.getBestMove(currentGame.getPosition().getFen(), 5000);
-					}
-
-					@Override
-					protected void done() {
-						try {
-							JOptionPane.showMessageDialog(AppFrame.this, this.get());
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-					
-					
-					
-				}.run();
-			}
-		};
-		
-		Action actionLoadPGN = new AbstractAction("load PGN") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				File lastDir = pgn != null ? pgn.getParentFile() : null;
-				JFileChooser fc = new JFileChooser(lastDir);
-				fc.setDialogTitle("Choose a PGN file that contains your repertoire lines");
-				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				fc.addChoosableFileFilter(new FileFilter() {
-
-					@Override
-					public boolean accept(File f) {						
-						return f.isDirectory() || f.getName().toLowerCase().endsWith(".pgn");
-					}
-
-					@Override
-					public String getDescription() {						
-						return "*.pgn";
-					}
-					
-				});
-				int ok = fc.showOpenDialog(AppFrame.this);
-				if (ok == JFileChooser.APPROVE_OPTION) {
-					loadPgn(fc.getSelectedFile());
-				}
-			}
-		};
-
-		txtFen = new JTextField();
-		txtFen.setEditable(false);
-		txtFen.setColumns(50);
+		pnlAll.add(pnlNorth, BorderLayout.PAGE_START);		
+		pnlAll.add(pnlCenter, BorderLayout.CENTER);
+		pnlAll.add(pnlEast, BorderLayout.LINE_END);
+		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
+		getContentPane().add(pnlAll, BorderLayout.CENTER);
 		
 		txtComment = new JTextField();
 		txtComment.setEditable(false);
@@ -235,9 +254,36 @@ public class AppFrame extends JFrame implements BoardListener {
 		pnlNorth.add(txtComment);
 
 		JPanel pnlBoard = new JPanel(new BorderLayout());
-		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 5));
 		pnlBoard.add(board, BorderLayout.CENTER);
 		pnlCenter.add(pnlBoard, BorderLayout.CENTER);
+		
+		JPanel pnlMoves = new JPanel(new BorderLayout());
+		pnlMoves.setBorder(BorderFactory.createTitledBorder("Move List"));
+		modelMoves = new PositionTableModel();
+		tblMoves = new JTable(modelMoves);
+		pnlMoves.add(new JScrollPane(tblMoves));
+		pnlMoves.setPreferredSize(new Dimension(150, 500));
+		JPanel pnlVariations = new JPanel(new BorderLayout());
+		pnlVariations.setBorder(BorderFactory.createTitledBorder("Variations"));
+		modelVariations = new DefaultListModel();
+		lstVariations = new JList(modelVariations);		
+		lstVariations.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (lstVariations.getSelectedIndex() >= 0) {
+					String move = modelVariations.get(lstVariations.getSelectedIndex()).toString();
+					currentGame.doMove(move);
+					updateBoard(true);
+				}
+			}
+			
+		});
+		pnlVariations.add(new JScrollPane(lstVariations));		
+		pnlVariations.setPreferredSize(new Dimension(150, 200));
+		pnlEast.add(pnlMoves, BorderLayout.CENTER);
+		pnlEast.add(pnlVariations, BorderLayout.PAGE_END);
 		
 		txtStatus = new JTextField();
 		txtStatus.setEditable(false);
@@ -246,14 +292,23 @@ public class AppFrame extends JFrame implements BoardListener {
 		
 		
 		KeyStroke keyNext = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0);
-		pnlSouth.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyNext, "next");
-		pnlSouth.getActionMap().put("next",actionNext);
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyNext, "next");
+		pnlAll.getActionMap().put("next",actionNext);
 		KeyStroke keyBack = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0);
-		pnlSouth.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyBack, "back");
-		pnlSouth.getActionMap().put("back",actionBack);
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyBack, "back");
+		pnlAll.getActionMap().put("back",actionBack);
+		InputMap im = (InputMap) UIManager.get("List.focusInputMap");
+		im.remove(keyNext);
+		im.remove(keyBack);
+		KeyStroke keyUp = KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0);
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyUp, "up");
+		pnlAll.getActionMap().put("up",actionUp);
+		KeyStroke keyDown = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0);
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyDown, "down");
+		pnlAll.getActionMap().put("down",actionDown);		
 		KeyStroke keyControlF = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK);
-		pnlSouth.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlF, "flip");
-		pnlSouth.getActionMap().put("flip",actionFlip);
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlF, "flip");
+		pnlAll.getActionMap().put("flip",actionFlip);
 		
 		Dimension prefSize = new Dimension(prefs.getInt(PREFS_FRAME_WIDTH, 800), prefs.getInt(PREFS_FRAME_HEIGHT, 800));		
 		this.setPreferredSize(prefSize);
@@ -284,8 +339,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	private void updateBoard(boolean playSound) {	
 		Position p = currentGame.getPosition();
 		board.setCurrentPosition(p);
-		txtFen.setText(p.getFen());
-		String comment = p.getMoveNotation();
+		String comment = p.getMoveNotation(true);
 		if (p.getComment() != null) {
 			comment += " " + p.getComment();
 		}
@@ -295,6 +349,13 @@ public class AppFrame extends JFrame implements BoardListener {
 				Sounds.capture();
 			} else {
 				Sounds.move();
+			}
+		}
+		modelMoves.setPosition(p);
+		modelVariations.clear();
+		if (!currentGame.isDrilling()) {
+			for (Position variation : p.getVariations()) {
+				modelVariations.addElement(variation.getMoveNotation(false));
 			}
 		}
 	}

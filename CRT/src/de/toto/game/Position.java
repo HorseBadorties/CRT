@@ -205,8 +205,8 @@ public class Position {
 	 * 
 	 * @return the move including possible NAGs
 	 */
-	public String getMoveNotation() {
-		return move + getNagsAsString();
+	public String getMoveNotation(boolean leadingMoveNumber) {
+		return (leadingMoveNumber ? getMoveNumber() + ". " : "") + move + getNagsAsString();
 	}
 
 	/**
