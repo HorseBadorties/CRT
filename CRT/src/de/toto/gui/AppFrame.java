@@ -25,7 +25,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	private List<Game> games = new ArrayList<Game>();
 	private Game currentGame;
 	private Board board;
-	private JTextField txtComment;
+	private JLabel txtComment;
 	private JTextField txtStatus;
 	private JTable tblMoves;
 	private PositionTableModel modelMoves;
@@ -243,33 +243,47 @@ public class AppFrame extends JFrame implements BoardListener {
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 		
-		txtComment = new JTextField();
-		txtComment.setEditable(false);
-		txtComment.setColumns(50);
-		
 				
 		pnlNorth.add(new JButton(actionBeginDrill));
 		pnlNorth.add(new JButton(actionEndDrill));
 		pnlNorth.add(new JButton(actionLoadPGN));
-		pnlNorth.add(txtComment);
+		
 
 		JPanel pnlBoard = new JPanel(new BorderLayout());
-		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 5));
+		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 5));
 		pnlBoard.add(board, BorderLayout.CENTER);
-		pnlCenter.add(pnlBoard, BorderLayout.CENTER);
+		txtComment = new JLabel();
+		pnlCenter.add(pnlBoard, BorderLayout.CENTER);		
+		pnlCenter.add(txtComment, BorderLayout.PAGE_END);
+		pnlCenter.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 0));
 		
 		JPanel pnlMoves = new JPanel(new BorderLayout());
 		pnlMoves.setBorder(BorderFactory.createTitledBorder("Move List"));
 		modelMoves = new PositionTableModel();
 		tblMoves = new JTable(modelMoves);
+		tblMoves.setEnabled(false);
+		tblMoves.setTableHeader(null);
+		tblMoves.setShowVerticalLines(false);
+		tblMoves.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int column = tblMoves.columnAtPoint(e.getPoint());
+				int row = tblMoves.rowAtPoint(e.getPoint());
+				if (column >= 0 && row >= 0) {
+					Position p = modelMoves.getPositionAt(row, column);
+					currentGame.gotoPosition(p);
+					updateBoard(true);
+				}				
+			}			
+		});
 		pnlMoves.add(new JScrollPane(tblMoves));
 		pnlMoves.setPreferredSize(new Dimension(150, 500));
+		
 		JPanel pnlVariations = new JPanel(new BorderLayout());
 		pnlVariations.setBorder(BorderFactory.createTitledBorder("Variations"));
 		modelVariations = new DefaultListModel();
 		lstVariations = new JList(modelVariations);		
 		lstVariations.addMouseListener(new MouseAdapter() {
-
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (lstVariations.getSelectedIndex() >= 0) {
@@ -277,8 +291,7 @@ public class AppFrame extends JFrame implements BoardListener {
 					currentGame.doMove(move);
 					updateBoard(true);
 				}
-			}
-			
+			}			
 		});
 		pnlVariations.add(new JScrollPane(lstVariations));		
 		pnlVariations.setPreferredSize(new Dimension(150, 200));
@@ -339,9 +352,9 @@ public class AppFrame extends JFrame implements BoardListener {
 	private void updateBoard(boolean playSound) {	
 		Position p = currentGame.getPosition();
 		board.setCurrentPosition(p);
-		String comment = p.getMoveNotation(true);
-		if (p.getComment() != null) {
-			comment += " " + p.getComment();
+		String comment = " ";
+		if (p != null && p.getComment() != null) {
+			comment = "<html>Move comment: <b>" + p.getComment() + "</b></html>";
 		}
 		txtComment.setText(comment);
 		if (playSound) {

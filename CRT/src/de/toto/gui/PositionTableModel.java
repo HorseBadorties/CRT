@@ -40,9 +40,13 @@ public class PositionTableModel extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {		
-		List<Position> l = columnIndex == 0 ? white : black;
-		Position p = l.size() <= rowIndex ? null : l.get(rowIndex);
+		Position p = getPositionAt(rowIndex, columnIndex);
 		return p != null ? p.getMoveNotation(p.whiteMoved()) : "";
+	}
+	
+	public Position getPositionAt(int rowIndex, int columnIndex) {		
+		List<Position> l = columnIndex == 0 ? white : black;
+		return l.size() <= rowIndex ? null : l.get(rowIndex);
 	}
 	
 	public void setPosition(Position p) {
