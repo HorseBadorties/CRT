@@ -206,7 +206,11 @@ public class Position {
 	 * @return the move including possible NAGs
 	 */
 	public String getMoveNotation(boolean leadingMoveNumber) {
-		return (leadingMoveNumber ? getMoveNumber() + ". " : "") + move + getNagsAsString();
+		String result = move + getNagsAsString();
+		if (leadingMoveNumber) {
+			result = getMoveNumber() + (whiteMoved() ? "." : "...") + result;
+		}
+		return result;
 	}
 
 	/**
@@ -514,8 +518,7 @@ public class Position {
 	
 	@Override
 	public String toString() {
-//		return move + "\n" + dumpSquares();
-		return getMoveNumber() + (whiteMoved() ? "." : "...") + move;
+		return getMoveNotation(true);
 	}
 	
 	private String dumpSquares() {

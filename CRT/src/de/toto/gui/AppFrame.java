@@ -10,6 +10,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.toto.engine.Stockfish;
 import de.toto.game.Game;
@@ -111,9 +112,14 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Action actionNext = new AbstractAction("next") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (currentGame.gotoNextPosition() != null) {
-//			if (game.goForward() != null) {
-				updateBoard(true);
+			if (lstVariations.getSelectedIndex() >= 0) {
+				Position p = (Position)modelVariations.get(lstVariations.getSelectedIndex());
+				currentGame.gotoPosition(p);
+				updateBoard(true);		
+			} else if (!modelVariations.isEmpty()) {
+				Position p = (Position)modelVariations.get(0);
+				currentGame.gotoPosition(p);
+				updateBoard(true);	
 			} else {
 				int i = games.indexOf(currentGame);
 				if (i < games.size()-1) {
@@ -139,14 +145,24 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Action actionUp = new AbstractAction("up") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			lstVariations.setSelectedIndex(lstVariations.getSelectedIndex()+1);
+			if (lstVariations.getSelectedIndex() <= 0) {
+				lstVariations.setSelectedIndex(modelVariations.size()-1);
+			} else {
+				lstVariations.setSelectedIndex(lstVariations.getSelectedIndex()-1);
+			}
 		}
 	};
 	
 	private Action actionDown = new AbstractAction("down") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			lstVariations.setSelectedIndex(lstVariations.getSelectedIndex()-1);
+			if (lstVariations.getSelectedIndex() == modelVariations.size()-1) {
+				lstVariations.setSelectedIndex(0);
+			} else if (lstVariations.getSelectedIndex() == -1 && modelVariations.size() > 1) {
+				lstVariations.setSelectedIndex(1);
+			} else {
+				lstVariations.setSelectedIndex(lstVariations.getSelectedIndex()+1);
+			}			
 		}
 	};
 	
@@ -206,21 +222,9 @@ public class AppFrame extends JFrame implements BoardListener {
 		public void actionPerformed(ActionEvent e) {
 			File lastDir = pgn != null ? pgn.getParentFile() : null;
 			JFileChooser fc = new JFileChooser(lastDir);
-			fc.setDialogTitle("Choose a PGN file that contains your repertoire lines");
+			fc.setDialogTitle("Please choose a PGN file that contains your repertoire lines!");
 			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			fc.addChoosableFileFilter(new FileFilter() {
-
-				@Override
-				public boolean accept(File f) {						
-					return f.isDirectory() || f.getName().toLowerCase().endsWith(".pgn");
-				}
-
-				@Override
-				public String getDescription() {						
-					return "*.pgn";
-				}
-				
-			});
+			fc.setFileFilter(new FileNameExtensionFilter("*.pgn", "pgn"));
 			int ok = fc.showOpenDialog(AppFrame.this);
 			if (ok == JFileChooser.APPROVE_OPTION) {
 				loadPgn(fc.getSelectedFile());
@@ -368,7 +372,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		modelVariations.clear();
 		if (!currentGame.isDrilling()) {
 			for (Position variation : p.getVariations()) {
-				modelVariations.addElement(variation.getMoveNotation(false));
+				modelVariations.addElement(variation);
 			}
 		}
 	}
