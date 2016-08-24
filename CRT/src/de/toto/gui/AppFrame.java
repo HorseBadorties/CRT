@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.toto.engine.Stockfish;
@@ -27,7 +26,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Game currentGame;
 	private Board board;
 	private JLabel txtComment;
-	private JTextField txtStatus;
+	private JLabel txtStatus;
 	private JTable tblMoves;
 	private PositionTableModel modelMoves;
 	private JList lstVariations;
@@ -111,7 +110,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	
 	private Action actionNext = new AbstractAction("next") {
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(ActionEvent e) {			
 			if (lstVariations.getSelectedIndex() >= 0) {
 				Position p = (Position)modelVariations.get(lstVariations.getSelectedIndex());
 				currentGame.gotoPosition(p);
@@ -241,9 +240,11 @@ public class AppFrame extends JFrame implements BoardListener {
 		JPanel pnlEast = new JPanel(new BorderLayout());
 		JPanel pnlSouth = new JPanel(new BorderLayout());
 		
+		JSplitPane splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pnlCenter, pnlEast);
+		splitCenter.setDividerLocation(650);
+		
 		pnlAll.add(pnlNorth, BorderLayout.PAGE_START);		
-		pnlAll.add(pnlCenter, BorderLayout.CENTER);
-		pnlAll.add(pnlEast, BorderLayout.LINE_END);
+		pnlAll.add(splitCenter, BorderLayout.CENTER);		
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 		
@@ -266,6 +267,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		modelMoves = new PositionTableModel();
 		tblMoves = new JTable(modelMoves);
 		tblMoves.setEnabled(false);
+		tblMoves.setFocusable(false);
 		tblMoves.setTableHeader(null);
 		tblMoves.setShowVerticalLines(false);
 		tblMoves.addMouseListener(new MouseAdapter() {
@@ -287,23 +289,23 @@ public class AppFrame extends JFrame implements BoardListener {
 		pnlVariations.setBorder(BorderFactory.createTitledBorder("Variations"));
 		modelVariations = new DefaultListModel();
 		lstVariations = new JList(modelVariations);		
+		lstVariations.setFocusable(false);
 		lstVariations.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (lstVariations.getSelectedIndex() >= 0) {
-					String move = modelVariations.get(lstVariations.getSelectedIndex()).toString();
-					currentGame.doMove(move);
+					Position p = (Position)modelVariations.get(lstVariations.getSelectedIndex());
+					currentGame.gotoPosition(p);				
 					updateBoard(true);
 				}
 			}			
 		});
 		pnlVariations.add(new JScrollPane(lstVariations));		
 		pnlVariations.setPreferredSize(new Dimension(150, 200));
-		pnlEast.add(pnlMoves, BorderLayout.CENTER);
-		pnlEast.add(pnlVariations, BorderLayout.PAGE_END);
+		JSplitPane splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlMoves, pnlVariations);
+		pnlEast.add(splitEast);
 		
-		txtStatus = new JTextField();
-		txtStatus.setEditable(false);
+		txtStatus = new JLabel();
 		txtStatus.setBorder(BorderFactory.createLoweredBevelBorder());	
 		pnlSouth.add(txtStatus, BorderLayout.PAGE_END);
 		
@@ -313,10 +315,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		pnlAll.getActionMap().put("next",actionNext);
 		KeyStroke keyBack = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0);
 		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyBack, "back");
-		pnlAll.getActionMap().put("back",actionBack);
-		InputMap im = (InputMap) UIManager.get("List.focusInputMap");
-		im.remove(keyNext);
-		im.remove(keyBack);
+		pnlAll.getActionMap().put("back",actionBack);		
 		KeyStroke keyUp = KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0);
 		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyUp, "up");
 		pnlAll.getActionMap().put("up",actionUp);

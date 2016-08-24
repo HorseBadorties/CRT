@@ -22,7 +22,8 @@ public class Main {
 	}
 	
 	private static void showFrame() {
-		AppFrame frame = new AppFrame();		
+		AppFrame frame = new AppFrame();	
+		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler(frame));
 		frame.setVisible(true);
 	}
 
