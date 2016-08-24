@@ -10,7 +10,7 @@ import de.toto.game.*;
 
 public class PGNReader {
 		
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	
 	private static Logger log = Logger.getLogger("PGNReader");
 	

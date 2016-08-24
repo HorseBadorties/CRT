@@ -42,8 +42,7 @@ public class Position {
 	}
 	
 	public Position(Position previous, String move, String fen, boolean asVariation) {
-		this.previous = previous;
-		previous.addNextPosition(this, asVariation);		
+		this.previous = previous;			
 		this.variationLevel = asVariation ? previous.variationLevel+1 : previous.variationLevel;
 		if (fen != null) {
 			setMove(move, false);
@@ -51,6 +50,7 @@ public class Position {
 		} else if (move != null) {
 			setMove(move, true);
 		}
+		previous.addNextPosition(this, asVariation);	
 	}	
 	
 	
@@ -284,7 +284,11 @@ public class Position {
 	}
 		
 	private void addNextPosition(Position nextPosition, boolean asVariation) {
-		next.add(asVariation ? next.size() : 0, nextPosition);			
+		if (!next.contains(nextPosition)) {
+			next.add(asVariation ? next.size() : 0, nextPosition);
+		} else {
+			log.warning(String.format("ignoring duplicate variation %s for position %s", nextPosition, this));
+		}
 	}
 		
 	private void initSquares() {

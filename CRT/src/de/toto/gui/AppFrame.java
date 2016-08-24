@@ -32,6 +32,8 @@ public class AppFrame extends JFrame implements BoardListener {
 	private PositionTableModel modelMoves;
 	private JList lstVariations;
 	private DefaultListModel modelVariations;
+	private JSplitPane splitCenter;
+	private JSplitPane splitEast;
 	private Stockfish stockfish;
 	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
 	
@@ -41,8 +43,10 @@ public class AppFrame extends JFrame implements BoardListener {
 	private static final String PREFS_FRAME_WIDTH = "FRAME_WIDTH";
 	private static final String PREFS_FRAME_HEIGHT = "FRAME_HEIGHT";
 	private static final String PREFS_FRAME_EXTENDED_STATE = "FRAME_EXTENDED_STATE";
-	private static final String PREFS_PGN_FILE = "PGN_FILE";
+	private static final String PREFS_PGN_FILE = "PGN_FILE";	
 	private static final String PREFS_WHITE_PERSPECTIVE = "WHITE_PERSPECTIVE";
+	private static final String PREFS_SPLITTER_CENTER_POSITION = "SPLITTER_CENTER_POSITION";
+	private static final String PREFS_SPLITTER_EAST_POSITION = "SPLITTER_EAST_POSITION";
 	
 	public AppFrame() throws HeadlessException {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource("/images/icon/Knight50.png")));
@@ -80,6 +84,8 @@ public class AppFrame extends JFrame implements BoardListener {
 			prefs.put(PREFS_PGN_FILE, pgn.getAbsolutePath());
 		}
 		prefs.putBoolean(PREFS_WHITE_PERSPECTIVE, board.isOrientationWhite());
+		prefs.putInt(PREFS_SPLITTER_CENTER_POSITION, splitCenter.getDividerLocation());
+		prefs.putInt(PREFS_SPLITTER_EAST_POSITION, splitEast.getDividerLocation());
 	}
 	
 	
@@ -249,8 +255,8 @@ public class AppFrame extends JFrame implements BoardListener {
 		JPanel pnlEast = new JPanel(new BorderLayout());
 		JPanel pnlSouth = new JPanel(new BorderLayout());
 		
-		JSplitPane splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pnlCenter, pnlEast);
-		splitCenter.setDividerLocation(650);
+		splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pnlCenter, pnlEast);
+		splitCenter.setDividerLocation(prefs.getInt(PREFS_SPLITTER_CENTER_POSITION, 650));
 		
 		pnlAll.add(pnlNorth, BorderLayout.PAGE_START);		
 		pnlAll.add(splitCenter, BorderLayout.CENTER);		
@@ -311,7 +317,12 @@ public class AppFrame extends JFrame implements BoardListener {
 		});
 		pnlVariations.add(new JScrollPane(lstVariations));		
 		pnlVariations.setPreferredSize(new Dimension(150, 200));
-		JSplitPane splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlMoves, pnlVariations);
+		splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlVariations, pnlMoves);
+		splitEast.setBorder(null);
+		int splitEastPosition = prefs.getInt(PREFS_SPLITTER_EAST_POSITION, 0);
+		if (splitEastPosition > 0) {
+			splitEast.setDividerLocation(splitEastPosition);
+		}
 		pnlEast.add(splitEast);
 		
 		txtStatus = new JLabel();
