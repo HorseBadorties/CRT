@@ -10,7 +10,7 @@ import de.toto.game.*;
 
 public class PGNReader {
 		
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	
 	private static Logger log = Logger.getLogger("PGNReader");
 	
@@ -176,42 +176,5 @@ public class PGNReader {
 		int lastIndexOfDot = move.lastIndexOf('.');		
 		return lastIndexOfDot == -1 ? move : move.substring(lastIndexOfDot+1, move.length());
 	}
-	
-	public static void main(String[] args) {		
-		File pgn = new File("C:/Users/080064/Downloads/test.pgn"); //Repertoire.pgn");
-		List<Game> games = PGNReader.parse(pgn);
-		int positionCount = 0;
-		for (Game g : games) {
-			positionCount += g.getAllPositions().size();
-		}
-		log.info(String.format("Successfully parsed %d games with %d positions", games.size(), positionCount));
 		
-		Game repertoire = games.get(0);
-		games.remove(repertoire);
-		while (!games.isEmpty()) {
-			Game game = games.get(0);
-			game.gotoStartPosition(); 
-			repertoire.gotoStartPosition();
-			
-			Position first = repertoire.getPosition();
-			Position second = game.getPosition();
-			
-			for (;;) {
-				second = second.getNext();
-				if (second == null) break;
-				if (!first.hasVariation(second)) {
-					first.addVariation(second);
-					break;
-				} else {
-					first = first.getVariation(second);
-				}				
-			}
-			games.remove(game);			
-		}
-		
-		
-		log.info(String.format("merged games to %d positions ",repertoire.getAllPositions().size()));
-	}
-	
-	
 }

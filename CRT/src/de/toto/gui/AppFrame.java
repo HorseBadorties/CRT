@@ -3,7 +3,6 @@ package de.toto.gui;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Logger;

@@ -2,9 +2,7 @@ package de.toto.game;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -524,24 +522,7 @@ public class Position {
 	public String toString() {
 		return getMoveNotation(true);
 	}
-	
-	private String dumpSquares() {
-		StringBuilder result = new StringBuilder();
-		for (int rank = 7; rank >= 0; rank--) {
-			for (int file = 0; file < 8; file++) {
-				String s = null;
-				if (squares[rank][file].piece != null) {
-					s = squares[rank][file].piece.getColoredFigurine();
-				} else {
-					s = " "; //squares[rank][file].isWhite() ? "⬜" : "⬛"; // "⬜" "⬛"  "◻" : "◼"
-				}
-				result.append(s);
-			}
-			result.append("\n");
-		}
-		return result.toString();
-	}
-	
+		
 	// construct a LAN move out of a SAN for this position 
 	private String sanToLan(String san) {
 		if (san.startsWith("0-0")) return san;
