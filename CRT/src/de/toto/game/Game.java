@@ -236,13 +236,17 @@ public class Game {
 		return currentPosition;
 	}
 	
-	public void beginDrill() {
+	public void beginDrill(boolean white) {
 		drillStartingPosition = getPosition();
 		drilledVariations.clear();
 		drillStats = new DrillStats();
 		isDrilling = true;
-		drillingWhite = getPosition().isWhiteToMove();
+		drillingWhite = white;
 		log.info(String.format("Drilling %s now", drillingWhite ? "White" : "Black"));
+		if (currentPosition.isWhiteToMove() != drillingWhite) {
+			gotoNextPosition();
+		}
+		
 	}
 	
 	public DrillStats endDrill() {

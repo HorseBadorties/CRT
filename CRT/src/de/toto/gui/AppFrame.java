@@ -3,6 +3,7 @@ package de.toto.gui;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -44,6 +45,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	private static final String PREFS_WHITE_PERSPECTIVE = "WHITE_PERSPECTIVE";
 	
 	public AppFrame() throws HeadlessException {
+		setIconImage(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource("/images/icon/Knight50.png")));
 		Game dummy = new Game();
 		dummy.start();
 		setGame(dummy);
@@ -111,7 +113,9 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Action actionNext = new AbstractAction("next") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (lstVariations.getSelectedIndex() >= 0) {
+			if (currentGame.isDrilling()) {
+				gotoNextDrillPosition();
+			} else if (lstVariations.getSelectedIndex() >= 0) {
 				Position p = (Position)modelVariations.get(lstVariations.getSelectedIndex());
 				currentGame.gotoPosition(p);
 				updateBoard(true);		
@@ -135,7 +139,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Action actionBack = new AbstractAction("back") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (currentGame.goBack() != null) {
+			if (!currentGame.isDrilling() && currentGame.goBack() != null) {
 				updateBoard(true);
 			};
 		}
@@ -177,7 +181,11 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Action actionBeginDrill = new AbstractAction("begin drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			currentGame.beginDrill();
+			if (!currentGame.isDrilling()) {
+				currentGame.beginDrill(board.isOrientationWhite());
+				modelVariations.clear();
+				updateBoard(false);
+			}
 		}
 	};
 	
@@ -185,6 +193,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			currentGame.endDrill();
+			updateBoard(false);
 		}
 	};
 	
@@ -392,14 +401,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	
 					@Override
 					protected void done() {
-						Position current = currentGame.getPosition();
-						Position newPosition = currentGame.gotoNextPosition();
-						if (current == newPosition) {
-							DrillStats drillStats = currentGame.endDrill();
-							JOptionPane.showMessageDialog(AppFrame.this, String.format("Drill ended for %d positions", drillStats.drilledPositions));
-							currentGame.gotoStartPosition();
-						} 
-						updateBoard(true);
+						gotoNextDrillPosition();
 					}
 					
 				}.execute();
@@ -412,6 +414,16 @@ public class AppFrame extends JFrame implements BoardListener {
 				updateBoard(true);
 			}
 		}
+	}
+	
+	private void gotoNextDrillPosition() {
+		Position current = currentGame.getPosition();
+		Position newPosition = currentGame.gotoNextPosition();
+		if (current == newPosition) {
+			DrillStats drillStats = currentGame.endDrill();
+			JOptionPane.showMessageDialog(AppFrame.this, String.format("Drill ended for %d positions", drillStats.drilledPositions));			
+		} 
+		updateBoard(true);
 	}
 
 }
