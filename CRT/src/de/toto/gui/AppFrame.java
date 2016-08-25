@@ -284,6 +284,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		tblMoves.setFocusable(false);
 		tblMoves.setTableHeader(null);
 		tblMoves.setShowVerticalLines(false);
+		tblMoves.setFont(new Font("Frutiger Standard", Font.PLAIN, 12));
 		tblMoves.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -304,6 +305,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		modelVariations = new DefaultListModel();
 		lstVariations = new JList(modelVariations);		
 		lstVariations.setFocusable(false);
+		lstVariations.setFont(new Font("Frutiger Standard", Font.PLAIN, 12));
 		lstVariations.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
