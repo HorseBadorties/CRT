@@ -25,6 +25,7 @@ public class Board extends JPanel {
 	
 	private Position currentPosition = new Position();
 	private BoardCanvas boardCanvas = new BoardCanvas(this);
+	private boolean showGraphicsComments = true;
 	
 	public Position getCurrentPosition() {
 		return currentPosition;
@@ -34,6 +35,10 @@ public class Board extends JPanel {
 		this.currentPosition = currentPosition;
 		boardCanvas.positionChanged();
 		repaint();		
+	}
+	
+	public void setShowGraphicsComments(boolean value) {
+		showGraphicsComments = value;	
 	}
 	
 	public void flip() {
@@ -439,7 +444,7 @@ public class Board extends JPanel {
 				colorSquare(g2, getSquare(squareNames[1]), squareSelectionColor, squareSize);				
 			}
 			
-			if (!isDragging) {
+			if (!isDragging && board.showGraphicsComments) {				
 				for (Position.GraphicsComment gc : position.getGraphicsComments()) {
 					if (gc.secondSquare == null) {
 						Color c = highlightColorGreen;

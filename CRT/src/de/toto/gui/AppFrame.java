@@ -31,6 +31,8 @@ public class AppFrame extends JFrame implements BoardListener {
 	private PositionTableModel modelMoves;
 	private JList lstVariations;
 	private DefaultListModel modelVariations;
+	private JCheckBox cbOnlyMainline;
+	private JCheckBox cbShowComments;
 	private JSplitPane splitCenter;
 	private JSplitPane splitEast;
 	private Stockfish stockfish;
@@ -107,6 +109,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		
 		setGame(repertoire);	
 		updateBoard(false);
+		setTitle(pgn.getName());
 		txtStatus.setText(String.format("%s loaded with %d positions ", pgn, repertoire.getAllPositions().size()));
 	}
 	
@@ -186,19 +189,29 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Action actionBeginDrill = new AbstractAction("begin drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (!currentGame.isDrilling()) {
-				currentGame.beginDrill(board.isOrientationWhite());
+			if (!currentGame.isDrilling()) {				
+				currentGame.beginDrill(board.isOrientationWhite(), cbOnlyMainline.isSelected());
 				modelVariations.clear();
-				updateBoard(false);
+				this.putValue(Action.NAME, "end drill");				
+			} else {
+				currentGame.endDrill();
+				this.putValue(Action.NAME, "begin drill");
 			}
+			updateBoard(false);
 		}
 	};
 	
-	private Action actionEndDrill = new AbstractAction("end drill") {
+	private Action actionShowMove = new AbstractAction("show correct move") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			currentGame.endDrill();
-			updateBoard(false);
+			JOptionPane.showMessageDialog(AppFrame.this, currentGame.getPosition().getNext());
+		}
+	};
+	
+	private Action actionShowComments = new AbstractAction("show comments / graphics comments?") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			board.setShowGraphicsComments(cbShowComments.isSelected());
 		}
 	};
 	
@@ -249,7 +262,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JPanel pnlAll = new JPanel(new BorderLayout());
-		JPanel pnlNorth = new JPanel();
+		JPanel pnlToolBar = new JPanel();
 		JPanel pnlCenter = new JPanel(new BorderLayout());
 		JPanel pnlEast = new JPanel(new BorderLayout());
 		JPanel pnlSouth = new JPanel(new BorderLayout());
@@ -257,16 +270,18 @@ public class AppFrame extends JFrame implements BoardListener {
 		splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pnlCenter, pnlEast);
 		splitCenter.setDividerLocation(prefs.getInt(PREFS_SPLITTER_CENTER_POSITION, 650));
 		
-		pnlAll.add(pnlNorth, BorderLayout.PAGE_START);		
+		pnlAll.add(pnlToolBar, BorderLayout.PAGE_START);		
 		pnlAll.add(splitCenter, BorderLayout.CENTER);		
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
-		
-				
-		pnlNorth.add(new JButton(actionBeginDrill));
-		pnlNorth.add(new JButton(actionEndDrill));
-		pnlNorth.add(new JButton(actionLoadPGN));
-		
+
+		pnlToolBar.add(new JButton(actionLoadPGN));
+		pnlToolBar.add(new JButton(actionBeginDrill));
+		pnlToolBar.add(new JButton(actionShowMove));
+		cbOnlyMainline = new JCheckBox("accept main line only?");
+		pnlToolBar.add(cbOnlyMainline);
+		cbShowComments = new JCheckBox(actionShowComments);
+		pnlToolBar.add(cbShowComments);
 
 		JPanel pnlBoard = new JPanel(new BorderLayout());
 		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 5));
@@ -433,6 +448,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		Position newPosition = currentGame.gotoNextPosition();
 		if (current == newPosition) {
 			DrillStats drillStats = currentGame.endDrill();
+			actionBeginDrill.actionPerformed(null);
 			JOptionPane.showMessageDialog(AppFrame.this, String.format("Drill ended for %d positions", drillStats.drilledPositions));			
 		} 
 		updateBoard(true);

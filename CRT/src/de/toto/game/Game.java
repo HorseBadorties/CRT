@@ -14,6 +14,7 @@ public class Game {
 	private Set<Position> drilledVariations = new HashSet<Position>();
 	private boolean isDrilling = false;
 	private boolean drillingWhite = true;
+	private boolean acceptOnlyMainline = true;
 	private DrillStats drillStats;
 	
 	public static class DrillStats {
@@ -121,16 +122,28 @@ public class Game {
 	public boolean hasNextPosition(String move) {
 		boolean result = false;
 		if (getPosition().hasNext()) {
-			for (Position p : getPosition().getVariations()) {
-				if (isDrilling && p.getNagsAsString().startsWith("?")) continue; //don't accept "?" or "?!" moves
-				if (p.getMove().startsWith(move)) {
-					result = true;
-					break;
+			if (acceptOnlyMainline) {
+				result = isCorrect(move, getPosition().getNext());
+			} else {
+				for (Position p : getPosition().getVariations()) {
+					if (isCorrect(move, p)) {
+						result = true;
+						break;
+					}				
 				}
 			}
 		}
 		if (isDrilling && result) drillStats.correctPositions++;
 		return result;
+	}
+	
+	private boolean isCorrect(String move, Position p) {
+		if (isDrilling && p.getNagsAsString().startsWith("?")) return false; //don't accept "?" or "?!" moves
+		if (move.equals("0-0")) {
+			return p.getMove().startsWith("0-0") && !p.getMove().startsWith("0-0-0");
+		} else {
+			return p.getMove().startsWith(move);
+		}
 	}
 	
 	public Position doMove(String move) {
@@ -184,6 +197,10 @@ public class Game {
 			candidates.removeAll(drilledVariations);
 			if (candidates.isEmpty()) {
 				Position previous = p.getPrevious();
+				if (previous == null) {
+					log.info("end of lines reached");
+					return null;
+				}
 				while (!previous.hasVariations() || previous.isWhiteToMove() == drillingWhite) {
 					if (previous.equals(drillStartingPosition)) {
 						log.info("end of lines reached");
@@ -214,8 +231,16 @@ public class Game {
 		} else {
 			log.info(p + " end of line");
 			Position previous = p.getPrevious();
+			if (previous == null) {
+				log.info("end of lines reached");
+				return null;
+			}
 			while (!previous.hasVariations() || previous.isWhiteToMove() == drillingWhite) {
 				previous = previous.getPrevious();
+				if (previous == null) {
+					log.info("end of lines reached");
+					return null;
+				}
 			}
 			log.info("finding next for " + previous);			
 			return findNextPosition2(previous);
@@ -236,12 +261,13 @@ public class Game {
 		return currentPosition;
 	}
 	
-	public void beginDrill(boolean white) {
+	public void beginDrill(boolean white, boolean acceptOnlyMainline) {
 		drillStartingPosition = getPosition();
 		drilledVariations.clear();
 		drillStats = new DrillStats();
 		isDrilling = true;
 		drillingWhite = white;
+		this.acceptOnlyMainline = acceptOnlyMainline;
 		log.info(String.format("Drilling %s now", drillingWhite ? "White" : "Black"));
 		if (currentPosition.isWhiteToMove() != drillingWhite) {
 			gotoNextPosition();
