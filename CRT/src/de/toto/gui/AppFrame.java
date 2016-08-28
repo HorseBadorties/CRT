@@ -177,8 +177,6 @@ public class AppFrame extends JFrame implements BoardListener {
 		}
 	};
 	
-	
-	
 	private Action actionFlip = new AbstractAction("flip") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -212,6 +210,18 @@ public class AppFrame extends JFrame implements BoardListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			board.setShowGraphicsComments(cbShowComments.isSelected());
+		}
+	};
+	
+	private Action actionChooseFont = new AbstractAction("choose font") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JFontChooser fc = new JFontChooser();
+			if (fc.showDialog(AppFrame.this) == JFontChooser.OK_OPTION) {
+				lstVariations.setFont(fc.getSelectedFont());
+				tblMoves.setFont(fc.getSelectedFont());
+			}
+			
 		}
 	};
 	
@@ -291,14 +301,23 @@ public class AppFrame extends JFrame implements BoardListener {
 		pnlCenter.add(txtComment, BorderLayout.PAGE_END);
 		pnlCenter.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 0));
 		
+		JPopupMenu popUp = new JPopupMenu();
+		popUp.add(actionChooseFont);
 		JPanel pnlMoves = new JPanel(new BorderLayout());
 		pnlMoves.setBorder(BorderFactory.createTitledBorder("Move List"));
 		modelMoves = new PositionTableModel();
-		tblMoves = new JTable(modelMoves);
+		tblMoves = new JTable(modelMoves) {
+			@Override
+			public void setFont(Font f) {
+				super.setFont(f);
+				setRowHeight(f.getSize() * 2);
+			}
+		};
 		tblMoves.setEnabled(false);
 		tblMoves.setFocusable(false);
 		tblMoves.setTableHeader(null);
 		tblMoves.setShowVerticalLines(false);
+		tblMoves.setComponentPopupMenu(popUp);
 		tblMoves.setFont(new Font("Frutiger Standard", Font.PLAIN, 12));
 		tblMoves.addMouseListener(new MouseAdapter() {
 			@Override
@@ -321,6 +340,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		lstVariations = new JList(modelVariations);		
 		lstVariations.setFocusable(false);
 		lstVariations.setFont(new Font("Frutiger Standard", Font.PLAIN, 12));
+		lstVariations.setComponentPopupMenu(popUp);
 		lstVariations.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {

@@ -122,7 +122,7 @@ public class Game {
 	public boolean hasNextPosition(String move) {
 		boolean result = false;
 		if (getPosition().hasNext()) {
-			if (acceptOnlyMainline) {
+			if (isDrilling() && acceptOnlyMainline) {
 				result = isCorrect(move, getPosition().getNext());
 			} else {
 				for (Position p : getPosition().getVariations()) {
