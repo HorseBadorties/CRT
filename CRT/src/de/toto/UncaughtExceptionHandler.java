@@ -21,6 +21,7 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
 
 	@Override
 	public void uncaughtException(Thread t, Throwable e) {
+		e.printStackTrace();
 		StringWriter sw = new StringWriter();
 		e.printStackTrace(new PrintWriter(sw));
 		JTextArea ta = new JTextArea(sw.toString(), 20, 100);		

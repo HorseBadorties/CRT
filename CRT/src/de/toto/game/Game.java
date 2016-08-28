@@ -15,6 +15,8 @@ public class Game {
 	private boolean isDrilling = false;
 	private boolean drillingWhite = true;
 	private boolean acceptOnlyMainline = true;
+	private boolean randomDrill = true;
+	private List<Position> drillPositions;
 	private DrillStats drillStats;
 	
 	public static class DrillStats {
@@ -248,6 +250,15 @@ public class Game {
 	}
 	
 	public Position gotoNextPosition() {
+		if (randomDrill) {
+			if (drillPositions.isEmpty()) {
+				log.info("reached end of random drill");
+				return currentPosition;
+			} else {
+				currentPosition = drillPositions.remove(0);
+				return currentPosition;
+			}
+		}
 		Position next = findNextPosition(currentPosition);
 //		log.info(String.format("findNextPosition for %s: %s with previous %s", currentPosition, next, next.getPrevious()));
 		if (next == null) {
@@ -262,16 +273,21 @@ public class Game {
 	}
 	
 	public void beginDrill(boolean white, boolean acceptOnlyMainline) {
+		randomDrill = false;
 		drillStartingPosition = getPosition();
 		drilledVariations.clear();
 		drillStats = new DrillStats();
 		isDrilling = true;
 		drillingWhite = white;
 		this.acceptOnlyMainline = acceptOnlyMainline;
-		log.info(String.format("Drilling %s now", drillingWhite ? "White" : "Black"));
 		if (currentPosition.isWhiteToMove() != drillingWhite) {
 			gotoNextPosition();
 		}
+		drillPositions = getAllDrillPositions();
+		drilledVariations.clear();
+		Collections.shuffle(drillPositions);
+		randomDrill = true;
+		log.info(String.format("Drilling %s now for %d positions", drillingWhite ? "White" : "Black", drillPositions.size()));
 		
 	}
 	
@@ -280,6 +296,27 @@ public class Game {
 		log.info(String.format("Drill ended - %d of %d positions correct", drillStats.correctPositions, drillStats.drilledPositions));
 		return drillStats;
 		
+	}
+	
+	private List<Position> getAllDrillPositions() {
+		List<Position> result = new ArrayList<Position>();
+		//drill has just begun - we are on our first drill prosition already
+		Position drillPosition = getPosition();
+		for(;;) { 
+			Position repertoireAnswer = drillPosition.hasNext() ? drillPosition.getNext() : null;
+			Position nextDrillPosition = null;
+			if (repertoireAnswer != null) {
+				result.add(getPosition());
+				gotoPosition(repertoireAnswer);
+				nextDrillPosition = gotoNextPosition();
+			} else {
+				nextDrillPosition = gotoNextPosition();
+			}
+			if (nextDrillPosition.equals(drillPosition) || nextDrillPosition == null) break;
+			drillPosition = nextDrillPosition;
+		} 
+		gotoPosition(drillStartingPosition);
+		return result;
 	}
 	
 	public boolean isDrilling() {
