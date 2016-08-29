@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
@@ -13,7 +12,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.toto.engine.Stockfish;
 import de.toto.game.Game;
-import de.toto.game.Game.DrillStats;
+import de.toto.game.Drill;
+import de.toto.game.Drill.DrillStats;
 import de.toto.game.Position;
 import de.toto.pgn.PGNReader;
 import de.toto.sound.Sounds;
@@ -22,8 +22,8 @@ import de.toto.sound.Sounds;
 public class AppFrame extends JFrame implements BoardListener {
 	
 	private File pgn = null;
-	private List<Game> games = new ArrayList<Game>();
-	private Game currentGame;
+	private Game game;
+	private Drill drill;
 	private Board board;
 	private JLabel txtComment;
 	private JLabel txtStatus;
@@ -33,6 +33,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	private DefaultListModel modelVariations;
 	private JCheckBox cbOnlyMainline;
 	private JCheckBox cbShowComments;
+	private JCheckBox cbRandomDrill;
 	private JSplitPane splitCenter;
 	private JSplitPane splitEast;
 	private Stockfish stockfish;
@@ -48,6 +49,10 @@ public class AppFrame extends JFrame implements BoardListener {
 	private static final String PREFS_WHITE_PERSPECTIVE = "WHITE_PERSPECTIVE";
 	private static final String PREFS_SPLITTER_CENTER_POSITION = "SPLITTER_CENTER_POSITION";
 	private static final String PREFS_SPLITTER_EAST_POSITION = "SPLITTER_EAST_POSITION";
+	private static final String PREFS_FONT_SIZE = "FONT_SIZE";
+	private static final String PREFS_ONLY_MAINLINE = "ONLY_MAINLINE";
+	private static final String PREFS_SHOW_COMMENTS = "SHOW_COMMENTS";
+	private static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
 	
 	public AppFrame() throws HeadlessException {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource("/images/icon/Knight50.png")));
@@ -87,6 +92,10 @@ public class AppFrame extends JFrame implements BoardListener {
 		prefs.putBoolean(PREFS_WHITE_PERSPECTIVE, board.isOrientationWhite());
 		prefs.putInt(PREFS_SPLITTER_CENTER_POSITION, splitCenter.getDividerLocation());
 		prefs.putInt(PREFS_SPLITTER_EAST_POSITION, splitEast.getDividerLocation());
+		prefs.putInt(PREFS_FONT_SIZE, lstVariations.getFont().getSize());
+		prefs.putBoolean(PREFS_ONLY_MAINLINE, cbOnlyMainline.isSelected());
+		prefs.putBoolean(PREFS_RANDOM_DRILL, cbRandomDrill.isSelected());
+		prefs.putBoolean(PREFS_SHOW_COMMENTS, cbShowComments.isSelected());
 	}
 	
 	
@@ -114,32 +123,25 @@ public class AppFrame extends JFrame implements BoardListener {
 	}
 	
 	private void setGame(Game g) {
-		currentGame = g;
+		game = g;
 		g.gotoStartPosition();
 	}
 	
 	private Action actionNext = new AbstractAction("next") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (currentGame.isDrilling()) {
+			if (drill != null) {
 				gotoNextDrillPosition();
 			} else if (lstVariations.getSelectedIndex() >= 0) {
 				Position p = (Position)modelVariations.get(lstVariations.getSelectedIndex());
-				currentGame.gotoPosition(p);
+				game.gotoPosition(p);
 				updateBoard(true);		
 			} else if (!modelVariations.isEmpty()) {
 				Position p = (Position)modelVariations.get(0);
-				currentGame.gotoPosition(p);
+				game.gotoPosition(p);
 				updateBoard(true);	
 			} else {
-				int i = games.indexOf(currentGame);
-				if (i < games.size()-1) {
-					currentGame = games.get(i+1);
-					currentGame.gotoStartPosition();
-					updateBoard(true);						
-				} else {
-					log.info("End of moves");
-				}
+				log.info("End of moves");
 			};
 		}
 	};		
@@ -147,7 +149,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Action actionBack = new AbstractAction("back") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (!currentGame.isDrilling() && currentGame.goBack() != null) {
+			if (drill == null && game.goBack() != null) {
 				updateBoard(true);
 			};
 		}
@@ -187,12 +189,20 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Action actionBeginDrill = new AbstractAction("begin drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (!currentGame.isDrilling()) {				
-				currentGame.beginDrill(board.isOrientationWhite(), cbOnlyMainline.isSelected());
+			if (drill == null) {				
+				drill = new Drill(game.getPosition(), board.isOrientationWhite(), cbOnlyMainline.isSelected(), cbRandomDrill.isSelected());				
 				modelVariations.clear();
+				actionLoadPGN.setEnabled(false);
+				actionShowMove.setEnabled(true);
+				cbOnlyMainline.setEnabled(false);
+				cbRandomDrill.setEnabled(false);
 				this.putValue(Action.NAME, "end drill");				
-			} else {
-				currentGame.endDrill();
+			} else {				
+				drill = null;
+				actionLoadPGN.setEnabled(true);
+				actionShowMove.setEnabled(false);
+				cbOnlyMainline.setEnabled(true);
+				cbRandomDrill.setEnabled(true);
 				this.putValue(Action.NAME, "begin drill");
 			}
 			updateBoard(false);
@@ -202,7 +212,14 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Action actionShowMove = new AbstractAction("show correct move") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			JOptionPane.showMessageDialog(AppFrame.this, currentGame.getPosition().getNext());
+			if (drill != null) {
+				if (drill.getPosition().hasNext()) {
+					JOptionPane.showMessageDialog(AppFrame.this, drill.getPosition().getNext());
+				} else {
+					JOptionPane.showMessageDialog(AppFrame.this, "repertoire move missing for current position");
+				}
+				
+			}
 		}
 	};
 	
@@ -235,7 +252,7 @@ public class AppFrame extends JFrame implements BoardListener {
 					if (stockfish == null) {
 						stockfish = new Stockfish(PATH_TO_STOCKFISH);
 					}
-					return stockfish.getBestMove(currentGame.getPosition().getFen(), 5000);
+					return stockfish.getBestMove(game.getPosition().getFen(), 5000);
 				}
 
 				@Override
@@ -286,12 +303,20 @@ public class AppFrame extends JFrame implements BoardListener {
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 
 		pnlToolBar.add(new JButton(actionLoadPGN));
-		pnlToolBar.add(new JButton(actionBeginDrill));
-		pnlToolBar.add(new JButton(actionShowMove));
-		cbOnlyMainline = new JCheckBox("accept main line only?");
-		pnlToolBar.add(cbOnlyMainline);
 		cbShowComments = new JCheckBox(actionShowComments);
+		cbShowComments.setSelected(prefs.getBoolean(PREFS_SHOW_COMMENTS, false));
+		actionShowComments.actionPerformed(null);
 		pnlToolBar.add(cbShowComments);
+		
+		pnlToolBar.add(new JButton(actionBeginDrill));		
+		cbOnlyMainline = new JCheckBox("accept main line only?");
+		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
+		pnlToolBar.add(cbOnlyMainline);
+		cbRandomDrill = new JCheckBox("drill positions in random order?");
+		cbRandomDrill.setSelected(prefs.getBoolean(PREFS_RANDOM_DRILL, false));
+		pnlToolBar.add(cbRandomDrill);
+		pnlToolBar.add(new JButton(actionShowMove));
+		actionShowMove.setEnabled(false);
 
 		JPanel pnlBoard = new JPanel(new BorderLayout());
 		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 5));
@@ -318,7 +343,8 @@ public class AppFrame extends JFrame implements BoardListener {
 		tblMoves.setTableHeader(null);
 		tblMoves.setShowVerticalLines(false);
 		tblMoves.setComponentPopupMenu(popUp);
-		tblMoves.setFont(new Font("Frutiger Standard", Font.PLAIN, 12));
+		int fontSize = prefs.getInt(PREFS_FONT_SIZE, 12);
+		tblMoves.setFont(new Font("Frutiger Standard", Font.PLAIN, fontSize));
 		tblMoves.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -326,7 +352,7 @@ public class AppFrame extends JFrame implements BoardListener {
 				int row = tblMoves.rowAtPoint(e.getPoint());
 				if (column >= 0 && row >= 0) {
 					Position p = modelMoves.getPositionAt(row, column);
-					currentGame.gotoPosition(p);
+					game.gotoPosition(p);
 					updateBoard(true);
 				}				
 			}			
@@ -339,14 +365,14 @@ public class AppFrame extends JFrame implements BoardListener {
 		modelVariations = new DefaultListModel();
 		lstVariations = new JList(modelVariations);		
 		lstVariations.setFocusable(false);
-		lstVariations.setFont(new Font("Frutiger Standard", Font.PLAIN, 12));
+		lstVariations.setFont(new Font("Frutiger Standard", Font.PLAIN, fontSize));
 		lstVariations.setComponentPopupMenu(popUp);
 		lstVariations.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (lstVariations.getSelectedIndex() >= 0) {
 					Position p = (Position)modelVariations.get(lstVariations.getSelectedIndex());
-					currentGame.gotoPosition(p);				
+					game.gotoPosition(p);				
 					updateBoard(true);
 				}
 			}			
@@ -409,7 +435,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	}
 
 	private void updateBoard(boolean playSound) {	
-		Position p = currentGame.getPosition();
+		Position p = drill != null ? drill.getPosition() : game.getPosition();
 		board.setCurrentPosition(p);
 		String comment = " ";
 		if (p != null && p.getComment() != null) {
@@ -425,7 +451,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		}
 		modelMoves.setPosition(p);
 		modelVariations.clear();
-		if (!currentGame.isDrilling()) {
+		if (drill == null) {
 			for (Position variation : p.getVariations()) {
 				modelVariations.addElement(variation);
 			}
@@ -434,9 +460,9 @@ public class AppFrame extends JFrame implements BoardListener {
 
 	@Override
 	public void userMove(String move) {
-		if (currentGame.isDrilling()) {
-			if (currentGame.hasNextPosition(move)) {
-				currentGame.doMove(move);		
+		if (drill != null) {
+			if (drill.isCorrectMove(move)) {
+				drill.doMove(move);		
 				updateBoard(true);
 				new SwingWorker<Void,Void>() {
 	
@@ -452,22 +478,22 @@ public class AppFrame extends JFrame implements BoardListener {
 					}
 					
 				}.execute();
-			} else if (currentGame.getPosition().hasNext()) {
+			} else if (drill.getPosition().hasNext()) {
 				Sounds.wrong();
 			}
 		} else {
-			if (currentGame.hasNextPosition(move)) {
-				currentGame.doMove(move);		
+			if (game.isCorrectMove(move)) {
+				game.doMove(move);		
 				updateBoard(true);
 			}
 		}
 	}
 	
 	private void gotoNextDrillPosition() {
-		Position current = currentGame.getPosition();
-		Position newPosition = currentGame.gotoNextPosition();
+		Position current = drill.getPosition();
+		Position newPosition = drill.gotoNextPosition();
 		if (current == newPosition) {
-			DrillStats drillStats = currentGame.endDrill();
+			DrillStats drillStats = drill.endDrill();
 			actionBeginDrill.actionPerformed(null);
 			JOptionPane.showMessageDialog(AppFrame.this, String.format("Drill ended for %d positions", drillStats.drilledPositions));			
 		} 
