@@ -170,7 +170,7 @@ public class Drill extends Game {
 		for(;;) { 
 			Position repertoireAnswer = drillPosition.hasNext() ? drillPosition.getNext() : null;
 			Position nextDrillPosition = null;
-			if (repertoireAnswer != null) {
+			if (repertoireAnswer != null && repertoireAnswer.whiteMoved() == drillingWhite) {
 				result.add(getPosition());
 				gotoPosition(repertoireAnswer);
 				nextDrillPosition = gotoNextPosition();
