@@ -1,6 +1,8 @@
 package de.toto.pgn;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,10 +16,27 @@ public class PGNReader {
 	
 	private static Logger log = Logger.getLogger("PGNReader");
 	
-	public static List<Game> parse(File pgn) {	
-		List<String> pgnLines = new ArrayList<String>();
+	public static List<Game> parse(File pgn) {
+		try {	
+			return doParse(new BufferedReader(new InputStreamReader(new FileInputStream(pgn), "UTF-8")));
+		} catch (Exception ex) {
+			//TODO better error handling
+			throw new RuntimeException("parsing PGN file failed", ex);
+		}	
+	}
+	
+	public static List<Game> parse(URL url) {		
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(pgn), "UTF-8"));
+			return doParse(new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8")));
+		} catch (Exception ex) {
+			//TODO better error handling
+			throw new RuntimeException("parsing PGN url failed", ex);
+		}
+	}
+	
+	public static List<Game> doParse(BufferedReader reader) {	
+		List<String> pgnLines = new ArrayList<String>();
+		try {			
 			try {
 				String line = null;
 				for(;;) {
@@ -175,6 +194,15 @@ public class PGNReader {
 	private static String stripPossibleMoveNumber(String move) {
 		int lastIndexOfDot = move.lastIndexOf('.');		
 		return lastIndexOfDot == -1 ? move : move.substring(lastIndexOfDot+1, move.length());
+	}
+	
+	public static void main(String[] args) {
+		try {
+			PGNReader.parse(new URL("https://drive.google.com/file/d/0BwRlMWvDu7UwZ1p2bXVwMTdkR3M/view?usp=sharing"));
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 		
 }
