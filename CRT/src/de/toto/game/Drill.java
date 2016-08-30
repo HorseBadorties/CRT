@@ -141,6 +141,7 @@ public class Drill extends Game {
 				return currentPosition;
 			} else {
 				currentPosition = drillPositions.remove(0);
+				drillStats.drilledPositions++;
 				return currentPosition;
 			}
 		}
