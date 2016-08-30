@@ -479,8 +479,10 @@ public class Board extends JPanel {
 						}
 					}
 				}
-				getIconFor(dragSquare.gameSquare.piece).paintIcon(this, g2, 
-						cursorLocation.x - squareSize / 2, cursorLocation.y - squareSize / 2);
+				if (dragSquare.gameSquare.piece != null) {
+					getIconFor(dragSquare.gameSquare.piece).paintIcon(this, g2, 
+							cursorLocation.x - squareSize / 2, cursorLocation.y - squareSize / 2);
+				}
 			} 
 		}
 		
