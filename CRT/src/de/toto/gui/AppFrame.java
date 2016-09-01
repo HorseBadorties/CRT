@@ -491,7 +491,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	
 	private void gotoNextDrillPosition() {
 		Position current = drill.getPosition();
-		Position newPosition = drill.gotoNextPosition();
+		Position newPosition = drill.getNextDrillPosition();
 		if (current == newPosition) {
 			DrillStats drillStats = drill.endDrill();
 			actionBeginDrill.actionPerformed(null);

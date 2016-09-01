@@ -15,11 +15,11 @@ public class Drill extends Game {
 	private Set<Position> drilledVariations = new HashSet<Position>();
 	private boolean drillingWhite = true;
 	private boolean acceptOnlyMainline = true;
-	private boolean randomDrill = true;
 	private List<Position> drillPositions;
 	private DrillStats drillStats;
 	
 	public static class DrillStats {
+		public Position lastDrilledPosition;
 		public int drilledPositions;
 		public int correctPositions;
 	}
@@ -30,32 +30,22 @@ public class Drill extends Game {
 		currentPosition = startPosition;
 		drillStartingPosition = startPosition;
 		this.drillingWhite = drillingWhite;
-		this.acceptOnlyMainline = acceptOnlyMainline;
-		this.randomDrill = false;		
+		this.acceptOnlyMainline = acceptOnlyMainline;		
 		drillPositions = getAllDrillPositions();
 		drilledVariations.clear();		
-		Collections.shuffle(drillPositions);
-		this.randomDrill = randomDrill;
+		if (randomDrill) Collections.shuffle(drillPositions);
 		drillStats = new DrillStats();
-		if (randomDrill) {
-			currentPosition = gotoNextPosition();
-		} else {
-			currentPosition = startPosition;
-			if (currentPosition.isWhiteToMove() != drillingWhite) {
-				gotoNextPosition();
-			}
-		}
+		currentPosition = getNextDrillPosition();
 		log.info(String.format("Drilling %s now for %d positions", drillingWhite ? "White" : "Black", drillPositions.size()));
-	}
-	
+	}	
 	
 	public boolean isCorrectMove(String move) {
 		boolean result = false;
-		if (getPosition().hasNext()) {
+		if (currentPosition.hasNext()) {
 			if (acceptOnlyMainline) {
-				result = isCorrect(move, getPosition().getNext());
+				result = isCorrect(move, currentPosition.getNext());
 			} else {
-				for (Position p : getPosition().getVariations()) {
+				for (Position p : currentPosition.getVariations()) {
 					if (isCorrect(move, p)) {
 						result = true;
 						break;
@@ -63,7 +53,10 @@ public class Drill extends Game {
 				}
 			}
 		}
-		if (result) drillStats.correctPositions++;
+		if (currentPosition != drillStats.lastDrilledPosition) {
+			if (result) drillStats.correctPositions++;
+			drillStats.lastDrilledPosition = currentPosition;
+		}		
 		return result;
 	}
 	
@@ -78,7 +71,15 @@ public class Drill extends Game {
 	
 	private Position findNextPosition(Position p) {
 		if (p.hasVariations()) {
-			if (p.isWhiteToMove() == drillingWhite) return p.getNext();
+			if (p.isWhiteToMove() == drillingWhite) {
+				Position next = p.getNext();
+				if (next.equals(drillStartingPosition)) {
+					log.info("drillStartingPosition reached - no more lines");
+					return null;
+				} else {
+					return next;
+				}
+			}
 			log.info(p + " hasVariations " + p.getVariations());
 			List<Position> candidates = new ArrayList<Position>(p.getVariations());
 			candidates.removeAll(drilledVariations);
@@ -90,7 +91,7 @@ public class Drill extends Game {
 				}
 				while (!previous.hasVariations() || previous.isWhiteToMove() == drillingWhite) {
 					if (previous.equals(drillStartingPosition)) {
-						log.info("end of lines reached");
+						log.info("drillStartingPosition reached - no more lines");
 						return null;
 					}
 					previous = previous.getPrevious();
@@ -98,7 +99,7 @@ public class Drill extends Game {
 						log.info("end of lines reached");
 						return null;
 					}
-				}
+				}				
 				return findNextPosition(previous);
 			} else {
 				if (candidates.size() > 1) {
@@ -106,14 +107,12 @@ public class Drill extends Game {
 				}
 				drilledVariations.add(candidates.get(0));
 				Position result = candidates.get(0);
-				log.info("returning " + result);
-				drillStats.drilledPositions++;
+				log.info("returning " + result);				
 				return result;
 			}
 		} else if (p.hasNext()) {
 			Position result = p.getNext();
-			log.info(p + " no variations - returning next: " + result);
-			drillStats.drilledPositions++;
+			log.info(p + " no variations - returning next: " + result);			
 			return result;
 		} else {
 			log.info(p + " end of line");
@@ -123,6 +122,10 @@ public class Drill extends Game {
 				return null;
 			}
 			while (!previous.hasVariations() || previous.isWhiteToMove() == drillingWhite) {
+				if (previous.equals(drillStartingPosition)) {
+					log.info("drillStartingPosition reached - no more lines");
+					return null;
+				}
 				previous = previous.getPrevious();
 				if (previous == null) {
 					log.info("end of lines reached");
@@ -134,19 +137,18 @@ public class Drill extends Game {
 		}
 	}
 	
-	public Position gotoNextPosition() {
-		if (randomDrill) {
-			if (drillPositions.isEmpty()) {
-				log.info("reached end of random drill");
-				return currentPosition;
-			} else {
-				currentPosition = drillPositions.remove(0);
-				drillStats.drilledPositions++;
-				return currentPosition;
-			}
+	public Position getNextDrillPosition() {
+		if (drillPositions.isEmpty()) {			
+			return currentPosition;
+		} else {
+			currentPosition = drillPositions.remove(0);
+			drillStats.drilledPositions++;
+			return currentPosition;
 		}
+	}
+	
+	private Position gotoNextPosition() {
 		Position next = findNextPosition(currentPosition);
-//		log.info(String.format("findNextPosition for %s: %s with previous %s", currentPosition, next, next.getPrevious()));
 		if (next == null) {
 			log.info("reached end of variation tree with last position " + currentPosition);
 			return currentPosition;
@@ -165,23 +167,31 @@ public class Drill extends Game {
 	}
 	
 	private List<Position> getAllDrillPositions() {
-		List<Position> result = new ArrayList<Position>();
-		//drill has just begun - we are on our first drill prosition already
-		Position drillPosition = getPosition();
+		List<Position> result = new ArrayList<Position>();		
+		Position drillPosition = currentPosition;
+		if (drillPosition.isWhiteToMove() != drillingWhite) {
+			drillPosition = gotoNextPosition();
+		}
 		for(;;) { 
 			Position repertoireAnswer = drillPosition.hasNext() ? drillPosition.getNext() : null;
-			Position nextDrillPosition = null;
-			if (repertoireAnswer != null && repertoireAnswer.whiteMoved() == drillingWhite) {
-				result.add(getPosition());
-				gotoPosition(repertoireAnswer);
+			Position nextDrillPosition = null;			
+			if (repertoireAnswer != null) {
+				result.add(drillPosition);
+				currentPosition = repertoireAnswer;
 				nextDrillPosition = gotoNextPosition();
 			} else {
 				nextDrillPosition = gotoNextPosition();
 			}
-			if (nextDrillPosition.equals(drillPosition) || nextDrillPosition == null) break;
+			if (nextDrillPosition.equals(drillPosition) 
+					|| nextDrillPosition == null
+					|| nextDrillPosition.equals(drillStartingPosition)
+					|| nextDrillPosition.getMoveNumber() <= drillStartingPosition.getMoveNumber()) 
+			{
+				log.info("end of line");
+				break;
+			}
 			drillPosition = nextDrillPosition;
 		} 
-		gotoPosition(drillStartingPosition);
 		return result;
 	}
 		
