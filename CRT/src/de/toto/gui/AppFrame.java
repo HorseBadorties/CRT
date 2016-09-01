@@ -62,6 +62,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		board = new Board();
 		board.addBoardListener(this);		
 		doUI();
+		SwingUtilities.updateComponentTreeUI(this);
 		addWindowListener(new WindowAdapter() {
 				
 			@Override
@@ -302,7 +303,9 @@ public class AppFrame extends JFrame implements BoardListener {
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 
-		pnlToolBar.add(new JButton(actionLoadPGN));
+		JButton btnLoadPGN = new JButton(actionLoadPGN);
+		btnLoadPGN.putClientProperty("JComponent.sizeVariant", "large");
+		pnlToolBar.add(btnLoadPGN);
 		cbShowComments = new JCheckBox(actionShowComments);
 		cbShowComments.setSelected(prefs.getBoolean(PREFS_SHOW_COMMENTS, false));
 		actionShowComments.actionPerformed(null);
