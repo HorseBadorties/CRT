@@ -518,6 +518,15 @@ public class Position {
 		return result;
 	}
 	
+	public String[] getPossibleCastlingSquareNames() {
+		String[] result = new String[2];
+		int rank = isWhiteToMove() ? 1 : 8;
+		String castleFenField = getFen().split(" ")[2];
+		if (castleFenField.contains(isWhiteToMove() ? "K" : "k")) result[0] = "g" + rank;
+		if (castleFenField.contains(isWhiteToMove() ? "Q" : "q")) result[1] = "c" + rank;
+		return result;
+	}
+	
 	@Override
 	public String toString() {
 		return getMoveNotation(true);

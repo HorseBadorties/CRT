@@ -103,6 +103,23 @@ public class Square {
 			return false;
 		}
 		
+		/**
+		 * Can the piece on this Square move to the other square?
+		 */
+		public boolean canMoveTo(Square other, Position p, Square ignore) {
+			if (piece == null) return false;
+			if (ignore == null && isPinned(p, other)) return false;
+			switch (piece.type) {
+				case KING: return kingCanMoveTo(other, p);
+				case QUEEN: return queenAttacks(other, p, ignore);
+				case ROOK: return rookAttacks(other, p, ignore);
+				case BISHOP: return bishopAttacks(other, p, ignore);
+				case KNIGHT: return knightAttacks(other, p);
+				case PAWN: return pawnCanMoveTo(other, p);				
+			}
+			return false;
+		}
+		
 		private boolean kingAttacks(Square other, Position p) {
 			if (other.equals(getSquare(p, rank+1, file))) return true;
 			if (other.equals(getSquare(p, rank+1, file-1))) return true;
@@ -112,6 +129,13 @@ public class Square {
 			if (other.equals(getSquare(p, rank-1, file))) return true;
 			if (other.equals(getSquare(p, rank-1, file-1))) return true;
 			if (other.equals(getSquare(p, rank-1, file+1))) return true;
+			return false;
+		}
+		
+		private boolean kingCanMoveTo(Square other, Position p) {
+			if (kingAttacks(other, p)) return true;
+			String[] castlingSquareNames = p.getPossibleCastlingSquareNames();
+			if (other.getName().equals(castlingSquareNames[0]) || other.getName().equals(castlingSquareNames[1])) return true;
 			return false;
 		}
 		
@@ -208,11 +232,31 @@ public class Square {
 				if (other.equals(s)) return true;	
 			}
 			// try captures (with en passant)
-			String enPassantField = p.getPrevious().getFen().split(" ")[3]; 
+			String enPassantField = p.getPrevious() != null ? p.getPrevious().getFen().split(" ")[3] : null; 
 			s = getSquare(p, p.whiteMoved() ? rank+1 : rank-1, file+1);
 			if (other.equals(s) && ((s.piece != null && s.piece.isWhite != p.whiteMoved()) || s.getName().equals(enPassantField))) return true;	
 			s = getSquare(p, p.whiteMoved() ? rank+1 : rank-1, file-1);
 			if (other.equals(s) && ((s.piece != null && s.piece.isWhite != p.whiteMoved()) || s.getName().equals(enPassantField))) return true;	
+			 
+			return false;
+		}
+		
+		private boolean pawnCanMoveTo(Square other, Position p) {
+			int startRank = p.isWhiteToMove() ? 2 : 7;  
+			// move one square
+			Square s = getSquare(p, p.isWhiteToMove() ? rank+1 : rank-1, file);
+			if (other.equals(s)) return true;			
+			if (rank == startRank && s.piece == null) {
+				// move two squares
+				s = getSquare(p, p.isWhiteToMove() ? rank+2 : rank-2, file);
+				if (other.equals(s)) return true;	
+			}
+			// try captures (with en passant)
+			String enPassantField = p.getPrevious() != null ? p.getPrevious().getFen().split(" ")[3] : null; 
+			s = getSquare(p, p.isWhiteToMove() ? rank+1 : rank-1, file+1);
+			if (other.equals(s) && ((s.piece != null && s.piece.isWhite != p.isWhiteToMove()) || s.getName().equals(enPassantField))) return true;	
+			s = getSquare(p, p.isWhiteToMove() ? rank+1 : rank-1, file-1);
+			if (other.equals(s) && ((s.piece != null && s.piece.isWhite != p.isWhiteToMove()) || s.getName().equals(enPassantField))) return true;	
 			 
 			return false;
 		}
