@@ -118,7 +118,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		
 		setGame(repertoire);	
 		updateBoard(false);
-		setTitle(pgn.getName());
+		setTitle("Chess Repertoire Trainer: " + pgn.getName());
 		txtStatus.setText(String.format("%s loaded with %d positions ", pgn, repertoire.getAllPositions().size()));
 	}
 	
@@ -201,7 +201,7 @@ public class AppFrame extends JFrame implements BoardListener {
 				drill = null;
 				actionLoadPGN.setEnabled(true);
 				actionShowMove.setEnabled(false);
-				cbOnlyMainline.setEnabled(true);
+				//cbOnlyMainline.setEnabled(true);
 				cbRandomDrill.setEnabled(true);
 				this.putValue(Action.NAME, "begin drill");
 			}
@@ -311,6 +311,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		pnlToolBar.add(new JButton(actionBeginDrill));		
 		cbOnlyMainline = new JCheckBox("accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
+		cbOnlyMainline.setEnabled(false);
 		pnlToolBar.add(cbOnlyMainline);
 		cbRandomDrill = new JCheckBox("drill positions in random order?");
 		cbRandomDrill.setSelected(prefs.getBoolean(PREFS_RANDOM_DRILL, false));
@@ -489,7 +490,42 @@ public class AppFrame extends JFrame implements BoardListener {
 		}
 	}
 	
+	@Override
+	public void userClickedSquare(String squareName) {
+		if (drill != null) {			
+			if (drill.isCorrectSquare(squareName)) {
+				drill.gotoPosition(drill.getPosition().getNext());
+				updateBoard(true);
+				new SwingWorker<Void,Void>() {
+	
+					@Override
+					protected Void doInBackground() throws Exception {
+						Thread.sleep(500);
+						return null;
+					}
+	
+					@Override
+					protected void done() {
+						gotoNextDrillPosition();
+					}
+					
+				}.execute();
+			} else if (drill.getPosition().hasNext()) {
+				Sounds.wrong();
+			}
+		} else {
+			for (Position variation : game.getPosition().getVariations()) {
+				if (variation.getMoveSquareNames()[1].equals(squareName)) {
+					game.gotoPosition(variation);
+					updateBoard(true);
+					break;
+				}
+			}
+		}
+	}
+	
 	private void gotoNextDrillPosition() {
+		if (drill == null) return;
 		Position current = drill.getPosition();
 		Position newPosition = drill.getNextDrillPosition();
 		if (current == newPosition) {

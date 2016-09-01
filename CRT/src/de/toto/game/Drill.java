@@ -13,8 +13,8 @@ public class Drill extends Game {
 	
 	private Position drillStartingPosition;
 	private Set<Position> drilledVariations = new HashSet<Position>();
-	private boolean drillingWhite = true;
-	private boolean acceptOnlyMainline = true;
+	private boolean drillingWhite;
+	private boolean acceptOnlyMainline;
 	private List<Position> drillPositions;
 	private DrillStats drillStats;
 	
@@ -57,6 +57,20 @@ public class Drill extends Game {
 			if (result) drillStats.correctPositions++;
 			drillStats.lastDrilledPosition = currentPosition;
 		}		
+		return result;
+	}
+	
+	public boolean isCorrectSquare(String squareName) {
+		boolean result = false;
+		Position correctPosition = currentPosition.hasNext() ? currentPosition.getNext() : null;
+		//TODO !acceptOnlyMainline
+		if (correctPosition != null) {			
+			if (correctPosition.getMoveSquareNames()[1].equals(squareName)) result = true;
+			if (currentPosition != drillStats.lastDrilledPosition) {
+				if (result) drillStats.correctPositions++;
+				drillStats.lastDrilledPosition = currentPosition;
+			}			
+		}				
 		return result;
 	}
 	

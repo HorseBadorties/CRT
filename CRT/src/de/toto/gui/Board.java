@@ -88,7 +88,13 @@ public class Board extends JPanel {
 		for (BoardListener l : listenerList.getListeners(BoardListener.class)) {
 			l.userMove(move);
 		}
-	 }
+	}
+	
+	protected void fireUserClickedSquare(String squarename) {
+		for (BoardListener l : listenerList.getListeners(BoardListener.class)) {
+			l.userClickedSquare(squarename);
+		}
+	}
 	
 	public static class BoardCanvas extends JComponent {
 
@@ -222,8 +228,11 @@ public class Board extends JPanel {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 3) {
-					flip();
+				if (e.getClickCount() == 1) {
+					Square clickSquare = getSquareAt(e.getPoint());
+					if (clickSquare != null) {
+						board.fireUserClickedSquare(clickSquare.getName());
+					}
 				}
 			}
 
