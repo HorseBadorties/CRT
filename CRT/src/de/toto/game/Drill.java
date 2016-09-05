@@ -50,7 +50,7 @@ public class Drill extends Game {
 				result.append(minutes).append(" minutes");
 			
 			}
-			duration = duration % 3600000;			
+			duration = duration % 60000;			
 			if (duration > 0) {
 				if (result.length() > 0) result.append(", ");
 				result.append(duration / 1000).append(" seconds");
@@ -111,7 +111,12 @@ public class Drill extends Game {
 			}
 		}
 		if (currentPosition != drillStats.lastDrilledPosition) {
-			if (result) drillStats.correctPositions++;
+			if (result) {
+				drillStats.correctPositions++;
+				fireDrillEvent(new DrillEvent(DrillEvent.ID_WAS_CORRECT, this, move));		
+			} else {
+				fireDrillEvent(new DrillEvent(DrillEvent.ID_WAS_INCORRECT, this, move));	
+			}
 			drillStats.lastDrilledPosition = currentPosition;
 		}		
 		return result;
@@ -240,6 +245,7 @@ public class Drill extends Game {
 	
 	
 	public void endDrill() {		
+		gotoPosition(drillStartingPosition);
 		log.info(String.format("Drill ended - %d of %d positions correct", drillStats.correctPositions, drillStats.drilledPositions));
 		fireDrillEvent(new DrillEvent(DrillEvent.ID_DRILL_ENDED, this, null));		
 	}
@@ -276,6 +282,9 @@ public class Drill extends Game {
 	public DrillStats getDrillStats() {
 		return drillStats;
 	}
-		
-		
+	
+	public int getPositionCount() {
+		return drillPositions.size() + drillStats.drilledPositions;
+	}
+			
 }

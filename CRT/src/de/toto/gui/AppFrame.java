@@ -34,7 +34,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private JTable tblMoves;
 	private PositionTableModel modelMoves;
 	private JList lstVariations;
+	private JScrollPane scrollerVariations;
 	private DefaultListModel modelVariations;
+	private DrillStatusPanel drillStatus;
 	private JCheckBox cbOnlyMainline;
 	private JCheckBox cbShowComments;
 	private JCheckBox cbRandomDrill;
@@ -201,6 +203,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				actionShowMove.setEnabled(true);
 				cbOnlyMainline.setEnabled(false);
 				cbRandomDrill.setEnabled(false);
+				drillStatus = new DrillStatusPanel(drill);
+				splitEast.setLeftComponent(drillStatus);
 				this.putValue(Action.NAME, "end drill");
 				drill.startDrill();
 			} else {				
@@ -377,8 +381,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 					game.gotoPosition(p);
 				}
 			}			
-		});
-		pnlVariations.add(new JScrollPane(lstVariations));		
+		});		
+		scrollerVariations = new JScrollPane(lstVariations);
+		pnlVariations.add(scrollerVariations);		
 		pnlVariations.setPreferredSize(new Dimension(150, 200));
 		splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlVariations, pnlMoves);
 		splitEast.setBorder(null);
@@ -531,7 +536,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 
 	@Override
 	public void drillEnded(DrillEvent e) {		
-		DrillStats drillStats =  e.getDrill().getDrillStats();		
+		DrillStats drillStats =  drill.getDrillStats();		
 		JOptionPane.showMessageDialog(AppFrame.this, 
 				String.format("Drill ended for %d positions and took %s", 
 						drillStats.drilledPositions, drillStats.getFormattedDuration()));
@@ -542,6 +547,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		//cbOnlyMainline.setEnabled(true);
 		cbRandomDrill.setEnabled(true);
 		actionBeginDrill.putValue(Action.NAME, "begin drill");
+		splitEast.setLeftComponent(scrollerVariations);
 	}
 
 	@Override
