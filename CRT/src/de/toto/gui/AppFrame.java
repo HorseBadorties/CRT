@@ -11,15 +11,19 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.toto.engine.Stockfish;
+import de.toto.game.DrillEvent;
 import de.toto.game.Game;
 import de.toto.game.Drill;
 import de.toto.game.Drill.DrillStats;
+import de.toto.game.DrillListener;
+import de.toto.game.GameEvent;
+import de.toto.game.GameListener;
 import de.toto.game.Position;
 import de.toto.pgn.PGNReader;
 import de.toto.sound.Sounds;
 
 @SuppressWarnings("serial")
-public class AppFrame extends JFrame implements BoardListener {
+public class AppFrame extends JFrame implements BoardListener, GameListener, DrillListener {
 	
 	private File pgn = null;
 	private Game game;
@@ -56,9 +60,6 @@ public class AppFrame extends JFrame implements BoardListener {
 	
 	public AppFrame() throws HeadlessException {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource("/images/icon/Knight50.png")));
-		Game dummy = new Game();
-		dummy.start();
-		setGame(dummy);
 		board = new Board();
 		board.addBoardListener(this);		
 		doUI();
@@ -117,14 +118,17 @@ public class AppFrame extends JFrame implements BoardListener {
 		log.info(String.format("merged games to %d positions ", repertoire.getAllPositions().size()));
 		this.pgn = pgn;
 		
-		setGame(repertoire);	
-		updateBoard(false);
+		setGame(repertoire);		
 		setTitle("Chess Repertoire Trainer: " + pgn.getName());
 		txtStatus.setText(String.format("%s loaded with %d positions ", pgn, repertoire.getAllPositions().size()));
 	}
 	
 	private void setGame(Game g) {
+		if (game != null) {
+			game.removeGameListener(this);
+		}
 		game = g;
+		game.addGameListener(this);
 		g.gotoStartPosition();
 	}
 	
@@ -135,12 +139,10 @@ public class AppFrame extends JFrame implements BoardListener {
 				gotoNextDrillPosition();
 			} else if (lstVariations.getSelectedIndex() >= 0) {
 				Position p = (Position)modelVariations.get(lstVariations.getSelectedIndex());
-				game.gotoPosition(p);
-				updateBoard(true);		
+				game.gotoPosition(p);						
 			} else if (!modelVariations.isEmpty()) {
 				Position p = (Position)modelVariations.get(0);
-				game.gotoPosition(p);
-				updateBoard(true);	
+				game.gotoPosition(p);					
 			} else {
 				log.info("End of moves");
 			};
@@ -150,9 +152,9 @@ public class AppFrame extends JFrame implements BoardListener {
 	private Action actionBack = new AbstractAction("back") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (drill == null && game.goBack() != null) {
-				updateBoard(true);
-			};
+			if (drill == null) {
+				game.goBack();
+			}
 		}
 	};
 	
@@ -191,22 +193,19 @@ public class AppFrame extends JFrame implements BoardListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (drill == null) {				
-				drill = new Drill(game.getPosition(), board.isOrientationWhite(), cbOnlyMainline.isSelected(), cbRandomDrill.isSelected());				
+				drill = new Drill(game.getPosition(), board.isOrientationWhite(), cbOnlyMainline.isSelected(), cbRandomDrill.isSelected());
+				drill.addGameListener(AppFrame.this);
+				drill.addDrillListener(AppFrame.this);
 				modelVariations.clear();
 				actionLoadPGN.setEnabled(false);
 				actionShowMove.setEnabled(true);
 				cbOnlyMainline.setEnabled(false);
 				cbRandomDrill.setEnabled(false);
-				this.putValue(Action.NAME, "end drill");				
+				this.putValue(Action.NAME, "end drill");
+				drill.startDrill();
 			} else {				
-				drill = null;
-				actionLoadPGN.setEnabled(true);
-				actionShowMove.setEnabled(false);
-				//cbOnlyMainline.setEnabled(true);
-				cbRandomDrill.setEnabled(true);
-				this.putValue(Action.NAME, "begin drill");
-			}
-			updateBoard(false);
+				drill.endDrill();				
+			}			
 		}
 	};
 	
@@ -356,8 +355,7 @@ public class AppFrame extends JFrame implements BoardListener {
 				int row = tblMoves.rowAtPoint(e.getPoint());
 				if (column >= 0 && row >= 0) {
 					Position p = modelMoves.getPositionAt(row, column);
-					game.gotoPosition(p);
-					updateBoard(true);
+					game.gotoPosition(p);					
 				}				
 			}			
 		});
@@ -376,8 +374,7 @@ public class AppFrame extends JFrame implements BoardListener {
 			public void mouseClicked(MouseEvent e) {
 				if (lstVariations.getSelectedIndex() >= 0) {
 					Position p = (Position)modelVariations.get(lstVariations.getSelectedIndex());
-					game.gotoPosition(p);				
-					updateBoard(true);
+					game.gotoPosition(p);
 				}
 			}			
 		});
@@ -432,7 +429,6 @@ public class AppFrame extends JFrame implements BoardListener {
 			actionLoadPGN.actionPerformed(null);
 		}	
 		
-		updateBoard(false);
 		if (!prefs.getBoolean(PREFS_WHITE_PERSPECTIVE, true)) {
 			board.flip();
 		}
@@ -466,8 +462,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	public void userMove(String move) {
 		if (drill != null) {
 			if (drill.isCorrectMove(move)) {
-				drill.doMove(move);		
-				updateBoard(true);
+				drill.doMove(move);				
 				new SwingWorker<Void,Void>() {
 	
 					@Override
@@ -487,8 +482,7 @@ public class AppFrame extends JFrame implements BoardListener {
 			}
 		} else {
 			if (game.isCorrectMove(move)) {
-				game.doMove(move);		
-				updateBoard(true);
+				game.doMove(move);				
 			}
 		}
 	}
@@ -497,8 +491,7 @@ public class AppFrame extends JFrame implements BoardListener {
 	public void userClickedSquare(String squareName) {
 		if (drill != null) {			
 			if (drill.isCorrectSquare(squareName)) {
-				drill.gotoPosition(drill.getPosition().getNext());
-				updateBoard(true);
+				drill.gotoPosition(drill.getPosition().getNext());				
 				new SwingWorker<Void,Void>() {
 	
 					@Override
@@ -519,8 +512,7 @@ public class AppFrame extends JFrame implements BoardListener {
 		} else {
 			for (Position variation : game.getPosition().getVariations()) {
 				if (variation.getMoveSquareNames()[1].equals(squareName)) {
-					game.gotoPosition(variation);
-					updateBoard(true);
+					game.gotoPosition(variation);					
 					break;
 				}
 			}
@@ -529,14 +521,45 @@ public class AppFrame extends JFrame implements BoardListener {
 	
 	private void gotoNextDrillPosition() {
 		if (drill == null) return;
-		Position current = drill.getPosition();
-		Position newPosition = drill.getNextDrillPosition();
-		if (current == newPosition) {
-			DrillStats drillStats = drill.endDrill();
-			actionBeginDrill.actionPerformed(null);
-			JOptionPane.showMessageDialog(AppFrame.this, String.format("Drill ended for %d positions", drillStats.drilledPositions));			
-		} 
+		drill.getNextDrillPosition();			
+	}
+
+	@Override
+	public void positionChanged(GameEvent e) {
 		updateBoard(true);
+	}
+
+	@Override
+	public void drillEnded(DrillEvent e) {		
+		DrillStats drillStats =  e.getDrill().getDrillStats();		
+		JOptionPane.showMessageDialog(AppFrame.this, 
+				String.format("Drill ended for %d positions and took %s", 
+						drillStats.drilledPositions, drillStats.getFormattedDuration()));
+		
+		drill = null;
+		actionLoadPGN.setEnabled(true);
+		actionShowMove.setEnabled(false);
+		//cbOnlyMainline.setEnabled(true);
+		cbRandomDrill.setEnabled(true);
+		actionBeginDrill.putValue(Action.NAME, "begin drill");
+	}
+
+	@Override
+	public void wasCorrect(DrillEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void wasIncorrect(DrillEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void drillingNextVariation(DrillEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

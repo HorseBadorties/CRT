@@ -1,5 +1,7 @@
 package de.toto.game;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -19,9 +21,65 @@ public class Drill extends Game {
 	private DrillStats drillStats;
 	
 	public static class DrillStats {
+		
+		public long drillBegin;
 		public Position lastDrilledPosition;
 		public int drilledPositions;
 		public int correctPositions;
+		
+		public DrillStats() {
+			drillBegin = System.currentTimeMillis();
+		}
+		
+		public long getDuration() {
+			return System.currentTimeMillis() - drillBegin;
+		}
+		
+		public String getFormattedDuration() {
+			StringBuilder result = new StringBuilder();
+			long duration = getDuration();
+			long hours = duration / 3600000;
+			if (hours > 0) {
+				result.append(hours).append(" hours");
+			
+			}
+			duration = duration % 3600000;
+			long minutes = duration / 60000;
+			if (minutes > 0) {
+				if (result.length() > 0) result.append(", ");
+				result.append(minutes).append(" minutes");
+			
+			}
+			duration = duration % 3600000;			
+			if (duration > 0) {
+				if (result.length() > 0) result.append(", ");
+				result.append(duration / 1000).append(" seconds");
+			
+			}
+			return result.toString();
+		}
+		
+	}
+	
+	private List<DrillListener> listener = new ArrayList<DrillListener>();
+	
+	public void addDrillListener(DrillListener l) {
+		listener.add(l);		
+	}
+	
+	public void removeDrillListener(DrillListener l) {
+		listener.remove(l);
+	}
+	
+	private void fireDrillEvent(DrillEvent e) {		
+		for (DrillListener l : listener) {
+			switch (e.getID()) {
+				case DrillEvent.ID_DRILL_ENDED : l.drillEnded(e); break;
+				case DrillEvent.ID_DRILLING_NEXT_VARIATION : l.drillingNextVariation(e); break;
+				case DrillEvent.ID_WAS_CORRECT : l.wasCorrect(e); break;
+				case DrillEvent.ID_WAS_INCORRECT : l.wasIncorrect(e); break;
+			}
+		}
 	}
 	
 	
@@ -34,8 +92,7 @@ public class Drill extends Game {
 		drillPositions = getAllDrillPositions();
 		drilledVariations.clear();		
 		if (randomDrill) Collections.shuffle(drillPositions);
-		drillStats = new DrillStats();
-		currentPosition = getNextDrillPosition();
+		drillStats = new DrillStats();		
 		log.info(String.format("Drilling %s now for %d positions", drillingWhite ? "White" : "Black", drillPositions.size()));
 	}	
 	
@@ -153,9 +210,11 @@ public class Drill extends Game {
 	
 	public Position getNextDrillPosition() {
 		if (drillPositions.isEmpty()) {			
+			endDrill();
 			return currentPosition;
 		} else {
 			currentPosition = drillPositions.remove(0);
+			firePositionChangedEvent();
 			drillStats.drilledPositions++;
 			return currentPosition;
 		}
@@ -174,10 +233,15 @@ public class Drill extends Game {
 		return currentPosition;
 	}
 	
+	public void startDrill() {
+		currentPosition = getNextDrillPosition();
+		firePositionChangedEvent();
+	}
 	
-	public DrillStats endDrill() {		
+	
+	public void endDrill() {		
 		log.info(String.format("Drill ended - %d of %d positions correct", drillStats.correctPositions, drillStats.drilledPositions));
-		return drillStats;		
+		fireDrillEvent(new DrillEvent(DrillEvent.ID_DRILL_ENDED, this, null));		
 	}
 	
 	private List<Position> getAllDrillPositions() {
@@ -208,5 +272,10 @@ public class Drill extends Game {
 		} 
 		return result;
 	}
+	
+	public DrillStats getDrillStats() {
+		return drillStats;
+	}
+		
 		
 }

@@ -10,10 +10,26 @@ public class Game {
 	protected Position currentPosition;
 	private Map<String, String> tags = new HashMap<String, String>();
 	
+	private List<GameListener> listener = new ArrayList<GameListener>();
 	
+	public void addGameListener(GameListener l) {
+		listener.add(l);
+	}
+	
+	public void removeGameListener(GameListener l) {
+		listener.remove(l);
+	}
+	
+	protected void firePositionChangedEvent() {
+		GameEvent e = new GameEvent(this);
+		for (GameListener l : listener) {
+			l.positionChanged(e);
+		}
+	}
 	
 	public void start() {
 		currentPosition = new Position();
+		firePositionChangedEvent();
 	}
 	
 	/**
@@ -43,6 +59,7 @@ public class Game {
 		
 	public Position addMove(String move, String fen) {
 		currentPosition = new Position(currentPosition, move, fen);
+		firePositionChangedEvent();
 		return currentPosition;
 	}
 	
@@ -65,11 +82,13 @@ public class Game {
 		while (!currentPosition.hasPrevious()) {
 			currentPosition = currentPosition.getPrevious();
 		}
+		firePositionChangedEvent();
 		return currentPosition;
 	}
 	
 	public Position gotoPosition(Position p) {		
-		currentPosition = p;		
+		currentPosition = p;
+		firePositionChangedEvent();
 		return currentPosition;
 	}
 	
@@ -78,13 +97,15 @@ public class Game {
 	 */
 	public Position goForward() {
 		if (!currentPosition.hasNext()) return null;
-		currentPosition = currentPosition.getNext();		
+		currentPosition = currentPosition.getNext();
+		firePositionChangedEvent();
 		return currentPosition; 	
 	}
 		
 	public Position goBack() {
 		if (!currentPosition.hasPrevious()) {
 			currentPosition = currentPosition.getPrevious();
+			firePositionChangedEvent();
 			return currentPosition;
 		} else return null;
 	}
@@ -116,6 +137,7 @@ public class Game {
 			for (Position p : getPosition().getVariations()) {				
 				if (p.getMove().startsWith(move)) {
 					currentPosition = p;
+					firePositionChangedEvent();
 					return currentPosition;
 				}
 			}
