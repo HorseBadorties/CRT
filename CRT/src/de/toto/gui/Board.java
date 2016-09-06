@@ -198,10 +198,8 @@ public class Board extends JPanel {
 							isCapture = dragSquare.file != dropSquare.file;
 						}
 						if (isCapture) {
-							Sounds.capture();
 							move += "x";
 						} else {
-							Sounds.move();
 							move += "-";
 						}
 						move += dropSquare.getName();
