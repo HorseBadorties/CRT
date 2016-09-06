@@ -126,7 +126,10 @@ public class Drill extends Game {
 		Position correctPosition = currentPosition.hasNext() ? currentPosition.getNext() : null;
 		//TODO !acceptOnlyMainline
 		if (correctPosition != null) {			
-			if (correctPosition.getMoveSquareNames()[1].equals(squareName)) result = true;
+			String[] correctSquareNames = correctPosition.getMoveSquareNames();
+			if (correctSquareNames[0].equals(squareName) || correctSquareNames[1].equals(squareName)) {
+				result = true;
+			}
 			if (currentPosition != drillStats.lastDrilledPosition) {
 				if (result) {
 					drillStats.correctPositions++;
@@ -236,6 +239,7 @@ public class Drill extends Game {
 			return currentPosition;
 		}
 		if (currentPosition != next.getPrevious()) {
+			fireDrillEvent(new DrillEvent(DrillEvent.ID_DRILLING_NEXT_VARIATION, this, null));	
 			log.info("jumped to next variation with " + next);
 		}
 		currentPosition = next;

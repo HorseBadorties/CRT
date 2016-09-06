@@ -454,20 +454,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		if (drill != null) {
 			if (drill.isCorrectMove(move)) {
 				drill.doMove(move);				
-				new SwingWorker<Void,Void>() {
-	
-					@Override
-					protected Void doInBackground() throws Exception {
-						Thread.sleep(500);
-						return null;
-					}
-	
-					@Override
-					protected void done() {
-						gotoNextDrillPosition();
-					}
-					
-				}.execute();
+				waitAndLoadNextDrillPosition(drill.getPosition());
 			} else if (drill.getPosition().hasNext()) {
 				Sounds.wrong();
 			}
@@ -483,20 +470,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		if (drill != null) {			
 			if (drill.isCorrectSquare(squareName)) {
 				drill.gotoPosition(drill.getPosition().getNext());				
-				new SwingWorker<Void,Void>() {
-	
-					@Override
-					protected Void doInBackground() throws Exception {
-						Thread.sleep(500);
-						return null;
-					}
-	
-					@Override
-					protected void done() {
-						gotoNextDrillPosition();
-					}
-					
-				}.execute();
+				waitAndLoadNextDrillPosition(drill.getPosition());
 			} else if (drill.getPosition().hasNext()) {
 				Sounds.wrong();
 			}
@@ -508,6 +482,23 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				}
 			}
 		}
+	}
+	
+	private void waitAndLoadNextDrillPosition(final Position p) {
+		new SwingWorker<Void,Void>() {
+			
+			@Override
+			protected Void doInBackground() throws Exception {
+				Thread.sleep(cbRandomDrill.isSelected() || p.hasNext() ? 500 : 500);
+				return null;
+			}
+
+			@Override
+			protected void done() {
+				gotoNextDrillPosition();
+			}
+			
+		}.execute();
 	}
 	
 	private void gotoNextDrillPosition() {

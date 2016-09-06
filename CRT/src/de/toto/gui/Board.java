@@ -124,21 +124,23 @@ public class Board extends JPanel {
 		private SVGIcon wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP; 
 		private int scaleSize;
 		
-		private Color squareSelectionColor = new Color(.3f, .4f, .5f, .6f); 
-		private Color highlightColorGreen = new Color(0f, 1f, 0f, .4f);
-		private Color highlightColorRed = new Color(1f, 0f, 0f, .4f);
-		private Color highlightColorYellow = new Color(1f, 1f, 0f, .4f);
+		private static final Color squareSelectionColor = new Color(.3f, .4f, .5f, .6f); 
+		private static final Color highlightColorGreen = new Color(0f, 1f, 0f, .4f);
+		private static final Color highlightColorRed = new Color(1f, 0f, 0f, .4f);
+		private static final Color highlightColorYellow = new Color(1f, 1f, 0f, .4f);
 		
-		private Color lightBlue = new Color(230, 245, 250);
-		private Color darkBlue = new Color(150, 190, 200);
-		private Color lightGreen = new Color(240, 250, 240);
-		private Color darkGreen = new Color(113, 170, 85);
-		private Color lightGray = new Color(240, 240, 240);
-		private Color darkGray = Color.GRAY;
+		private static final Color lightBlue = new Color(230, 245, 250);
+		private static final Color darkBlue = new Color(150, 190, 200);
+		private static final Color lightGreen = new Color(240, 250, 240);
+		private static final Color darkGreen = new Color(113, 170, 85);
+		private static final Color lightGray = new Color(240, 240, 240);
+		private static final Color darkGray = Color.GRAY;		
 		
+		private static final Color squareColorWhite = lightGreen; 
+		private static final Color squareColorBlack = darkGreen;
 		
-		private Color squareColorWhite = lightGreen; 
-		private Color squareColorBlack = darkGreen; 
+		private Font fontPositionEval = new Font("Frutiger Standard", Font.PLAIN, 200); 
+		private static final Color colorPositionEval = new Color(1f, .0f, .0f, .6f); ;
 
 		
 		private boolean isDragging = false;
@@ -380,6 +382,7 @@ public class Board extends JPanel {
 			bN.setPreferredSize(new Dimension(squareSize, squareSize));
 			bP.setPreferredSize(new Dimension(squareSize, squareSize)); 
 			scaleSize = squareSize;
+			fontPositionEval = new Font("Frutiger Standard", Font.PLAIN, squareSize*4); 
 		}
 
 		private SVGIcon getIconFor(Piece p) {
@@ -495,6 +498,18 @@ public class Board extends JPanel {
 							cursorLocation.x - squareSize / 2, cursorLocation.y - squareSize / 2);
 				}
 			} 
+			
+			/*
+			//position eval						 
+			if (positionEval != null && positionEval.length() > 0) {				
+				g2.setColor(colorPositionEval);
+				g2.setFont(fontPositionEval);				
+				FontMetrics metrics = g2.getFontMetrics();
+				int x = (getWidth() / 2) - (metrics.stringWidth(positionEval) / 2);
+				int y = (getHeight() / 2) + (metrics.getHeight() / 4);
+				g2.drawString(positionEval, x, y);
+			}
+			*/
 		}
 		
 		private void colorSquare(Graphics2D g2, Square s, Color color, int squareSize) {			

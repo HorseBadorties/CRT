@@ -1,5 +1,7 @@
 package de.toto.gui;
 
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 
@@ -31,17 +33,29 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 
 	public DrillStatusPanel(Drill drill) {
 		super();
-		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		this.drill = drill;
+		drill.addDrillListener(this);
+		
+		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));		
+		add(Box.createRigidArea(new Dimension(0,5)));
 		pbPositionCount = new JProgressBar(JProgressBar.HORIZONTAL, 0, drill.getPositionCount());
 		pbPositionCount.setStringPainted(true);
+		pbPositionCount.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(pbPositionCount);
-		drill.addDrillListener(this);
-		updateProgress();		
+		
+		add(Box.createRigidArea(new Dimension(0,10)));	
 		lblLast = new JLabel();
+		lblLast.setAlignmentX(Component.CENTER_ALIGNMENT);
+		lblLast.setHorizontalAlignment(JLabel.CENTER);
 		add(lblLast);
-		add(new JButton(actionShowMove));
+		add(Box.createRigidArea(new Dimension(0,10)));
+		add(Box.createVerticalGlue());
+		JButton btnShowMove = new JButton(actionShowMove);
+		btnShowMove.setAlignmentX(Component.CENTER_ALIGNMENT);
+		add(btnShowMove);
+		add(Box.createRigidArea(new Dimension(0,5)));
 		setBorder(BorderFactory.createTitledBorder("Drill Status"));
+		updateProgress();	
 	}
 
 	@Override
@@ -52,18 +66,17 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 	@Override
 	public void wasCorrect(DrillEvent e) {
 		updateProgress();
-		lblLast.setText("<html>" + e.getLastMove() + " was correct</html>");
+		lblLast.setText("<html><font color=green>" + e.getLastMove() + " was the correct repertoire answer</font></html>");
 	}
 
 	@Override
 	public void wasIncorrect(DrillEvent e) {
 		updateProgress();
-		lblLast.setText("<html><font color=red>" + e.getLastMove() + " was incorrect</font></html>");
+		lblLast.setText("<html><font color=red>" + e.getLastMove() + " wasn't the correct repertoire answer</font></html>");
 	}
 
 	@Override
 	public void drillingNextVariation(DrillEvent e) {
-		// TODO Auto-generated method stub
 		
 	}
 	

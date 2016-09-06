@@ -64,5 +64,10 @@ public enum NAG {
 		}
 		return UNKNOWN;
 	}
+	
+	public boolean isPositionEval() {
+		int n = Integer.valueOf(nag.substring(1));
+		return n >= 10 && n <= 135;
+	}
 
 }

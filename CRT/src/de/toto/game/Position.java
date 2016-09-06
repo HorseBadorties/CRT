@@ -128,6 +128,18 @@ public class Position {
 		}
 		return result.toString();
 	}
+	
+	public String getPositionNagsAsString() {
+		if (nags.isEmpty()) return "";
+		StringBuilder result = new StringBuilder();
+		for (String nag : nags) {
+			NAG nAG = NAG.getByNag(nag);
+			if (nAG.isPositionEval()) {
+				result.append(nAG.toString());
+			}
+		}
+		return result.toString();
+	}
 
 	public int getVariationLevel() {
 		return variationLevel;
