@@ -34,7 +34,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private JTable tblMoves;
 	private PositionTableModel modelMoves;
 	private JList lstVariations;
-	private JScrollPane scrollerVariations;
+	private JPanel pnlVariationsAndDrillStatus;
+	private JPanel pnlVariations;
 	private DefaultListModel modelVariations;
 	private DrillStatusPanel drillStatus;
 	private JCheckBox cbOnlyMainline;
@@ -199,12 +200,11 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				drill.addGameListener(AppFrame.this);
 				drill.addDrillListener(AppFrame.this);
 				modelVariations.clear();
-				actionLoadPGN.setEnabled(false);
-				actionShowMove.setEnabled(true);
+				actionLoadPGN.setEnabled(false);				
 				cbOnlyMainline.setEnabled(false);
 				cbRandomDrill.setEnabled(false);
 				drillStatus = new DrillStatusPanel(drill);
-				splitEast.setLeftComponent(drillStatus);
+				setPanelVisible(drillStatus);
 				this.putValue(Action.NAME, "end drill");
 				drill.startDrill();
 			} else {				
@@ -213,19 +213,6 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionShowMove = new AbstractAction("show correct move") {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			if (drill != null) {
-				if (drill.getPosition().hasNext()) {
-					JOptionPane.showMessageDialog(AppFrame.this, drill.getPosition().getNext());
-				} else {
-					JOptionPane.showMessageDialog(AppFrame.this, "repertoire move missing for current position");
-				}
-				
-			}
-		}
-	};
 	
 	private Action actionShowComments = new AbstractAction("show comments / graphics comments?") {
 		@Override
@@ -321,9 +308,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlToolBar.add(cbOnlyMainline);
 		cbRandomDrill = new JCheckBox("drill positions in random order?");
 		cbRandomDrill.setSelected(prefs.getBoolean(PREFS_RANDOM_DRILL, false));
-		pnlToolBar.add(cbRandomDrill);
-		pnlToolBar.add(new JButton(actionShowMove));
-		actionShowMove.setEnabled(false);
+		pnlToolBar.add(cbRandomDrill);		
 
 		JPanel pnlBoard = new JPanel(new BorderLayout());
 		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 5));
@@ -366,7 +351,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlMoves.add(new JScrollPane(tblMoves));
 		pnlMoves.setPreferredSize(new Dimension(150, 500));
 		
-		JPanel pnlVariations = new JPanel(new BorderLayout());
+		pnlVariationsAndDrillStatus = new JPanel(new BorderLayout());
+		pnlVariations = new JPanel(new BorderLayout());
 		pnlVariations.setBorder(BorderFactory.createTitledBorder("Variations"));
 		modelVariations = new DefaultListModel();
 		lstVariations = new JList(modelVariations);		
@@ -382,10 +368,10 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				}
 			}			
 		});		
-		scrollerVariations = new JScrollPane(lstVariations);
-		pnlVariations.add(scrollerVariations);		
+		pnlVariations.add(new JScrollPane(lstVariations));		
 		pnlVariations.setPreferredSize(new Dimension(150, 200));
-		splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlVariations, pnlMoves);
+		pnlVariationsAndDrillStatus.add(pnlVariations);
+		splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlVariationsAndDrillStatus, pnlMoves);
 		splitEast.setBorder(null);
 		int splitEastPosition = prefs.getInt(PREFS_SPLITTER_EAST_POSITION, 0);
 		if (splitEastPosition > 0) {
@@ -536,18 +522,27 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 
 	@Override
 	public void drillEnded(DrillEvent e) {		
-		DrillStats drillStats =  drill.getDrillStats();		
-		JOptionPane.showMessageDialog(AppFrame.this, 
-				String.format("Drill ended for %d positions and took %s", 
-						drillStats.drilledPositions, drillStats.getFormattedDuration()));
-		
+		DrillStats drillStats =  drill.getDrillStats();	
 		drill = null;
-		actionLoadPGN.setEnabled(true);
-		actionShowMove.setEnabled(false);
+		actionLoadPGN.setEnabled(true);		
 		//cbOnlyMainline.setEnabled(true);
 		cbRandomDrill.setEnabled(true);
 		actionBeginDrill.putValue(Action.NAME, "begin drill");
-		splitEast.setLeftComponent(scrollerVariations);
+		updateBoard(false);
+		setPanelVisible(pnlVariations);
+		
+		JOptionPane.showMessageDialog(AppFrame.this,
+				String.format("Drill ended for %d positions. It took %s.",
+						drillStats.drilledPositions,
+						drillStats.getFormattedDuration()), 
+				"Drill ended", JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	private void setPanelVisible(JPanel pnl) {
+		pnlVariationsAndDrillStatus.removeAll();
+		pnlVariationsAndDrillStatus.add(pnl);		
+		pnlVariationsAndDrillStatus.revalidate();
+		pnlVariationsAndDrillStatus.repaint();
 	}
 
 	@Override

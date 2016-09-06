@@ -40,20 +40,21 @@ public class Drill extends Game {
 			long duration = getDuration();
 			long hours = duration / 3600000;
 			if (hours > 0) {
-				result.append(hours).append(" hours");
+				result.append(hours).append(hours > 1 ? " hours" : " hour");
 			
 			}
 			duration = duration % 3600000;
 			long minutes = duration / 60000;
 			if (minutes > 0) {
 				if (result.length() > 0) result.append(", ");
-				result.append(minutes).append(" minutes");
+				result.append(minutes).append(minutes > 1 ? " minutes" : " minute");
 			
 			}
 			duration = duration % 60000;			
 			if (duration > 0) {
 				if (result.length() > 0) result.append(", ");
-				result.append(duration / 1000).append(" seconds");
+				long seconds = duration / 1000; 
+				result.append(seconds).append(seconds > 1 ? " seconds" : " second");
 			
 			}
 			return result.toString();
@@ -129,7 +130,12 @@ public class Drill extends Game {
 		if (correctPosition != null) {			
 			if (correctPosition.getMoveSquareNames()[1].equals(squareName)) result = true;
 			if (currentPosition != drillStats.lastDrilledPosition) {
-				if (result) drillStats.correctPositions++;
+				if (result) {
+					drillStats.correctPositions++;
+					fireDrillEvent(new DrillEvent(DrillEvent.ID_WAS_CORRECT, this, squareName));		
+				} else {
+					fireDrillEvent(new DrillEvent(DrillEvent.ID_WAS_INCORRECT, this, squareName));	
+				}
 				drillStats.lastDrilledPosition = currentPosition;
 			}			
 		}				
