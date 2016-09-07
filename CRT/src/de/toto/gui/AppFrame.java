@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.toto.engine.Stockfish;
@@ -293,6 +294,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 
+		
+		pnlToolBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.GRAY));
 		pnlToolBar.add(createButton(actionLoadPGN));
 		pnlToolBar.add(createButton(actionFlip));	
 		cbShowComments = new JCheckBox(actionShowComments);
@@ -427,7 +430,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	}
 	
-	private JButton createButton(Action action) {
+	public static JButton createButton(Action action) {
 		JButton btn = new JButton(action);
 		btn.putClientProperty("JComponent.sizeVariant", "large");
 		return btn;

@@ -50,7 +50,8 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 		add(lblLast);
 		add(Box.createRigidArea(new Dimension(0,10)));
 		add(Box.createVerticalGlue());
-		JButton btnShowMove = new JButton(actionShowMove);
+		JButton btnShowMove = AppFrame.createButton(actionShowMove);
+		btnShowMove.putClientProperty("JComponent.sizeVariant", "large");
 		btnShowMove.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(btnShowMove);
 		add(Box.createRigidArea(new Dimension(0,5)));
