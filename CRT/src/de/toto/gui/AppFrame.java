@@ -310,6 +310,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		cbRandomDrill.setSelected(prefs.getBoolean(PREFS_RANDOM_DRILL, false));
 		pnlToolBar.add(cbRandomDrill);		
 
+		JPopupMenu popUpFlipBoard = new JPopupMenu();
+		popUpFlipBoard.add(actionFlip);
+		board.setComponentPopupMenu(popUpFlipBoard);
 		JPanel pnlBoard = new JPanel(new BorderLayout());
 		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 5));
 		pnlBoard.add(board, BorderLayout.CENTER);
@@ -318,8 +321,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlCenter.add(txtComment, BorderLayout.PAGE_END);
 		pnlCenter.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 0));
 		
-		JPopupMenu popUp = new JPopupMenu();
-		popUp.add(actionChooseFont);
+		JPopupMenu popUpChooseFont = new JPopupMenu();
+		popUpChooseFont.add(actionChooseFont);
 		JPanel pnlMoves = new JPanel(new BorderLayout());
 		pnlMoves.setBorder(BorderFactory.createTitledBorder("Move List"));
 		modelMoves = new PositionTableModel();
@@ -334,7 +337,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		tblMoves.setFocusable(false);
 		tblMoves.setTableHeader(null);
 		tblMoves.setShowVerticalLines(false);
-		tblMoves.setComponentPopupMenu(popUp);
+		tblMoves.setComponentPopupMenu(popUpChooseFont);
 		int fontSize = prefs.getInt(PREFS_FONT_SIZE, 12);
 		tblMoves.setFont(new Font("Frutiger Standard", Font.PLAIN, fontSize));
 		tblMoves.addMouseListener(new MouseAdapter() {
@@ -358,7 +361,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		lstVariations = new JList(modelVariations);		
 		lstVariations.setFocusable(false);
 		lstVariations.setFont(new Font("Frutiger Standard", Font.PLAIN, fontSize));
-		lstVariations.setComponentPopupMenu(popUp);
+		lstVariations.setComponentPopupMenu(popUpChooseFont);
 		lstVariations.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {

@@ -11,6 +11,7 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 import com.kitfox.svg.SVGUniverse;
 import com.kitfox.svg.app.beans.SVGIcon;
@@ -18,7 +19,6 @@ import com.kitfox.svg.app.beans.SVGIcon;
 import de.toto.game.Position;
 import de.toto.game.Rules.Piece;
 import de.toto.game.Rules.PieceType;
-import de.toto.sound.Sounds;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel {
@@ -110,7 +110,7 @@ public class Board extends JPanel {
 			public Square(int rank, int file) {
 				this.rank = rank;
 				this.file = file;
-				isWhite = (file % 2 == 0 && rank % 2 != 0) || (file % 2 != 0 && rank % 2 == 0);
+				isWhite = (file % 2 == 0 && rank % 2 != 0) || (file % 2 != 0 && rank % 2 == 0);				
 			}
 
 			// e.g. "a1"
@@ -183,9 +183,20 @@ public class Board extends JPanel {
 				}
 				repaint();
 			}
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showPopup(e);
+				}
+			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showPopup(e);
+					return;
+				} 
 				if (!isDragging)
 					return;
 				Square dropSquare = getSquareAt(e.getPoint());
@@ -227,10 +238,11 @@ public class Board extends JPanel {
 				dragTarget = null;
 				repaint();
 			}
-
+			
+			
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 1) {
+				if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
 					Square clickSquare = getSquareAt(e.getPoint());
 					if (clickSquare != null) {
 						board.fireUserClickedSquare(clickSquare.getName());
@@ -239,6 +251,13 @@ public class Board extends JPanel {
 			}
 
 		};
+		
+		private void showPopup(MouseEvent e) {
+			JPopupMenu popup = getComponentPopupMenu();
+			if (popup != null) {
+				popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+		}
 		
 		public void flip() {
 			setOrientationWhite(!isOrientationWhite);
@@ -264,6 +283,7 @@ public class Board extends JPanel {
 			initSquares();
 			addMouseMotionListener(mouseAdapter);
 			addMouseListener(mouseAdapter);
+			setInheritsPopupMenu(true);
 		}
 
 		private void loadImages() {
