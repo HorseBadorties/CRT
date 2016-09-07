@@ -293,9 +293,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.add(splitCenter, BorderLayout.CENTER);		
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
-
-		
-		pnlToolBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.GRAY));
+				
 		pnlToolBar.add(createButton(actionLoadPGN));
 		pnlToolBar.add(createButton(actionFlip));	
 		cbShowComments = new JCheckBox(actionShowComments);
@@ -304,11 +302,11 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlToolBar.add(cbShowComments);
 				
 		pnlToolBar.add(createButton(actionBeginDrill));		
-		cbOnlyMainline = new JCheckBox("accept main line only?");
+		cbOnlyMainline = new JCheckBox("Accept Main Line Only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
 		cbOnlyMainline.setEnabled(false);
 		pnlToolBar.add(cbOnlyMainline);
-		cbRandomDrill = new JCheckBox("drill positions in random order?");
+		cbRandomDrill = new JCheckBox("Random Order Drill?");
 		cbRandomDrill.setSelected(prefs.getBoolean(PREFS_RANDOM_DRILL, false));
 		pnlToolBar.add(cbRandomDrill);		
 
