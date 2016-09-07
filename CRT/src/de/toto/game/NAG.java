@@ -16,10 +16,10 @@ public enum NAG {
 	EVEN_POSITION("$10", "="),
 	EVEN_POSITION2("$11", "="),
 	UNCLEAR_POSITION("$13", "\u221E"),
-	SLIGHT_ADVANTAGE_WHITE("$14", "\u2A72"), //TODO
-	SLIGHT_ADVANTAGE_BLACK("$15", "\u2A71"), //TODO
-	ADVANTAGE_WHITE("$16", "\u00B1"),
-	ADVANTAGE_BLACK("$17", "\u2213"),
+	SLIGHT_ADVANTAGE_WHITE("$14", "+="), //"\u2A72"
+	SLIGHT_ADVANTAGE_BLACK("$15", "=+"), //"\u2A71"
+	ADVANTAGE_WHITE("$16", "+/-"), //"\u00B1"
+	ADVANTAGE_BLACK("$17", "-/+"), //"\u2213"
 	DECISIVE_ADVANTAGE_WHITE("$18", "+-"),
 	DECISIVE_ADVANTAGE_BLACK("$19", "-+"),
 	ZUGZWANG_WHITE("$22", "\u2A00"),
@@ -30,8 +30,8 @@ public enum NAG {
 	INITIATIVE_BLACK("$37", "\u2192"),
 	ATTACK_WHITE("$40", "\u2191"),
 	ATTACK_BLACK("$41", "\u2191"),
-	COMPENSATION_WHITE("$44", "="+"\u221E"), //Unicode symbol missing
-	COMPENSATION_BLACK("$45", "="+"\u221E"), //Unicode symbol missing
+	COMPENSATION_WHITE("$44", "=/"+"\u221E"), //Unicode symbol missing
+	COMPENSATION_BLACK("$45", "\u221E"+"/="), //Unicode symbol missing
 	COUNTERPLAY_WHITE("$132", "\u21C6"),
 	COUNTERPLAY_BLACK("$133", "\u21C6"),
 	WITH_THE_IDEA("$140", "\u2206"),
