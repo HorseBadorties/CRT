@@ -152,7 +152,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};		
 	
-	private Action actionBack = new AbstractAction("back") {
+	private Action actionBack = new AbstractAction("Back") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (drill == null) {
@@ -161,7 +161,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionUp = new AbstractAction("up") {
+	private Action actionUp = new AbstractAction("Up") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
 			if (lstVariations.getSelectedIndex() <= 0) {
@@ -172,7 +172,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionDown = new AbstractAction("down") {
+	private Action actionDown = new AbstractAction("Down") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (lstVariations.getSelectedIndex() == modelVariations.size()-1) {
@@ -185,14 +185,14 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionFlip = new AbstractAction("flip") {
+	private Action actionFlip = new AbstractAction("Flip Board") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			board.flip();
 		}
 	};
 	
-	private Action actionBeginDrill = new AbstractAction("begin drill") {
+	private Action actionBeginDrill = new AbstractAction("Begin Drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (drill == null) {				
@@ -214,14 +214,14 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	};
 	
 	
-	private Action actionShowComments = new AbstractAction("show comments / graphics comments?") {
+	private Action actionShowComments = new AbstractAction("Show Comments / Graphics Comments?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			board.setShowGraphicsComments(cbShowComments.isSelected());
 		}
 	};
 	
-	private Action actionChooseFont = new AbstractAction("choose font") {
+	private Action actionChooseFont = new AbstractAction("Choose Font") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			JFontChooser fc = new JFontChooser();
@@ -233,7 +233,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionEval = new AbstractAction("get Stockfish eval") {
+	private Action actionEval = new AbstractAction("Stockfish Eval") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			new SwingWorker<String, String>() {
@@ -261,7 +261,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionLoadPGN = new AbstractAction("load PGN") {
+	private Action actionLoadPGN = new AbstractAction("Load PGN") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			File lastDir = pgn != null ? pgn.getParentFile() : null;
@@ -293,15 +293,14 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 
-		JButton btnLoadPGN = new JButton(actionLoadPGN);
-		btnLoadPGN.putClientProperty("JComponent.sizeVariant", "large");
-		pnlToolBar.add(btnLoadPGN);
+		pnlToolBar.add(createButton(actionLoadPGN));
+		pnlToolBar.add(createButton(actionFlip));	
 		cbShowComments = new JCheckBox(actionShowComments);
 		cbShowComments.setSelected(prefs.getBoolean(PREFS_SHOW_COMMENTS, false));
 		actionShowComments.actionPerformed(null);
 		pnlToolBar.add(cbShowComments);
-		
-		pnlToolBar.add(new JButton(actionBeginDrill));		
+				
+		pnlToolBar.add(createButton(actionBeginDrill));		
 		cbOnlyMainline = new JCheckBox("accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
 		cbOnlyMainline.setEnabled(false);
@@ -426,6 +425,12 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		if (!prefs.getBoolean(PREFS_WHITE_PERSPECTIVE, true)) {
 			board.flip();
 		}
+	}
+	
+	private JButton createButton(Action action) {
+		JButton btn = new JButton(action);
+		btn.putClientProperty("JComponent.sizeVariant", "large");
+		return btn;
 	}
 
 	private void updateBoard(boolean playSound) {	
