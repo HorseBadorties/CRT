@@ -543,9 +543,9 @@ public class Board extends JPanel {
 			int y1 = from.topLeftOnBoard.y + squareSize/2;;
 			int x2 = to.topLeftOnBoard.x + squareSize/2;
 			int y2 = to.topLeftOnBoard.y + squareSize/2;
-//			g2.setPaint(new GradientPaint(x1,y1,highlightColorRed,x2, y2,Color.RED));
-			g2.setColor(color);
-			g2.setStroke(new BasicStroke(squareSize/30));
+			g2.setPaint(new GradientPaint(x1,y1,highlightColorRed,x2, y2,Color.RED));
+//			g2.setColor(color);
+//			g2.setStroke(new BasicStroke(squareSize/30));
 //			g2.drawLine(x1, y1, x2, y2);
 			g2.fill(createArrowShape(new Point(x1,y1), new Point(x2,y2)));
 			
