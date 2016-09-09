@@ -5,6 +5,9 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.image.*;
 import java.net.URL;
 
@@ -543,7 +546,40 @@ public class Board extends JPanel {
 //			g2.setPaint(new GradientPaint(x1,y1,highlightColorRed,x2, y2,Color.RED));
 			g2.setColor(color);
 			g2.setStroke(new BasicStroke(squareSize/30));
-			g2.drawLine(x1, y1, x2, y2);
+//			g2.drawLine(x1, y1, x2, y2);
+			g2.fill(createArrowShape(new Point(x1,y1), new Point(x2,y2)));
+			
+			
+		}
+		
+		public static Shape createArrowShape(Point fromPt, Point toPt) {
+		    Polygon arrowPolygon = new Polygon();
+		    arrowPolygon.addPoint(-6,1);
+		    arrowPolygon.addPoint(2,1);
+		    arrowPolygon.addPoint(2,2);
+		    arrowPolygon.addPoint(6,0);
+		    arrowPolygon.addPoint(2,-2);
+		    arrowPolygon.addPoint(2,-1);
+		    arrowPolygon.addPoint(-6,-1);
+
+
+		    Point midPoint = midpoint(fromPt, toPt);
+
+		    double rotate = Math.atan2(toPt.y - fromPt.y, toPt.x - fromPt.x);
+
+		    AffineTransform transform = new AffineTransform();
+		    transform.translate(midPoint.x, midPoint.y);
+		    double ptDistance = fromPt.distance(toPt);
+		    double scale = ptDistance / 12.0; // 12 because it's the length of the arrow polygon.
+		    transform.scale(scale, scale);
+		    transform.rotate(rotate);
+
+		    return transform.createTransformedShape(arrowPolygon);
+		}
+
+		private static Point midpoint(Point p1, Point p2) {
+		    return new Point((int)((p1.x + p2.x)/2.0), 
+		                     (int)((p1.y + p2.y)/2.0));
 		}
 		
 	}
