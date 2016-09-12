@@ -568,7 +568,7 @@ public class Board extends JPanel {
 				gradientFrom = arrowColorYellow20Percent;
 				gradientTo = arrowColorYellow50Percent;
 			}
-			g2.setPaint(new GradientPaint(x1,y1,gradientFrom,x2, y2,gradientTo));
+			g2.setPaint(new GradientPaint(x1, y1 ,gradientFrom,x2, y2, gradientTo));
 			g2.fill(createArrowShape(new Point(x1,y1), new Point(x2,y2), squareSize));
 		}
 		
