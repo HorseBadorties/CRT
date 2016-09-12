@@ -131,6 +131,12 @@ public class Board extends JPanel {
 		private static final Color highlightColorGreen = new Color(0f, 1f, 0f, .4f);
 		private static final Color highlightColorRed = new Color(1f, 0f, 0f, .4f);
 		private static final Color highlightColorYellow = new Color(1f, 1f, 0f, .4f);
+		private static final Color arrowColorGreen50Percent = new Color(0f, 1f, 0f, .5f);
+		private static final Color arrowColorRed50Percent = new Color(1f, 0f, 0f, .5f);
+		private static final Color arrowColorYellow50Percent = new Color(1f, 1f, 0f, .5f);
+		private static final Color arrowColorGreen20Percent = new Color(0f, 1f, 0f, .2f);
+		private static final Color arrowColorRed20Percent = new Color(1f, 0f, 0f, .2f);
+		private static final Color arrowColorYellow20Percent = new Color(1f, 1f, 0f, .2f);
 		
 		private static final Color lightBlue = new Color(230, 245, 250);
 		private static final Color darkBlue = new Color(150, 190, 200);
@@ -479,16 +485,15 @@ public class Board extends JPanel {
 				colorSquare(g2, getSquare(squareNames[1]), squareSelectionColor, squareSize);				
 			}
 			
+			java.util.List<Position.GraphicsComment> graphicsComments = position.getGraphicsComments();
+			//draw square highlights
 			if (!isDragging && board.showGraphicsComments) {				
-				for (Position.GraphicsComment gc : position.getGraphicsComments()) {
+				for (Position.GraphicsComment gc : graphicsComments) {
 					if (gc.secondSquare == null) {
 						Color c = highlightColorGreen;
 						if (gc.color == Color.RED) c = highlightColorRed; 
 						else if  (gc.color == Color.YELLOW) c = highlightColorYellow;  
 						colorSquare(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file), c, squareSize);
-					} else {
-						drawArrow(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file),
-								getSquare(gc.secondSquare.rank, gc.secondSquare.file), gc.color, squareSize);
 					}
 				}
 			}
@@ -520,6 +525,16 @@ public class Board extends JPanel {
 				}
 			} 
 			
+			//draw arrows
+			if (!isDragging && board.showGraphicsComments) {				
+				for (Position.GraphicsComment gc : graphicsComments) {
+					if (gc.secondSquare != null) {						
+						drawArrow(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file),
+								getSquare(gc.secondSquare.rank, gc.secondSquare.file), gc.color, squareSize);
+					}
+				}
+			}
+			
 			/*
 			//position eval						 
 			if (positionEval != null && positionEval.length() > 0) {				
@@ -543,44 +558,45 @@ public class Board extends JPanel {
 			int y1 = from.topLeftOnBoard.y + squareSize/2;;
 			int x2 = to.topLeftOnBoard.x + squareSize/2;
 			int y2 = to.topLeftOnBoard.y + squareSize/2;
-			g2.setPaint(new GradientPaint(x1,y1,highlightColorRed,x2, y2,Color.RED));
-//			g2.setColor(color);
-//			g2.setStroke(new BasicStroke(squareSize/30));
-//			g2.drawLine(x1, y1, x2, y2);
-			g2.fill(createArrowShape(new Point(x1,y1), new Point(x2,y2)));
 			
-			
+			Color gradientFrom = arrowColorRed20Percent;
+			Color gradientTo = arrowColorRed50Percent;
+			if (color.equals(Color.GREEN)) {
+				gradientFrom = arrowColorGreen20Percent;
+				gradientTo = arrowColorGreen50Percent;
+			} else if (color.equals(Color.YELLOW)) {
+				gradientFrom = arrowColorYellow20Percent;
+				gradientTo = arrowColorYellow50Percent;
+			}
+			g2.setPaint(new GradientPaint(x1,y1,gradientFrom,x2, y2,gradientTo));
+			g2.fill(createArrowShape(new Point(x1,y1), new Point(x2,y2), squareSize));
 		}
 		
-		public static Shape createArrowShape(Point fromPt, Point toPt) {
-		    Polygon arrowPolygon = new Polygon();
-		    arrowPolygon.addPoint(-6,1);
-		    arrowPolygon.addPoint(2,1);
-		    arrowPolygon.addPoint(2,2);
-		    arrowPolygon.addPoint(6,0);
-		    arrowPolygon.addPoint(2,-2);
-		    arrowPolygon.addPoint(2,-1);
-		    arrowPolygon.addPoint(-6,-1);
-
-
-		    Point midPoint = midpoint(fromPt, toPt);
-
-		    double rotate = Math.atan2(toPt.y - fromPt.y, toPt.x - fromPt.x);
+		public static Shape createArrowShape(Point fromPt, Point toPt, double squareSize) {
+			double ptDistance = fromPt.distance(toPt);
+			Point midPoint = new Point((int)((fromPt.x + toPt.x)/2.0), 
+                    (int)((fromPt.y + toPt.y)/2.0));
+			double rotate = Math.atan2(toPt.y - fromPt.y, toPt.x - fromPt.x);
+			double arrowHeight = squareSize / 10;
+			double arrowheadSide = squareSize / 2;
+			double arrowheadLength = arrowheadSide; //TODO
+			
+			Path2D.Double path = new Path2D.Double();
+			path.moveTo(-ptDistance/2, arrowHeight / 2);
+			path.lineTo(ptDistance/2 - arrowheadLength, arrowHeight / 2);
+			path.lineTo(ptDistance/2 - arrowheadLength, arrowheadSide / 2);
+			path.lineTo(ptDistance/2, 0);
+			path.lineTo(ptDistance/2 - arrowheadLength, -(arrowheadSide / 2));
+			path.lineTo(ptDistance/2 - arrowheadLength, -(arrowHeight / 2));
+			path.lineTo(-ptDistance/2, -(arrowHeight / 2));
 
 		    AffineTransform transform = new AffineTransform();
 		    transform.translate(midPoint.x, midPoint.y);
-		    double ptDistance = fromPt.distance(toPt);
-		    double scale = ptDistance / 12.0; // 12 because it's the length of the arrow polygon.
-		    transform.scale(scale, scale);
 		    transform.rotate(rotate);
 
-		    return transform.createTransformedShape(arrowPolygon);
+		    return transform.createTransformedShape(path);
 		}
 
-		private static Point midpoint(Point p1, Point p2) {
-		    return new Point((int)((p1.x + p2.x)/2.0), 
-		                     (int)((p1.y + p2.y)/2.0));
-		}
 		
 	}
 }
