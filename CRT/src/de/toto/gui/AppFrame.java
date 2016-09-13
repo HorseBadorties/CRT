@@ -31,13 +31,14 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private Board board;
 	private JLabel txtComment;
 	private JLabel txtStatus;
+	private JPanel pnlMoves;
 	private JTable tblMoves;
 	private PositionTableModel modelMoves;
 	private JList lstVariations;
 	private JPanel pnlVariationsAndDrillStatus;
 	private JPanel pnlVariations;
 	private DefaultListModel modelVariations;
-	private DrillStatusPanel drillStatus;
+	private DrillStatusPanel pnlDrillStatus;
 	private JCheckBox cbOnlyMainline;
 	private JCheckBox cbShowComments;
 	private JCheckBox cbRandomDrill;
@@ -57,6 +58,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private static final String PREFS_SPLITTER_CENTER_POSITION = "SPLITTER_CENTER_POSITION";
 	private static final String PREFS_SPLITTER_EAST_POSITION = "SPLITTER_EAST_POSITION";
 	private static final String PREFS_FONT_SIZE = "FONT_SIZE";
+	private static final String PREFS_FONT_NAME = "FONT_NAME";
 	private static final String PREFS_ONLY_MAINLINE = "ONLY_MAINLINE";
 	private static final String PREFS_SHOW_COMMENTS = "SHOW_COMMENTS";
 	private static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
@@ -98,6 +100,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		prefs.putInt(PREFS_SPLITTER_CENTER_POSITION, splitCenter.getDividerLocation());
 		prefs.putInt(PREFS_SPLITTER_EAST_POSITION, splitEast.getDividerLocation());
 		prefs.putInt(PREFS_FONT_SIZE, lstVariations.getFont().getSize());
+		prefs.put(PREFS_FONT_NAME, lstVariations.getFont().getName());
 		prefs.putBoolean(PREFS_ONLY_MAINLINE, cbOnlyMainline.isSelected());
 		prefs.putBoolean(PREFS_RANDOM_DRILL, cbRandomDrill.isSelected());
 		prefs.putBoolean(PREFS_SHOW_COMMENTS, cbShowComments.isSelected());
@@ -203,8 +206,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				actionLoadPGN.setEnabled(false);				
 				cbOnlyMainline.setEnabled(false);
 				cbRandomDrill.setEnabled(false);
-				drillStatus = new DrillStatusPanel(drill);
-				setPanelVisible(drillStatus);
+				pnlDrillStatus = new DrillStatusPanel(drill);
+				pnlDrillStatus.setFont(lstVariations.getFont());
+				setPanelVisible(pnlDrillStatus);
 				this.putValue(Action.NAME, "end drill");
 				drill.startDrill();
 			} else {				
@@ -225,9 +229,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			JFontChooser fc = new JFontChooser();
-			if (fc.showDialog(AppFrame.this) == JFontChooser.OK_OPTION) {
-				lstVariations.setFont(fc.getSelectedFont());
-				tblMoves.setFont(fc.getSelectedFont());
+			fc.setSelectedFont(lstVariations.getFont());
+			if (fc.showDialog(AppFrame.this) == JFontChooser.OK_OPTION) {				
+				setFonts(fc.getSelectedFont());
 			}
 			
 		}
@@ -322,7 +326,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		
 		JPopupMenu popUpChooseFont = new JPopupMenu();
 		popUpChooseFont.add(actionChooseFont);
-		JPanel pnlMoves = new JPanel(new BorderLayout());
+		pnlMoves = new JPanel(new BorderLayout());
 		pnlMoves.setBorder(BorderFactory.createTitledBorder("Move List"));
 		modelMoves = new PositionTableModel();
 		tblMoves = new JTable(modelMoves) {
@@ -336,9 +340,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		tblMoves.setFocusable(false);
 		tblMoves.setTableHeader(null);
 		tblMoves.setShowVerticalLines(false);
-		tblMoves.setComponentPopupMenu(popUpChooseFont);
-		int fontSize = prefs.getInt(PREFS_FONT_SIZE, 12);
-		tblMoves.setFont(new Font("Frutiger Standard", Font.PLAIN, fontSize));
+		tblMoves.setComponentPopupMenu(popUpChooseFont);		
 		tblMoves.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -358,8 +360,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlVariations.setBorder(BorderFactory.createTitledBorder("Variations"));
 		modelVariations = new DefaultListModel();
 		lstVariations = new JList(modelVariations);		
-		lstVariations.setFocusable(false);
-		lstVariations.setFont(new Font("Frutiger Standard", Font.PLAIN, fontSize));
+		lstVariations.setFocusable(false);		
 		lstVariations.setComponentPopupMenu(popUpChooseFont);
 		lstVariations.addMouseListener(new MouseAdapter() {
 			@Override
@@ -425,6 +426,10 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		if (!prefs.getBoolean(PREFS_WHITE_PERSPECTIVE, true)) {
 			board.flip();
 		}
+		
+		int fontSize = prefs.getInt(PREFS_FONT_SIZE, 12);
+		String fontName = prefs.get(PREFS_FONT_NAME, "Frutiger Standard");
+		setFonts(new Font(fontName, Font.PLAIN, fontSize));
 	}
 	
 	public static JButton createButton(Action action) {
@@ -542,6 +547,15 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlVariationsAndDrillStatus.add(pnl);		
 		pnlVariationsAndDrillStatus.revalidate();
 		pnlVariationsAndDrillStatus.repaint();
+	}
+	
+	private void setFonts(Font f) {		
+		lstVariations.setFont(f);
+		tblMoves.setFont(f);	
+		((javax.swing.border.TitledBorder)pnlVariations.getBorder()).setTitleFont(f);
+		((javax.swing.border.TitledBorder)pnlMoves.getBorder()).setTitleFont(f);
+		revalidate();
+		repaint();		
 	}
 
 	@Override

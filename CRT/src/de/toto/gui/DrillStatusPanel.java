@@ -2,6 +2,7 @@ package de.toto.gui;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 
 import javax.swing.*;
@@ -15,6 +16,7 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 	private Drill drill;
 	private JProgressBar pbPositionCount;
 	private JLabel lblLast;
+	private JButton btnShowMove;
 	
 	private Action actionShowMove = new AbstractAction("show correct move") {
 		@Override
@@ -49,7 +51,7 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 		add(lblLast);
 		add(Box.createRigidArea(new Dimension(0,10)));
 		add(Box.createVerticalGlue());
-		JButton btnShowMove = AppFrame.createButton(actionShowMove);
+		btnShowMove = AppFrame.createButton(actionShowMove);
 		btnShowMove.putClientProperty("JComponent.sizeVariant", "large");
 		btnShowMove.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(btnShowMove);
@@ -57,6 +59,21 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 		setBorder(BorderFactory.createTitledBorder("Drill Status"));
 		updateProgress();	
 	}
+	
+	
+
+	@Override
+	public void setFont(Font f) {		
+		super.setFont(f);
+		if (pbPositionCount != null) {
+			pbPositionCount.setFont(f);
+			lblLast.setFont(f);
+			btnShowMove.setFont(f);
+			((javax.swing.border.TitledBorder)getBorder()).setTitleFont(f);
+		}
+	}
+
+
 
 	@Override
 	public void drillEnded(DrillEvent e) {
