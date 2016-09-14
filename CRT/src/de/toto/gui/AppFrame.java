@@ -39,6 +39,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private JPanel pnlVariations;
 	private DefaultListModel modelVariations;
 	private DrillStatusPanel pnlDrillStatus;
+	private JPanel pnlToolBar;
 	private JCheckBox cbOnlyMainline;
 	private JCheckBox cbShowComments;
 	private JCheckBox cbRandomDrill;
@@ -138,7 +139,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		g.gotoStartPosition();
 	}
 	
-	private Action actionNext = new AbstractAction("next") {
+	private Action actionNext = new AbstractAction("next move") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
 			if (drill != null) {
@@ -155,7 +156,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};		
 	
-	private Action actionBack = new AbstractAction("Back") {
+	private Action actionBack = new AbstractAction("move back") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (drill == null) {
@@ -209,7 +210,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				pnlDrillStatus = new DrillStatusPanel(drill);
 				pnlDrillStatus.setFont(lstVariations.getFont());
 				setPanelVisible(pnlDrillStatus);
-				this.putValue(Action.NAME, "end drill");
+				this.putValue(Action.NAME, "End Drill");
 				drill.startDrill();
 			} else {				
 				drill.endDrill();				
@@ -284,7 +285,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JPanel pnlAll = new JPanel(new BorderLayout());
-		JPanel pnlToolBar = new JPanel();
+		pnlToolBar = new JPanel();
 		JPanel pnlCenter = new JPanel(new BorderLayout());
 		JPanel pnlEast = new JPanel(new BorderLayout());
 		JPanel pnlSouth = new JPanel(new BorderLayout());
@@ -297,6 +298,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 				
+//		pnlToolBar.add(createButton(actionBack));
+//		pnlToolBar.add(createButton(actionNext));
 		pnlToolBar.add(createButton(actionLoadPGN));
 		pnlToolBar.add(createButton(actionFlip));	
 		cbShowComments = new JCheckBox(actionShowComments);
@@ -531,7 +534,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		actionLoadPGN.setEnabled(true);		
 		//cbOnlyMainline.setEnabled(true);
 		cbRandomDrill.setEnabled(true);
-		actionBeginDrill.putValue(Action.NAME, "begin drill");
+		actionBeginDrill.putValue(Action.NAME, "Begin Drill");
 		updateBoard(false);
 		setPanelVisible(pnlVariations);
 		
@@ -554,6 +557,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		tblMoves.setFont(f);	
 		((javax.swing.border.TitledBorder)pnlVariations.getBorder()).setTitleFont(f);
 		((javax.swing.border.TitledBorder)pnlMoves.getBorder()).setTitleFont(f);
+		for (Component c : pnlToolBar.getComponents()) {
+			c.setFont(f);
+		}
 		revalidate();
 		repaint();		
 	}
