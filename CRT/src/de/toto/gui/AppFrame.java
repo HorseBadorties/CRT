@@ -468,6 +468,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 			}
 		}
 		modelMoves.setPosition(p);
+		tblMoves.scrollRectToVisible(tblMoves.getCellRect(modelMoves.getRowCount()-1, 0, false));
 		modelVariations.clear();
 		if (drill == null) {
 			for (Position variation : p.getVariations()) {
