@@ -544,7 +544,7 @@ public class Board extends JPanel {
 				int y = (getHeight() / 2) + (metrics.getHeight() / 4);
 				g2.drawString(positionEval, x, y);
 			}
-			*/
+			//*/
 		}
 		
 		private void colorSquare(Graphics2D g2, Square s, Color color, int squareSize) {			

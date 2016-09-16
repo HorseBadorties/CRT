@@ -50,23 +50,20 @@ public class Position {
 		}
 		previous.addNextPosition(this, asVariation);	
 	}	
-	
-	
-	// Compute the hashCode using it's FEN, ignoring the Halfmove and Fullmove fields	
+				
 	@Override
 	public int hashCode() {
-		if (fen == null) {
-			return super.hashCode();
-		} else {
-			String[] fenFields = fen.split(" ");
-			return (fenFields[0]+fenFields[1]+fenFields[2]+fenFields[3]).hashCode();
-		}
+		return super.hashCode();
 	}
 	
 	@Override
 	public boolean equals(Object obj) {		
 		if (!(obj instanceof Position)) return false;
 		return this.hashCode() == obj.hashCode();
+	}
+	
+	public boolean isSamePositionAs(Position other) {
+		return fen != null ? fen.equals(other.fen) : equals(other);
 	}
 
 	public String getComment() {
@@ -198,7 +195,7 @@ public class Position {
 	
 	public Position getVariation(Position variation) {
 		for (Position aVariation : next) {
-			if (aVariation.equals(variation)) return aVariation;
+			if (aVariation.isSamePositionAs(variation)) return aVariation;
 		}
 		return null;
 	}
@@ -665,26 +662,10 @@ public class Position {
 		@Override
 		public String toString() {
 			return firstSquare + "; " + secondSquare + "; " + color;
-		}
-		
-		
+		}	
 		
 	}
 		
-	public static void main(String[] args) {
-		Position p = new Position();
-		p.comment = "[%csl Ra5,Rb7,Re5,Rf3,Rf6,Gf7,Rg3,Rg6,Gg7,Rh3,Rh6,Rh7]";
-		log.info(p.getGraphicsComments().toString());
-		p.comment = "[%cal Gc5c4,Gc4e4,Ge4e3,Ge3f3,Gf3f1]";
-		log.info(p.getGraphicsComments().toString());
-		
-//		Position p = new Position(new Position(), "e2-e4", "1nb1kb1r/3ppp1p/5p2/2pP4/r7/2B5/PP3PPP/R3KBNR w KQk - 0 12");
-//		p.nags.add(NAG.GOOD_MOVE.nag);
-//		p.nags.add(NAG.FORCED_MOVE.nag);
-//		p.nags.add(NAG.COUNTERPLAY_WHITE.nag);
-//		log.info(p.getMoveNotation());
-//		log.info(p.dumpSquares());
 
-	}
 		
 }

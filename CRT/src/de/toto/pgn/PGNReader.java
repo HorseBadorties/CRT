@@ -59,17 +59,26 @@ public class PGNReader {
 		return parse(Arrays.asList(pgn.split("\\R")));
 	}
 	
+	private static boolean isEmpty(String line) {
+		if (line == null || line.trim().isEmpty()) return true;
+		
+		return false;
+	}
+	
 	private static List<Game> parse(List<String> pgnLines) {
 		List<Game> result = new ArrayList<Game>();
 		if (pgnLines == null || pgnLines.isEmpty()) return result;
-		// Handle first 3 ChessBase special characters
+		while (isEmpty(pgnLines.get(0))) {
+			pgnLines.remove(0);
+		}		
+		// Handle first 3 ChessBase special characters		
 		pgnLines.set(0, pgnLines.get(0).substring(pgnLines.get(0).indexOf('[')));
 		boolean isBeginOfGame = true;
 		StringBuilder movetext = null;
 		Game currentGame = null;
 		for (int i = 0; i < pgnLines.size(); i++) {			
 			String line = pgnLines.get(i).trim();
-			if (line.isEmpty()) {
+			if (isEmpty(line)) {
 				continue;
 			}
 			if (isBeginOfGame) {				
@@ -94,7 +103,7 @@ public class PGNReader {
 					//EOF or next line is either empty or start with a "["?
 					if (i < pgnLines.size()-1) {
 						String nextLine = pgnLines.get(i+1).trim();
-						if (nextLine.isEmpty() || nextLine.startsWith("[")) {							
+						if (isEmpty(nextLine) || nextLine.startsWith("[")) {							
 							parseMovetext(movetext.toString(), currentGame);
 							isBeginOfGame = true;
 						}
@@ -196,13 +205,5 @@ public class PGNReader {
 		return lastIndexOfDot == -1 ? move : move.substring(lastIndexOfDot+1, move.length());
 	}
 	
-	public static void main(String[] args) {
-		try {
-			PGNReader.parse(new URL("https://drive.google.com/file/d/0BwRlMWvDu7UwZ1p2bXVwMTdkR3M/view?usp=sharing"));
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 		
 }

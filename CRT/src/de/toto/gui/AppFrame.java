@@ -10,6 +10,7 @@ import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import de.toto.UncaughtExceptionHandler;
 import de.toto.engine.Stockfish;
 import de.toto.game.DrillEvent;
 import de.toto.game.Game;
@@ -108,26 +109,36 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	}
 	
 	
-	private void loadPgn(File pgn) {
-		List<Game> games = PGNReader.parse(pgn);
-		int positionCount = 0;
-		for (Game g : games) {
-			positionCount += g.getAllPositions().size();
+	private void loadPgn(final File pgn) {
+		try {
+			List<Game> games = PGNReader.parse(pgn);
+		
+			int positionCount = 0;
+			for (Game g : games) {
+				positionCount += g.getAllPositions().size();
+			}
+			log.info(String.format("Successfully parsed %d games with %d positions", games.size(), positionCount));
+			
+			Game repertoire = games.get(0);
+			games.remove(repertoire);
+			for (Game game : games) {
+				log.info("merging " + game);
+				repertoire.mergeIn(game);
+			}		
+			log.info(String.format("merged games to %d positions ", repertoire.getAllPositions().size()));
+			this.pgn = pgn;
+			
+			setGame(repertoire);		
+			setTitle("Chess Repertoire Trainer: " + pgn.getName());
+			txtStatus.setText(String.format("%s loaded with %d positions ", pgn, repertoire.getAllPositions().size()));
+		} catch (Exception ex) {			
+			Game dummy = new Game();
+			dummy.start();
+			setGame(dummy);		
+			setTitle("Chess Repertoire Trainer");
+			txtStatus.setText(String.format("Loading PGN %s failed", pgn));
+			new UncaughtExceptionHandler(this).uncaughtException(Thread.currentThread(), ex);
 		}
-		log.info(String.format("Successfully parsed %d games with %d positions", games.size(), positionCount));
-		
-		Game repertoire = games.get(0);
-		games.remove(repertoire);
-		for (Game game : games) {
-			log.info("merging " + game);
-			repertoire.mergeIn(game);
-		}		
-		log.info(String.format("merged games to %d positions ", repertoire.getAllPositions().size()));
-		this.pgn = pgn;
-		
-		setGame(repertoire);		
-		setTitle("Chess Repertoire Trainer: " + pgn.getName());
-		txtStatus.setText(String.format("%s loaded with %d positions ", pgn, repertoire.getAllPositions().size()));
 	}
 	
 	private void setGame(Game g) {
@@ -415,11 +426,11 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 			setLocationRelativeTo(null);
 		}
 		
-		String lastPGN = prefs.get(PREFS_PGN_FILE, null);
+		final String lastPGN = prefs.get(PREFS_PGN_FILE, null);
 		if (lastPGN != null) {
 			File f = new File(lastPGN);
-			if (f.exists()) {
-				loadPgn(f);
+			if (f.exists()) {				
+				loadPgn(f);				
 			}			
 		} 
 		if (pgn == null) {
@@ -463,6 +474,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				modelVariations.addElement(variation);
 			}
 		}
+		
+		txtStatus.setText(p.getFen());
 	}
 
 	@Override
@@ -538,11 +551,15 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		updateBoard(false);
 		setPanelVisible(pnlVariations);
 		
-		JOptionPane.showMessageDialog(AppFrame.this,
-				String.format("Drill ended for %d positions. It took %s.",
+		showMessageDialog(String.format("Drill ended for %d positions. It took %s.",
 						drillStats.drilledPositions,
 						drillStats.getFormattedDuration()), 
-				"Drill ended", JOptionPane.INFORMATION_MESSAGE);
+				"Drill ended");
+	}
+	
+	private void showMessageDialog(String text, String title) {
+		JOptionPane.showMessageDialog(AppFrame.this,
+				text, title, JOptionPane.INFORMATION_MESSAGE);
 	}
 	
 	private void setPanelVisible(JPanel pnl) {

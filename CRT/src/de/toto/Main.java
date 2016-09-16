@@ -1,7 +1,6 @@
 package de.toto;
 
 import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 
 import de.toto.gui.AppFrame;
 
@@ -10,7 +9,7 @@ public class Main {
 	
 	public static void main(String[] args) {
 //		try {
-//			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+//			for (javax.swing.UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 //		        if ("Nimbus".equals(info.getName())) {
 //		            UIManager.setLookAndFeel(info.getClassName());
 //		            break;
@@ -23,7 +22,6 @@ public class Main {
 		       ex2.printStackTrace();
 			}
 //	    }
-		
 		
 		
 		java.awt.EventQueue.invokeLater(new Runnable() {

@@ -157,7 +157,7 @@ public class Drill extends Game {
 			if (p.isWhiteToMove() == drillingWhite) {
 				Position next = p.getNext();
 				if (next.equals(drillStartingPosition)) {
-					log.info("drillStartingPosition reached - no more lines");
+					log.info(String.format("drillStartingPosition %s reached (1) - no more lines", drillStartingPosition));
 					return null;
 				} else {
 					return next;
@@ -174,7 +174,7 @@ public class Drill extends Game {
 				}
 				while (!previous.hasVariations() || previous.isWhiteToMove() == drillingWhite) {
 					if (previous.equals(drillStartingPosition)) {
-						log.info("drillStartingPosition reached - no more lines");
+						log.info(String.format("drillStartingPosition %s reached (2) - no more lines", drillStartingPosition));
 						return null;
 					}
 					previous = previous.getPrevious();
@@ -206,7 +206,7 @@ public class Drill extends Game {
 			}
 			while (!previous.hasVariations() || previous.isWhiteToMove() == drillingWhite) {
 				if (previous.equals(drillStartingPosition)) {
-					log.info("drillStartingPosition reached - no more lines");
+					log.info(String.format("drillStartingPosition %s reached (3) - no more lines", drillStartingPosition));
 					return null;
 				}
 				previous = previous.getPrevious();
@@ -274,8 +274,8 @@ public class Drill extends Game {
 			} else {
 				nextDrillPosition = gotoNextPosition();
 			}
-			if (nextDrillPosition.equals(drillPosition) 
-					|| nextDrillPosition == null
+			if (nextDrillPosition == null
+					|| nextDrillPosition.equals(drillPosition)
 					|| nextDrillPosition.equals(drillStartingPosition)
 					|| nextDrillPosition.getMoveNumber() <= drillStartingPosition.getMoveNumber()) 
 			{
