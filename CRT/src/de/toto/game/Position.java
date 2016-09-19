@@ -24,10 +24,12 @@ public class Position {
 	private List<String> nags = new ArrayList<String>(); // !, ?, ?? ...
 	
 	private static final Pattern graphicsCommentPattern = Pattern.compile("\\[(.*?)\\]");
+	
+	private static final String FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 		
 	// Startposition
 	public Position() {		
-		setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", true);
+		setFen(FEN_STARTPOSITION, true);
 		move = "";
 	}
 
@@ -166,7 +168,7 @@ public class Position {
 	}
 	
 	public boolean hasPrevious() {
-		return previous == null;
+		return previous != null;
 	}
 
 	public Position getNext() {

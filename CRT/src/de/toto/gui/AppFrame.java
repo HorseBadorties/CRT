@@ -150,7 +150,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		g.gotoStartPosition();
 	}
 	
-	private Action actionNext = new AbstractAction("next move") {
+	private Action actionNext = new AbstractAction("Next move") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
 			if (drill != null) {
@@ -167,7 +167,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};		
 	
-	private Action actionBack = new AbstractAction("move back") {
+	private Action actionBack = new AbstractAction("Move back") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (drill == null) {
@@ -200,14 +200,14 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionFlip = new AbstractAction("Flip Board") {
+	private Action actionFlip = new AbstractAction("Flip board") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			board.flip();
 		}
 	};
 	
-	private Action actionBeginDrill = new AbstractAction("Begin Drill") {
+	private Action actionBeginDrill = new AbstractAction("Begin drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (drill == null) {				
@@ -230,7 +230,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	};
 	
 	
-	private Action actionShowComments = new AbstractAction("Show Comments / Graphics Comments?") {
+	private Action actionShowComments = new AbstractAction("Show arrows/colored squares?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			board.setShowGraphicsComments(cbShowComments.isSelected());
@@ -309,8 +309,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 				
-//		pnlToolBar.add(createButton(actionBack));
-//		pnlToolBar.add(createButton(actionNext));
+		pnlToolBar.add(createButton(actionBack));
+		pnlToolBar.add(createButton(actionNext));
 		pnlToolBar.add(createButton(actionLoadPGN));
 		pnlToolBar.add(createButton(actionFlip));	
 		cbShowComments = new JCheckBox(actionShowComments);
@@ -319,11 +319,11 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlToolBar.add(cbShowComments);
 				
 		pnlToolBar.add(createButton(actionBeginDrill));		
-		cbOnlyMainline = new JCheckBox("Accept Main Line Only?");
+		cbOnlyMainline = new JCheckBox("Accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
 		cbOnlyMainline.setEnabled(false);
 		pnlToolBar.add(cbOnlyMainline);
-		cbRandomDrill = new JCheckBox("Random Order Drill?");
+		cbRandomDrill = new JCheckBox("Random position drill?");
 		cbRandomDrill.setSelected(prefs.getBoolean(PREFS_RANDOM_DRILL, false));
 		pnlToolBar.add(cbRandomDrill);		
 
@@ -474,9 +474,11 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 			for (Position variation : p.getVariations()) {
 				modelVariations.addElement(variation);
 			}
-		}
-		
+		}		
 		txtStatus.setText(p.getFen());
+		
+		actionNext.setEnabled(p != null && p.hasNext());
+		actionBack.setEnabled(p != null && p.hasPrevious());		
 	}
 
 	@Override

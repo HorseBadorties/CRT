@@ -79,7 +79,7 @@ public class Game {
 	}
 	
 	public Position gotoStartPosition() {
-		while (!currentPosition.hasPrevious()) {
+		while (currentPosition.hasPrevious()) {
 			currentPosition = currentPosition.getPrevious();
 		}
 		firePositionChangedEvent();
@@ -103,7 +103,7 @@ public class Game {
 	}
 		
 	public Position goBack() {
-		if (!currentPosition.hasPrevious()) {
+		if (currentPosition.hasPrevious()) {
 			currentPosition = currentPosition.getPrevious();
 			firePositionChangedEvent();
 			return currentPosition;
