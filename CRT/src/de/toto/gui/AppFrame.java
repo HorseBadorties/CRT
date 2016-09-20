@@ -11,7 +11,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.toto.UncaughtExceptionHandler;
-import de.toto.engine.Stockfish;
+import de.toto.engine.UCIEngine;
 import de.toto.game.DrillEvent;
 import de.toto.game.Game;
 import de.toto.game.Drill;
@@ -46,12 +46,12 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private JCheckBox cbRandomDrill;
 	private JSplitPane splitCenter;
 	private JSplitPane splitEast;
-	private Stockfish stockfish;
+	private UCIEngine engine;
 	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
 	
 	private static Logger log = Logger.getLogger("AppFrame");
 	
-	private static final String PATH_TO_STOCKFISH = "C://Program Files//Stockfish//stockfish 7 x64.exe";
+	private static final String PATH_TO_ENGINE = "C://Program Files//Stockfish//stockfish 7 x64.exe";
 	private static final String PREFS_FRAME_WIDTH = "FRAME_WIDTH";
 	private static final String PREFS_FRAME_HEIGHT = "FRAME_HEIGHT";
 	private static final String PREFS_FRAME_EXTENDED_STATE = "FRAME_EXTENDED_STATE";
@@ -76,9 +76,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 			@Override
 			public void windowClosing(WindowEvent e) {
 				savePrefs();
-				if (stockfish != null) {
+				if (engine != null) {
 					try {
-						stockfish.stopEngine();
+						engine.stop();
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
@@ -249,17 +249,18 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionEval = new AbstractAction("Stockfish Eval") {
+	private Action actionEval = new AbstractAction("Engine Eval") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			new SwingWorker<String, String>() {
 
 				@Override
 				protected String doInBackground() throws Exception {
-					if (stockfish == null) {
-						stockfish = new Stockfish(PATH_TO_STOCKFISH);
+					if (engine == null) {
+						engine = new UCIEngine(PATH_TO_ENGINE);
 					}
-					return stockfish.getBestMove(game.getPosition().getFen(), 5000);
+					//return engine.getBestMove(game.getPosition().getFen(), 5000);
+					return null;
 				}
 
 				@Override
