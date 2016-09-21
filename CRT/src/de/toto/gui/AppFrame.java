@@ -512,12 +512,14 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 
 	@Override
 	public void userMove(String move) {
-		if (drill != null && drill.isCurrentDrillPosition()) {
-			if (drill.isCorrectMove(move)) {
-				drill.doMove(move);				
-				waitAndLoadNextDrillPosition(drill.getPosition());
-			} else if (drill.getPosition().hasNext()) {
-				Sounds.wrong();
+		if (drill != null) {
+			if (drill.isCurrentDrillPosition()) {
+				if (drill.isCorrectMove(move)) {
+					drill.doMove(move);				
+					waitAndLoadNextDrillPosition(drill.getPosition());
+				} else if (drill.getPosition().hasNext()) {
+					Sounds.wrong();
+				}
 			}
 		} else {
 			if (game.isCorrectMove(move)) {
