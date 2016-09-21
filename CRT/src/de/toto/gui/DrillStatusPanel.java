@@ -21,7 +21,7 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 	private Action actionShowMove = new AbstractAction("show correct move") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (drill != null) {
+			if (drill != null && drill.isCurrentDrillPosition()) {
 				if (drill.getPosition().hasNext()) {
 					JOptionPane.showMessageDialog(DrillStatusPanel.this, drill.getPosition().getNext());
 				} else {

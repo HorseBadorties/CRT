@@ -12,10 +12,12 @@ public class Drill extends Game {
 	private static Logger log = Logger.getLogger("Drill");
 	
 	private Position drillStartingPosition;
+	private Position currentDrillPosition;
 	private Set<Position> drilledVariations = new HashSet<Position>();
 	private boolean drillingWhite;
 	private boolean acceptOnlyMainline;
 	private List<Position> drillPositions;
+	private List<Position> drillHistory;
 	private DrillStats drillStats;
 	
 	public static class DrillStats {
@@ -84,16 +86,24 @@ public class Drill extends Game {
 	
 	public Drill(Position startPosition, boolean drillingWhite, boolean acceptOnlyMainline, boolean randomDrill) {
 		drillStats = new DrillStats();
+		drillHistory = new ArrayList<Position>();
 		currentPosition = startPosition;
 		drillStartingPosition = startPosition;
 		this.drillingWhite = drillingWhite;
 		this.acceptOnlyMainline = acceptOnlyMainline;		
 		drillPositions = getAllDrillPositions();
+		drillHistory.clear();
 		drilledVariations.clear();		
 		if (randomDrill) Collections.shuffle(drillPositions);
-		drillStats = new DrillStats();		
+		drillStats = new DrillStats();	
+		currentPosition = startPosition;
 		log.info(String.format("Drilling %s now for %d positions", drillingWhite ? "White" : "Black", drillPositions.size()));
 	}	
+	
+	private void setCurrentDrillPosition(Position p) {
+		currentPosition = p;
+		currentDrillPosition = currentPosition;
+	}
 	
 	public boolean isCorrectMove(String move) {
 		boolean result = false;
@@ -225,7 +235,11 @@ public class Drill extends Game {
 			endDrill();
 			return currentPosition;
 		} else {
-			currentPosition = drillPositions.remove(0);
+			if (currentPosition != drillStartingPosition) {					
+				drillHistory.add(currentPosition.getPrevious());
+				drillHistory.add(currentPosition);
+			}
+			setCurrentDrillPosition(drillPositions.remove(0));
 			firePositionChangedEvent();
 			drillStats.drilledPositions++;
 			return currentPosition;
@@ -242,12 +256,12 @@ public class Drill extends Game {
 			fireDrillEvent(new DrillEvent(DrillEvent.ID_DRILLING_NEXT_VARIATION, this, null));	
 			log.info("jumped to next variation with " + next);
 		}
-		currentPosition = next;
+		setCurrentDrillPosition(next);
 		return currentPosition;
 	}
 	
 	public void startDrill() {
-		currentPosition = getNextDrillPosition();
+		getNextDrillPosition();
 		firePositionChangedEvent();
 	}
 	
@@ -294,5 +308,55 @@ public class Drill extends Game {
 	public int getPositionCount() {
 		return drillPositions.size() + drillStats.drilledPositions;
 	}
+
+	@Override
+	public void goForward() {
+		int indexOfCurrentPosition = drillHistory.indexOf(currentPosition);
+		if (indexOfCurrentPosition >= 0) {
+			if (indexOfCurrentPosition == drillHistory.size()-1) {
+				//back to current drill position
+				currentPosition = currentDrillPosition;			
+			} else {
+				//next in history
+				currentPosition = drillHistory.get(indexOfCurrentPosition+1);
+			}
+			firePositionChangedEvent();
+		} 
+	}
+
+	@Override
+	public void goBack() {
+		if (currentPosition == currentDrillPosition && !drillHistory.isEmpty()) {
+			currentPosition = drillHistory.get(drillHistory.size()-1);
+			firePositionChangedEvent();
+		} else {
+			int indexOfCurrentPosition = drillHistory.indexOf(currentPosition);
+			if (indexOfCurrentPosition > 0) {
+				currentPosition = drillHistory.get(indexOfCurrentPosition-1);
+				firePositionChangedEvent();
+			} 
+		}
+	}
+
+	@Override
+	public boolean hasNext() {
+		return currentPosition != currentDrillPosition;	
+	}
+
+	@Override
+	public boolean hasPrevious() {
+		if (currentPosition == currentDrillPosition) {
+			return !drillHistory.isEmpty();
+		} else {
+			return drillHistory.indexOf(currentPosition) > 0;
+		}
+	}
+	
+	public boolean isCurrentDrillPosition() {
+		return currentPosition == currentDrillPosition;
+	}
+	
+	
+	
 			
 }

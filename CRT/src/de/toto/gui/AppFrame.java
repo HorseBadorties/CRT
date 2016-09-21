@@ -48,14 +48,13 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private JCheckBox cbRandomDrill;
 	private JSplitPane splitCenter;
 	private JSplitPane splitEast;
+	private String pathToEngine;
 	private UCIEngine engine;
 	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
 	
 	private static Logger log = Logger.getLogger("AppFrame");
-	
-	// C:\\Scid vs PC-4.12\\bin\\engines\\stockfish\\stockfish 7 x64.exe
-	// C://Program Files//Stockfish//stockfish 7 x64.exe
-	private static final String PATH_TO_ENGINE = "C:\\Scid vs PC-4.12\\bin\\engines\\stockfish\\stockfish 7 x64.exe";
+
+	private static final String PREFS_PATH_TO_ENGINE = "PREFS_PATH_TO_ENGINE";
 	private static final String PREFS_FRAME_WIDTH = "FRAME_WIDTH";
 	private static final String PREFS_FRAME_HEIGHT = "FRAME_HEIGHT";
 	private static final String PREFS_FRAME_EXTENDED_STATE = "FRAME_EXTENDED_STATE";
@@ -110,6 +109,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		prefs.putBoolean(PREFS_ONLY_MAINLINE, cbOnlyMainline.isSelected());
 		prefs.putBoolean(PREFS_RANDOM_DRILL, cbRandomDrill.isSelected());
 		prefs.putBoolean(PREFS_SHOW_COMMENTS, cbShowComments.isSelected());
+		if (engine != null) {
+			prefs.put(PREFS_PATH_TO_ENGINE, pathToEngine);
+		}
 	}
 	
 	
@@ -163,7 +165,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		@Override
 		public void actionPerformed(ActionEvent e) {			
 			if (drill != null) {
-				gotoNextDrillPosition();
+				//gotoNextDrillPosition();
+				drill.goForward();
 			} else if (lstVariations.getSelectedIndex() >= 0) {
 				Position p = (Position)modelVariations.get(lstVariations.getSelectedIndex());
 				game.gotoPosition(p);						
@@ -179,9 +182,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private Action actionBack = new AbstractAction("Move back") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (drill == null) {
-				game.goBack();
-			}
+			Game g = drill != null ? drill : game;
+			g.goBack();			
 		}
 	};
 	
@@ -258,21 +260,40 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionEval = new AbstractAction("Start engine") {
+	private Action actionEngine = new AbstractAction("Start engine") {
 		@Override
-		public void actionPerformed(ActionEvent e) {
-			if (engine == null) {
-				engine = new UCIEngine(PATH_TO_ENGINE);
-				engine.addEngineListener(AppFrame.this);							
+		public void actionPerformed(ActionEvent e) {			
+			if (pathToEngine == null) {
+				JFileChooser fc = new JFileChooser();
+				fc.setDialogTitle("Please choose an UCI-compatible engine!");
+				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				int ok = fc.showOpenDialog(AppFrame.this);
+				if (ok == JFileChooser.APPROVE_OPTION) {
+					pathToEngine = fc.getSelectedFile().getAbsolutePath();
+				}
 			}
-			if (engine.isStarted()) {
-				engine.stop();
-				this.putValue(Action.NAME, "Start engine");
-			} else {
-				engine.start();
-				engine.setFEN(getCurrentPosition().getFen());	
-				this.putValue(Action.NAME, "Stop engine");
+			if (pathToEngine == null) return;
+			
+			try {
+				if (engine == null) {				
+					engine = new UCIEngine(pathToEngine);
+					engine.addEngineListener(AppFrame.this);
+				}				
+				if (engine.isStarted()) {
+					engine.stop();
+					this.putValue(Action.NAME, "Start engine");
+					txtStatus.setText("engine stopped");
+				} else {
+					engine.start();
+					engine.setFEN(getCurrentPosition().getFen());	
+					this.putValue(Action.NAME, "Stop engine");
+				}
+			} catch (RuntimeException ex) {
+				engine = null;
+				pathToEngine = null;
+				throw ex;
 			}
+			
 		}
 	};
 	
@@ -308,8 +329,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 				
-//		pnlToolBar.add(createButton(actionBack));
-//		pnlToolBar.add(createButton(actionNext));
+		pnlToolBar.add(createButton(actionBack));
+		pnlToolBar.add(createButton(actionNext));
 		pnlToolBar.add(createButton(actionLoadPGN));
 		pnlToolBar.add(createButton(actionFlip));	
 		cbShowComments = new JCheckBox(actionShowComments);
@@ -395,7 +416,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 		pnlEast.add(splitEast);
 		
-		pnlToolBar.add(createButton(actionEval));	
+		pnlToolBar.add(createButton(actionEngine));	
 		
 		txtStatus = new JLabel();
 		txtStatus.setBorder(BorderFactory.createLoweredBevelBorder());	
@@ -445,6 +466,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		int fontSize = prefs.getInt(PREFS_FONT_SIZE, 12);
 		String fontName = prefs.get(PREFS_FONT_NAME, "Frutiger Standard");
 		setFonts(new Font(fontName, Font.PLAIN, fontSize));
+		
+		pathToEngine = prefs.get(PREFS_PATH_TO_ENGINE, null);
 	}
 	
 	public static JButton createButton(Action action) {
@@ -482,13 +505,14 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 			txtStatus.setText(p.getFen());
 		}
 		
-		actionNext.setEnabled(p != null && p.hasNext());
-		actionBack.setEnabled(p != null && p.hasPrevious());		
+		Game g = drill != null ? drill : game;
+		actionNext.setEnabled(g.hasNext());
+		actionBack.setEnabled(g.hasPrevious());		
 	}
 
 	@Override
 	public void userMove(String move) {
-		if (drill != null) {
+		if (drill != null && drill.isCurrentDrillPosition()) {
 			if (drill.isCorrectMove(move)) {
 				drill.doMove(move);				
 				waitAndLoadNextDrillPosition(drill.getPosition());

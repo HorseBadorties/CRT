@@ -41,11 +41,25 @@ public class UCIEngine {
 		try {
 			process = new ProcessBuilder(pathToEngine).start();
 			reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			writer = new OutputStreamWriter(process.getOutputStream());	
-			outputListener = new OutputReader(this);	
+			writer = new OutputStreamWriter(process.getOutputStream());			
 			sendCommand("uci");
+			String line = null;
+			boolean idReceived = false;
+			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("id ")) {
+					idReceived = true;
+					break;
+				}
+			}
+			if (!idReceived) {
+				throw new RuntimeException("process did not send an ID token - it's not a valid UCI engine");
+			}
+			outputListener = new OutputReader(this);
 		} catch (Exception e) {
 			log.severe(e.getLocalizedMessage());
+			try {
+				stop();
+			} catch (Exception ignore) {}
 			if (!(e instanceof RuntimeException)) {
 				throw new RuntimeException(e.getLocalizedMessage(), e);
 			} else {
@@ -76,7 +90,7 @@ public class UCIEngine {
 		if (!isStarted()) return;
 		try {
 			sendCommand("quit");
-			outputListener.stop();
+			if (outputListener != null) outputListener.stop();
 			reader.close();
 			writer.close();			
 		} catch (IOException e) {
@@ -96,7 +110,7 @@ public class UCIEngine {
 	private static class OutputReader implements Runnable {
 		
 		private UCIEngine engine;
-		private volatile boolean isAlive = true; 
+		private volatile boolean isAlive = true; 		
 		
 		public OutputReader(UCIEngine engine) {
 			super();
@@ -123,11 +137,11 @@ public class UCIEngine {
 		private void readEngineOutput() {			
 			try {
 				String line = null;
-				while (isAlive && (line = engine.reader.readLine()) != null) {
+				while (isAlive && (line = engine.reader.readLine()) != null) {					
 					Score newScore = Score.parse(line);
 					if (newScore != null) {
 						engine.fireNewScore(newScore);
-					}										
+					}
 				}
 			} catch (IOException ex) {
 				ex.printStackTrace();

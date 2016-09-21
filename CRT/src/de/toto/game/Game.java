@@ -95,19 +95,25 @@ public class Game {
 	/**
 	 * Go forward one move, following the main line 
 	 */
-	public Position goForward() {
-		if (!currentPosition.hasNext()) return null;
+	public void goForward() {
+		if (!currentPosition.hasNext()) return;
 		currentPosition = currentPosition.getNext();
-		firePositionChangedEvent();
-		return currentPosition; 	
+		firePositionChangedEvent();	
+	}
+	
+	public boolean hasNext() {
+		return currentPosition.hasNext();
 	}
 		
-	public Position goBack() {
+	public void goBack() {
 		if (currentPosition.hasPrevious()) {
 			currentPosition = currentPosition.getPrevious();
 			firePositionChangedEvent();
-			return currentPosition;
-		} else return null;
+		}
+	}
+	
+	public boolean hasPrevious() {
+		return currentPosition.hasPrevious();
 	}
 		
 	public void addTag(String name, String value) {
