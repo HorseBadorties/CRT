@@ -11,6 +11,8 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.toto.UncaughtExceptionHandler;
+import de.toto.engine.EngineListener;
+import de.toto.engine.Score;
 import de.toto.engine.UCIEngine;
 import de.toto.game.DrillEvent;
 import de.toto.game.Game;
@@ -24,7 +26,7 @@ import de.toto.pgn.PGNReader;
 import de.toto.sound.Sounds;
 
 @SuppressWarnings("serial")
-public class AppFrame extends JFrame implements BoardListener, GameListener, DrillListener {
+public class AppFrame extends JFrame implements BoardListener, GameListener, DrillListener, EngineListener {
 	
 	private File pgn = null;
 	private Game game;
@@ -51,7 +53,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	
 	private static Logger log = Logger.getLogger("AppFrame");
 	
-	private static final String PATH_TO_ENGINE = "C://Program Files//Stockfish//stockfish 7 x64.exe";
+	// C:\\Scid vs PC-4.12\\bin\\engines\\stockfish\\stockfish 7 x64.exe
+	// C://Program Files//Stockfish//stockfish 7 x64.exe
+	private static final String PATH_TO_ENGINE = "C:\\Scid vs PC-4.12\\bin\\engines\\stockfish\\stockfish 7 x64.exe";
 	private static final String PREFS_FRAME_WIDTH = "FRAME_WIDTH";
 	private static final String PREFS_FRAME_HEIGHT = "FRAME_HEIGHT";
 	private static final String PREFS_FRAME_EXTENDED_STATE = "FRAME_EXTENDED_STATE";
@@ -148,6 +152,11 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		game = g;
 		game.addGameListener(this);
 		g.gotoStartPosition();
+	}
+	
+	private Position getCurrentPosition() {
+		Game g = drill != null ? drill : game;		
+		return g.getPosition();
 	}
 	
 	private Action actionNext = new AbstractAction("Next move") {
@@ -249,32 +258,21 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionEval = new AbstractAction("Engine Eval") {
+	private Action actionEval = new AbstractAction("Start engine") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			new SwingWorker<String, String>() {
-
-				@Override
-				protected String doInBackground() throws Exception {
-					if (engine == null) {
-						engine = new UCIEngine(PATH_TO_ENGINE);
-					}
-					//return engine.getBestMove(game.getPosition().getFen(), 5000);
-					return null;
-				}
-
-				@Override
-				protected void done() {
-					try {
-						JOptionPane.showMessageDialog(AppFrame.this, this.get());
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				
-				
-				
-			}.run();
+			if (engine == null) {
+				engine = new UCIEngine(PATH_TO_ENGINE);
+				engine.addEngineListener(AppFrame.this);							
+			}
+			if (engine.isStarted()) {
+				engine.stop();
+				this.putValue(Action.NAME, "Start engine");
+			} else {
+				engine.start();
+				engine.setFEN(getCurrentPosition().getFen());	
+				this.putValue(Action.NAME, "Stop engine");
+			}
 		}
 	};
 	
@@ -310,8 +308,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 				
-		pnlToolBar.add(createButton(actionBack));
-		pnlToolBar.add(createButton(actionNext));
+//		pnlToolBar.add(createButton(actionBack));
+//		pnlToolBar.add(createButton(actionNext));
 		pnlToolBar.add(createButton(actionLoadPGN));
 		pnlToolBar.add(createButton(actionFlip));	
 		cbShowComments = new JCheckBox(actionShowComments);
@@ -397,6 +395,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 		pnlEast.add(splitEast);
 		
+		pnlToolBar.add(createButton(actionEval));	
+		
 		txtStatus = new JLabel();
 		txtStatus.setBorder(BorderFactory.createLoweredBevelBorder());	
 		pnlSouth.add(txtStatus, BorderLayout.PAGE_END);
@@ -454,7 +454,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	}
 
 	private void updateBoard(boolean playSound) {	
-		Position p = drill != null ? drill.getPosition() : game.getPosition();
+		Position p = getCurrentPosition();
 		board.setCurrentPosition(p);
 		String comment = " ";
 		if (p != null && p.getComment() != null) {
@@ -476,7 +476,11 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				modelVariations.addElement(variation);
 			}
 		}		
-		txtStatus.setText(p.getFen());
+		if (engine != null && engine.isStarted()) {
+			engine.setFEN(p.getFen());
+		} else {
+			txtStatus.setText(p.getFen());
+		}
 		
 		actionNext.setEnabled(p != null && p.hasNext());
 		actionBack.setEnabled(p != null && p.hasPrevious());		
@@ -587,19 +591,30 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 
 	@Override
 	public void wasCorrect(DrillEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void wasIncorrect(DrillEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void drillingNextVariation(DrillEvent e) {
-		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void newEngineScore(final Score s) {
+		SwingUtilities.invokeLater(new Runnable() {
+						
+			@Override
+			public void run() {	
+				boolean whiteToMove = getCurrentPosition().isWhiteToMove();
+				boolean positiveScore = (whiteToMove && s.score >= 0) || (!whiteToMove && s.score < 0);
+				String scoreText = String.format("%d [%s%.2f] %s", 
+						s.depth, positiveScore ? "+" : "-", Math.abs(s.score), s.bestLine);
+				txtStatus.setText(scoreText);
+			}
+			
+		});
 		
 	}
 
