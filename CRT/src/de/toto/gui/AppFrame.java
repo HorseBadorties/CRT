@@ -240,7 +240,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				pnlDrillStatus.setFont(lstVariations.getFont());
 				setPanelVisible(pnlDrillStatus);
 				this.putValue(Action.NAME, "End Drill ");
-				btnDrill.setIcon(loadIcon("Make Decision red2-32.png"));
+				btnDrill.setIcon(loadIcon("Make Decision red2-64.png"));
 				drill.startDrill();
 			} else {				
 				drill.endDrill();				
@@ -290,13 +290,13 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				if (engine.isStarted()) {
 					engine.stop();
 					this.putValue(Action.NAME, "Start Engine");
-					btnEngine.setIcon(loadIcon("Superman-32.png"));
+					btnEngine.setIcon(loadIcon("Superman-64.png"));
 					txtStatus.setText("Engine stopped");
 				} else {
 					engine.start();
 					engine.setFEN(getCurrentPosition().getFen());	
 					this.putValue(Action.NAME, "Stop Engine");
-					btnEngine.setIcon(loadIcon("Superman red-32.png"));
+					btnEngine.setIcon(loadIcon("Superman red-64.png"));
 				}
 			} catch (RuntimeException ex) {
 				engine = null;
@@ -339,7 +339,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 		
-		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Window-32.png", true));
+		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Window-64.png", true));
 		
 		cbShowComments = new JCheckBox(actionShowComments);
 		cbShowComments.setFocusable(false);
@@ -347,7 +347,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		actionShowComments.actionPerformed(null);
 		pnlToolBar.add(cbShowComments);
 				
-		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision-32.png", true));		
+		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision-64.png", true));		
 		cbOnlyMainline = new JCheckBox("Accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
 		cbOnlyMainline.setFocusable(false);
@@ -366,9 +366,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlBoard.add(board, BorderLayout.CENTER);
 		JPanel pnlCenterSouth = new JPanel(new BorderLayout());
 		JPanel pnlBoardControls = new JPanel();
-		pnlBoardControls.add(btnBack = createButton(actionBack, "Circled Left 2-32.png", false));	
-		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Available Updates-32.png", false)); //Rotate Right-32.png
-		pnlBoardControls.add(btnNext = createButton(actionNext, "Circled Right 2-32.png", false));	
+		pnlBoardControls.add(btnBack = createButton(actionBack, "Circled Left 2-64.png", false));	
+		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Available Updates-64.png", false)); //Rotate Right-64.png
+		pnlBoardControls.add(btnNext = createButton(actionNext, "Circled Right 2-64.png", false));	
 		pnlCenterSouth.add(txtComment = new JLabel(), BorderLayout.PAGE_START);
 		pnlCenterSouth.add(pnlBoardControls, BorderLayout.CENTER);
 		pnlCenter.add(pnlBoard, BorderLayout.CENTER);		
@@ -433,7 +433,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 		pnlEast.add(splitEast);
 		
-		pnlToolBar.add(btnEngine = createButton(actionEngine, "Superman-32.png", true)); //"Robot-32.png	
+		pnlToolBar.add(btnEngine = createButton(actionEngine, "Superman-64.png", true)); //"Robot-64.png	
 		
 		txtStatus = new JLabel();
 		txtStatus.setBorder(BorderFactory.createLoweredBevelBorder());	
@@ -615,7 +615,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		//cbOnlyMainline.setEnabled(true);
 		cbRandomDrill.setEnabled(true);
 		actionDrill.putValue(Action.NAME, "Begin Drill");
-		btnDrill.setIcon(loadIcon("Make Decision-32.png"));
+		btnDrill.setIcon(loadIcon("Make Decision-64.png"));
 		updateBoard(false);
 		setPanelVisible(pnlVariations);
 		

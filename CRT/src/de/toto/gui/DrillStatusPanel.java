@@ -22,12 +22,8 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (drill != null && drill.isCurrentDrillPosition()) {
-				if (drill.getPosition().hasNext()) {
-					JOptionPane.showMessageDialog(DrillStatusPanel.this, drill.getPosition().getNext());
-				} else {
-					JOptionPane.showMessageDialog(DrillStatusPanel.this, "repertoire move missing for current position");
-				}
-				
+				String message = drill.getPosition().hasNext() ? drill.getPosition().getNext().toString() : "Repertoire move missing for current position";
+				JOptionPane.showMessageDialog(DrillStatusPanel.this, message, "Repertoire move", JOptionPane.INFORMATION_MESSAGE);
 			}
 		}
 	};
@@ -51,7 +47,7 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 		add(lblLast);
 		add(Box.createRigidArea(new Dimension(0,10)));
 		add(Box.createVerticalGlue());
-		btnShowMove = AppFrame.createButton(actionShowMove, "Idea-32.png", true);
+		btnShowMove = AppFrame.createButton(actionShowMove, "Idea-64.png", true);
 		btnShowMove.setVerticalTextPosition(SwingConstants.CENTER);
 		btnShowMove.setHorizontalTextPosition(SwingConstants.TRAILING);
 		btnShowMove.setAlignmentX(Component.CENTER_ALIGNMENT);		
