@@ -225,7 +225,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionBeginDrill = new AbstractAction("Begin Drill") {
+	private Action actionDrill = new AbstractAction("Begin Drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (drill == null) {				
@@ -240,7 +240,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				pnlDrillStatus.setFont(lstVariations.getFont());
 				setPanelVisible(pnlDrillStatus);
 				this.putValue(Action.NAME, "End Drill");
-				btnDrill.setIcon(loadIcon("Make Decision red-32.png"));
+				btnDrill.setIcon(loadIcon("Make Decision red2-32.png"));
 				drill.startDrill();
 			} else {				
 				drill.endDrill();				
@@ -290,13 +290,13 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				if (engine.isStarted()) {
 					engine.stop();
 					this.putValue(Action.NAME, "Start Engine");
-					btnEngine.setIcon(loadIcon("Robot-32.png"));
+					btnEngine.setIcon(loadIcon("Superman-32.png"));
 					txtStatus.setText("Engine stopped");
 				} else {
 					engine.start();
 					engine.setFEN(getCurrentPosition().getFen());	
 					this.putValue(Action.NAME, "Stop Engine");
-					btnEngine.setIcon(loadIcon("Robot red-32.png"));
+					btnEngine.setIcon(loadIcon("Superman red-32.png"));
 				}
 			} catch (RuntimeException ex) {
 				engine = null;
@@ -347,7 +347,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		actionShowComments.actionPerformed(null);
 		pnlToolBar.add(cbShowComments);
 				
-		pnlToolBar.add(btnDrill = createButton(actionBeginDrill, "Make Decision-32.png", true));		
+		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision-32.png", true));		
 		cbOnlyMainline = new JCheckBox("Accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
 		cbOnlyMainline.setFocusable(false);
@@ -366,7 +366,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlBoard.add(board, BorderLayout.CENTER);
 		JPanel pnlBoardControls = new JPanel();
 		pnlBoardControls.add(btnBack = createButton(actionBack, "Circled Left 2-32.png", false));	
-		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Rotate Right-32.png", false));
+		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Available Updates-32.png", false)); //Rotate Right-32.png
 		pnlBoardControls.add(btnNext = createButton(actionNext, "Circled Right 2-32.png", false));	
 		pnlBoardControls.add(txtComment = new JLabel());
 		pnlCenter.add(pnlBoard, BorderLayout.CENTER);		
@@ -431,7 +431,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 		pnlEast.add(splitEast);
 		
-		pnlToolBar.add(btnEngine = createButton(actionEngine, "Robot-32.png", true));	
+		pnlToolBar.add(btnEngine = createButton(actionEngine, "Superman-32.png", true)); //"Robot-32.png	
 		
 		txtStatus = new JLabel();
 		txtStatus.setBorder(BorderFactory.createLoweredBevelBorder());	
@@ -610,7 +610,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		actionLoadPGN.setEnabled(true);		
 		//cbOnlyMainline.setEnabled(true);
 		cbRandomDrill.setEnabled(true);
-		actionBeginDrill.putValue(Action.NAME, "Begin Drill");
+		actionDrill.putValue(Action.NAME, "Begin Drill");
 		btnDrill.setIcon(loadIcon("Make Decision-32.png"));
 		updateBoard(false);
 		setPanelVisible(pnlVariations);
