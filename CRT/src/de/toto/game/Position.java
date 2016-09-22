@@ -23,7 +23,7 @@ public class Position {
 	private String comment = null; // may contain graphics comments such as [%csl Ge5][%cal Ge5b2]
 	private List<String> nags = new ArrayList<String>(); // !, ?, ?? ...
 	
-	private static final Pattern graphicsCommentPattern = Pattern.compile("\\[(.*?)\\]");
+	private static final Pattern GRAPHICS_COMMENT_PATTERN = Pattern.compile("\\[(.*?)\\]");
 	
 	private static final String FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 		
@@ -72,10 +72,14 @@ public class Position {
 		return comment;
 	}
 	
+	public String getCommentText() {
+		return comment != null ?  GRAPHICS_COMMENT_PATTERN.matcher(comment).replaceAll("") : null;
+	}
+	
 	public List<GraphicsComment> getGraphicsComments() {
 		List<GraphicsComment> result = new ArrayList<GraphicsComment>();
 		if (comment != null && !comment.isEmpty()) {			
-			Matcher matcher = graphicsCommentPattern.matcher(comment);
+			Matcher matcher = GRAPHICS_COMMENT_PATTERN.matcher(comment);
 			while (matcher.find()) {				
 				String graphicsComment = matcher.group(1);
 				if (graphicsComment.startsWith("%csl")) {

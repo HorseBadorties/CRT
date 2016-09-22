@@ -84,7 +84,7 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 	@Override
 	public void wasCorrect(DrillEvent e) {
 		updateProgress();
-		lblLast.setText("<html><font color=green>" + e.getLastMove() + " was the correct repertoire answer</font></html>");
+		lblLast.setText("<html><font color=black>" + e.getLastMove() + " was the correct repertoire answer</font></html>");
 	}
 
 	@Override

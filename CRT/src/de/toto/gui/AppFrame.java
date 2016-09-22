@@ -239,7 +239,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				pnlDrillStatus = new DrillStatusPanel(drill);
 				pnlDrillStatus.setFont(lstVariations.getFont());
 				setPanelVisible(pnlDrillStatus);
-				this.putValue(Action.NAME, "End Drill");
+				this.putValue(Action.NAME, "End Drill ");
 				btnDrill.setIcon(loadIcon("Make Decision red2-32.png"));
 				drill.startDrill();
 			} else {				
@@ -364,13 +364,15 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		JPanel pnlBoard = new JPanel(new BorderLayout());
 		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 5));
 		pnlBoard.add(board, BorderLayout.CENTER);
+		JPanel pnlCenterSouth = new JPanel(new BorderLayout());
 		JPanel pnlBoardControls = new JPanel();
 		pnlBoardControls.add(btnBack = createButton(actionBack, "Circled Left 2-32.png", false));	
 		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Available Updates-32.png", false)); //Rotate Right-32.png
 		pnlBoardControls.add(btnNext = createButton(actionNext, "Circled Right 2-32.png", false));	
-		pnlBoardControls.add(txtComment = new JLabel());
+		pnlCenterSouth.add(txtComment = new JLabel(), BorderLayout.PAGE_START);
+		pnlCenterSouth.add(pnlBoardControls, BorderLayout.CENTER);
 		pnlCenter.add(pnlBoard, BorderLayout.CENTER);		
-		pnlCenter.add(pnlBoardControls, BorderLayout.PAGE_END);
+		pnlCenter.add(pnlCenterSouth, BorderLayout.PAGE_END);
 		pnlCenter.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 0));
 		
 		JPopupMenu popUpChooseFont = new JPopupMenu();
@@ -508,9 +510,11 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private void updateBoard(boolean playSound) {	
 		Position p = getCurrentPosition();
 		board.setCurrentPosition(p);
-		String comment = " ";
-		if (p != null && p.getComment() != null) {
-			comment = "<html>Move comment: <b>" + p.getComment() + "</b></html>";
+		String comment = p != null ? p.getCommentText() : null;
+		if (comment != null && comment.length() > 0) {
+			comment = "<html>Move comment: <b>" + comment + "</b></html>";
+		} else {
+			comment = " ";
 		}
 		txtComment.setText(comment);
 		if (playSound) {
