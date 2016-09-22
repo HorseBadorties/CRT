@@ -46,6 +46,13 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private JCheckBox cbOnlyMainline;
 	private JCheckBox cbShowComments;
 	private JCheckBox cbRandomDrill;
+	private JButton btnLoadPGN;
+	private JButton btnDrill;
+	private JButton btnEngine;
+	private JButton btnBack;
+	private JButton btnNext;
+	private JButton btnFlip;	
+	
 	private JSplitPane splitCenter;
 	private JSplitPane splitEast;
 	private String pathToEngine;
@@ -218,7 +225,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionBeginDrill = new AbstractAction("Begin drill") {
+	private Action actionBeginDrill = new AbstractAction("Begin Drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (drill == null) {				
@@ -233,6 +240,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				pnlDrillStatus.setFont(lstVariations.getFont());
 				setPanelVisible(pnlDrillStatus);
 				this.putValue(Action.NAME, "End Drill");
+				btnDrill.setIcon(loadIcon("Make Decision red-32.png"));
 				drill.startDrill();
 			} else {				
 				drill.endDrill();				
@@ -260,7 +268,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
-	private Action actionEngine = new AbstractAction("Start engine") {
+	private Action actionEngine = new AbstractAction("Start Engine") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
 			if (pathToEngine == null) {
@@ -281,12 +289,14 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				}				
 				if (engine.isStarted()) {
 					engine.stop();
-					this.putValue(Action.NAME, "Start engine");
-					txtStatus.setText("engine stopped");
+					this.putValue(Action.NAME, "Start Engine");
+					btnEngine.setIcon(loadIcon("Robot-32.png"));
+					txtStatus.setText("Engine stopped");
 				} else {
 					engine.start();
 					engine.setFEN(getCurrentPosition().getFen());	
-					this.putValue(Action.NAME, "Stop engine");
+					this.putValue(Action.NAME, "Stop Engine");
+					btnEngine.setIcon(loadIcon("Robot red-32.png"));
 				}
 			} catch (RuntimeException ex) {
 				engine = null;
@@ -328,22 +338,23 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.add(splitCenter, BorderLayout.CENTER);		
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
-				
-		pnlToolBar.add(createButton(actionBack));
-		pnlToolBar.add(createButton(actionNext));
-		pnlToolBar.add(createButton(actionLoadPGN));
-		pnlToolBar.add(createButton(actionFlip));	
+		
+		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Window-32.png", true));
+		
 		cbShowComments = new JCheckBox(actionShowComments);
+		cbShowComments.setFocusable(false);
 		cbShowComments.setSelected(prefs.getBoolean(PREFS_SHOW_COMMENTS, false));
 		actionShowComments.actionPerformed(null);
 		pnlToolBar.add(cbShowComments);
 				
-		pnlToolBar.add(createButton(actionBeginDrill));		
+		pnlToolBar.add(btnDrill = createButton(actionBeginDrill, "Make Decision-32.png", true));		
 		cbOnlyMainline = new JCheckBox("Accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
+		cbOnlyMainline.setFocusable(false);
 		cbOnlyMainline.setEnabled(false);
 		pnlToolBar.add(cbOnlyMainline);
 		cbRandomDrill = new JCheckBox("Random position drill?");
+		cbRandomDrill.setFocusable(false);
 		cbRandomDrill.setSelected(prefs.getBoolean(PREFS_RANDOM_DRILL, false));
 		pnlToolBar.add(cbRandomDrill);		
 
@@ -353,9 +364,13 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		JPanel pnlBoard = new JPanel(new BorderLayout());
 		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 5));
 		pnlBoard.add(board, BorderLayout.CENTER);
-		txtComment = new JLabel();
+		JPanel pnlBoardControls = new JPanel();
+		pnlBoardControls.add(btnBack = createButton(actionBack, "Circled Left 2-32.png", false));	
+		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Rotate Right-32.png", false));
+		pnlBoardControls.add(btnNext = createButton(actionNext, "Circled Right 2-32.png", false));	
+		pnlBoardControls.add(txtComment = new JLabel());
 		pnlCenter.add(pnlBoard, BorderLayout.CENTER);		
-		pnlCenter.add(txtComment, BorderLayout.PAGE_END);
+		pnlCenter.add(pnlBoardControls, BorderLayout.PAGE_END);
 		pnlCenter.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 0));
 		
 		JPopupMenu popUpChooseFont = new JPopupMenu();
@@ -416,7 +431,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 		pnlEast.add(splitEast);
 		
-		pnlToolBar.add(createButton(actionEngine));	
+		pnlToolBar.add(btnEngine = createButton(actionEngine, "Robot-32.png", true));	
 		
 		txtStatus = new JLabel();
 		txtStatus.setBorder(BorderFactory.createLoweredBevelBorder());	
@@ -424,7 +439,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		
 		
 		KeyStroke keyNext = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0);
-		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyNext, "next");
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyNext, "next");		
 		pnlAll.getActionMap().put("next",actionNext);
 		KeyStroke keyBack = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0);
 		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyBack, "back");
@@ -470,10 +485,24 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pathToEngine = prefs.get(PREFS_PATH_TO_ENGINE, null);
 	}
 	
-	public static JButton createButton(Action action) {
+	public static JButton createButton(Action action, String icon, boolean showText) {
 		JButton btn = new JButton(action);
+		if (icon != null) {
+			btn.setIcon(loadIcon(icon));
+			btn.setVerticalTextPosition(SwingConstants.BOTTOM);
+			btn.setHorizontalTextPosition(SwingConstants.CENTER);
+			btn.setToolTipText(btn.getText());
+			if (!showText) {
+				btn.setText("");				
+			}
+		}
+		btn.setFocusable(false);
 		btn.putClientProperty("JComponent.sizeVariant", "large");
 		return btn;
+	}
+	
+	private static ImageIcon loadIcon(String icon) {
+		return new ImageIcon(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource("/images/icon/" + icon)));
 	}
 
 	private void updateBoard(boolean playSound) {	
@@ -582,6 +611,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		//cbOnlyMainline.setEnabled(true);
 		cbRandomDrill.setEnabled(true);
 		actionBeginDrill.putValue(Action.NAME, "Begin Drill");
+		btnDrill.setIcon(loadIcon("Make Decision-32.png"));
 		updateBoard(false);
 		setPanelVisible(pnlVariations);
 		
