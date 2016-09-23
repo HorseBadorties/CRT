@@ -650,6 +650,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		for (Component c : pnlToolBar.getComponents()) {
 			c.setFont(f);
 		}
+		txtComment.setFont(f);
+		txtStatus.setFont(f);
 		revalidate();
 		repaint();		
 	}
