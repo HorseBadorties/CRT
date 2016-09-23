@@ -47,7 +47,7 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 		add(lblLast);
 		add(Box.createRigidArea(new Dimension(0,10)));
 		add(Box.createVerticalGlue());
-		btnShowMove = AppFrame.createButton(actionShowMove, "Idea-64.png", true);
+		btnShowMove = AppFrame.createButton(actionShowMove, "Idea", true);
 		btnShowMove.setVerticalTextPosition(SwingConstants.CENTER);
 		btnShowMove.setHorizontalTextPosition(SwingConstants.TRAILING);
 		btnShowMove.setAlignmentX(Component.CENTER_ALIGNMENT);		

@@ -240,7 +240,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				pnlDrillStatus.setFont(lstVariations.getFont());
 				setPanelVisible(pnlDrillStatus);
 				this.putValue(Action.NAME, "End Drill ");
-				btnDrill.setIcon(loadIcon("Make Decision red2-64.png"));
+				btnDrill.setIcon(loadIcon("Make Decision red2"));
 				drill.startDrill();
 			} else {				
 				drill.endDrill();				
@@ -290,13 +290,13 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				if (engine.isStarted()) {
 					engine.stop();
 					this.putValue(Action.NAME, "Start Engine");
-					btnEngine.setIcon(loadIcon("Superman-64.png"));
+					btnEngine.setIcon(loadIcon("Superman"));
 					txtStatus.setText("Engine stopped");
 				} else {
 					engine.start();
 					engine.setFEN(getCurrentPosition().getFen());	
 					this.putValue(Action.NAME, "Stop Engine");
-					btnEngine.setIcon(loadIcon("Superman red-64.png"));
+					btnEngine.setIcon(loadIcon("Superman red"));
 				}
 			} catch (RuntimeException ex) {
 				engine = null;
@@ -324,6 +324,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	
 	private void doUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension defaultFrameSize = new Dimension(screenSize.width/3*2, screenSize.height/3*2);
 		
 		JPanel pnlAll = new JPanel(new BorderLayout());
 		pnlToolBar = new JPanel();
@@ -332,14 +334,14 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		JPanel pnlSouth = new JPanel(new BorderLayout());
 		
 		splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pnlCenter, pnlEast);
-		splitCenter.setDividerLocation(prefs.getInt(PREFS_SPLITTER_CENTER_POSITION, 650));
+		splitCenter.setDividerLocation(prefs.getInt(PREFS_SPLITTER_CENTER_POSITION, defaultFrameSize.width/3*2));
 		
 		pnlAll.add(pnlToolBar, BorderLayout.PAGE_START);		
 		pnlAll.add(splitCenter, BorderLayout.CENTER);		
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 		
-		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Window-64.png", true));
+		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Window", true));
 		
 		cbShowComments = new JCheckBox(actionShowComments);
 		cbShowComments.setFocusable(false);
@@ -347,7 +349,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		actionShowComments.actionPerformed(null);
 		pnlToolBar.add(cbShowComments);
 				
-		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision-64.png", true));		
+		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true));		
 		cbOnlyMainline = new JCheckBox("Accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
 		cbOnlyMainline.setFocusable(false);
@@ -366,9 +368,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlBoard.add(board, BorderLayout.CENTER);
 		JPanel pnlCenterSouth = new JPanel(new BorderLayout());
 		JPanel pnlBoardControls = new JPanel();
-		pnlBoardControls.add(btnBack = createButton(actionBack, "Circled Left 2-64.png", false));	
-		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Available Updates-64.png", false)); //Rotate Right-64.png
-		pnlBoardControls.add(btnNext = createButton(actionNext, "Circled Right 2-64.png", false));	
+		pnlBoardControls.add(btnBack = createButton(actionBack, "Circled Left 2", false));	
+		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Available Updates", false)); //Rotate Right-64.png
+		pnlBoardControls.add(btnNext = createButton(actionNext, "Circled Right 2", false));	
 		pnlCenterSouth.add(txtComment = new JLabel(), BorderLayout.PAGE_START);
 		pnlCenterSouth.add(pnlBoardControls, BorderLayout.CENTER);
 		pnlCenter.add(pnlBoard, BorderLayout.CENTER);		
@@ -404,7 +406,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 			}			
 		});
 		pnlMoves.add(new JScrollPane(tblMoves));
-		pnlMoves.setPreferredSize(new Dimension(150, 500));
+//		pnlMoves.setPreferredSize(new Dimension(150, 500));
 		
 		pnlVariationsAndDrillStatus = new JPanel(new BorderLayout());
 		pnlVariations = new JPanel(new BorderLayout());
@@ -423,7 +425,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 			}			
 		});		
 		pnlVariations.add(new JScrollPane(lstVariations));		
-		pnlVariations.setPreferredSize(new Dimension(150, 200));
+//		pnlVariations.setPreferredSize(new Dimension(150, 200));
 		pnlVariationsAndDrillStatus.add(pnlVariations);
 		splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlVariationsAndDrillStatus, pnlMoves);
 		splitEast.setBorder(null);
@@ -433,7 +435,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 		pnlEast.add(splitEast);
 		
-		pnlToolBar.add(btnEngine = createButton(actionEngine, "Superman-64.png", true)); //"Robot-64.png	
+		pnlToolBar.add(btnEngine = createButton(actionEngine, "Superman", true)); //"Robot-64.png	
 		
 		txtStatus = new JLabel();
 		txtStatus.setBorder(BorderFactory.createLoweredBevelBorder());	
@@ -456,7 +458,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlF, "flip");
 		pnlAll.getActionMap().put("flip",actionFlip);
 		
-		Dimension prefSize = new Dimension(prefs.getInt(PREFS_FRAME_WIDTH, 800), prefs.getInt(PREFS_FRAME_HEIGHT, 800));		
+		
+		Dimension prefSize = new Dimension(prefs.getInt(PREFS_FRAME_WIDTH, defaultFrameSize.width), 
+				prefs.getInt(PREFS_FRAME_HEIGHT, defaultFrameSize.height));		
 		this.setPreferredSize(prefSize);
 		pack();
 		if (prefs.getBoolean(PREFS_FRAME_EXTENDED_STATE, false)) {
@@ -480,7 +484,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 			board.flip();
 		}
 		
-		int fontSize = prefs.getInt(PREFS_FONT_SIZE, 12);
+		int fontSize = prefs.getInt(PREFS_FONT_SIZE, isUltraHighResolution() ? 24 : 12);
 		String fontName = prefs.get(PREFS_FONT_NAME, "Frutiger Standard");
 		setFonts(new Font(fontName, Font.PLAIN, fontSize));
 		
@@ -504,7 +508,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	}
 	
 	private static ImageIcon loadIcon(String icon) {
-		return new ImageIcon(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource("/images/icon/" + icon)));
+		String suffix = isUltraHighResolution() ? "-64.png" : "-32.png"; 
+		return new ImageIcon(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource("/images/icon/" + icon + suffix)));
 	}
 
 	private void updateBoard(boolean playSound) {	
@@ -615,7 +620,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		//cbOnlyMainline.setEnabled(true);
 		cbRandomDrill.setEnabled(true);
 		actionDrill.putValue(Action.NAME, "Begin Drill");
-		btnDrill.setIcon(loadIcon("Make Decision-64.png"));
+		btnDrill.setIcon(loadIcon("Make Decision"));
 		updateBoard(false);
 		setPanelVisible(pnlVariations);
 		
@@ -676,6 +681,10 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 			
 		});
 		
+	}
+	
+	private static boolean isUltraHighResolution() {
+		return Toolkit.getDefaultToolkit().getScreenSize().width >= 1600;
 	}
 
 }
