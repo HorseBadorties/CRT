@@ -2,8 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Users/Torsten/workspace/CRT/lib/svgSalamander.jar">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.8.0_101"/>
+	<classpathentry kind="lib" path="C:/Users/080064/git/CRT/CRT/lib/svgSalamander.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:file:/C:/Users/Torsten/workspace/CRT/lib/svgSalamanderJavadoc.zip!/"/>
 		</attributes>
