@@ -341,7 +341,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 		
-		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Window", true));
+		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true));
 		
 		cbShowComments = new JCheckBox(actionShowComments);
 		cbShowComments.setFocusable(false);
