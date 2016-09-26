@@ -321,7 +321,7 @@ public class Position {
 	}
 
 	// e.g. "a1"
-	private Square getSquare(String squarename) {
+	public Square getSquare(String squarename) {
 		int file = Square.filenumberForName(squarename);
 		int rank = Character.getNumericValue(squarename.charAt(1));
 		return getSquare(rank, file);

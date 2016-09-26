@@ -9,6 +9,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.image.*;
 import java.net.URL;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
@@ -19,6 +20,7 @@ import com.kitfox.svg.SVGUniverse;
 import com.kitfox.svg.app.beans.SVGIcon;
 
 import de.toto.game.Position;
+import de.toto.game.Position.GraphicsComment;
 import de.toto.game.Rules.Piece;
 import de.toto.game.Rules.PieceType;
 
@@ -28,6 +30,7 @@ public class Board extends JPanel {
 	private Position currentPosition = new Position();
 	private BoardCanvas boardCanvas = new BoardCanvas(this);
 	private boolean showGraphicsComments = true;
+	private java.util.List<GraphicsComment> additionalGraphicsComment = new ArrayList<GraphicsComment>();  
 	
 	public Position getCurrentPosition() {
 		return currentPosition;
@@ -41,6 +44,14 @@ public class Board extends JPanel {
 	
 	public void setShowGraphicsComments(boolean value) {
 		showGraphicsComments = value;	
+	}
+	
+	public void clearAdditionalGraphicsComment() {
+		additionalGraphicsComment.clear();
+	}
+	
+	public void addAdditionalGraphicsComment(GraphicsComment gc) {
+		additionalGraphicsComment.add(gc);
 	}
 	
 	public void flip() {
@@ -133,9 +144,12 @@ public class Board extends JPanel {
 		private static final Color arrowColorGreen50Percent = new Color(0f, 1f, 0f, .5f);
 		private static final Color arrowColorRed50Percent = new Color(1f, 0f, 0f, .5f);
 		private static final Color arrowColorYellow50Percent = new Color(1f, 1f, 0f, .5f);
+		private static final Color arrowColorBlack50Percent = new Color(0f, 0f, 0f, .5f);
 		private static final Color arrowColorGreen20Percent = new Color(0f, 1f, 0f, .2f);
 		private static final Color arrowColorRed20Percent = new Color(1f, 0f, 0f, .2f);
 		private static final Color arrowColorYellow20Percent = new Color(1f, 1f, 0f, .2f);
+		private static final Color arrowColorBlack20Percent = new Color(0f, 0f, 0f, .2f);
+		
 		
 		private static final Color lightBlue = new Color(230, 245, 250);
 		private static final Color darkBlue = new Color(150, 190, 200);
@@ -534,6 +548,16 @@ public class Board extends JPanel {
 				}
 			}
 			
+			//draw additionalGraphicsComment
+			if (board.showGraphicsComments) {				
+				for (Position.GraphicsComment gc : board.additionalGraphicsComment) {
+					if (gc.secondSquare != null) {						
+						drawArrow(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file),
+								getSquare(gc.secondSquare.rank, gc.secondSquare.file), gc.color, squareSize);
+					}
+				}
+			}
+			
 			/*
 			//position eval						 
 			if (positionEval != null && positionEval.length() > 0) {				
@@ -558,14 +582,17 @@ public class Board extends JPanel {
 			int x2 = to.topLeftOnBoard.x + squareSize/2;
 			int y2 = to.topLeftOnBoard.y + squareSize/2;
 			
-			Color gradientFrom = arrowColorRed20Percent;
-			Color gradientTo = arrowColorRed50Percent;
+			Color gradientFrom = arrowColorBlack20Percent;
+			Color gradientTo = arrowColorBlack50Percent;
 			if (color.equals(Color.GREEN)) {
 				gradientFrom = arrowColorGreen20Percent;
 				gradientTo = arrowColorGreen50Percent;
 			} else if (color.equals(Color.YELLOW)) {
 				gradientFrom = arrowColorYellow20Percent;
 				gradientTo = arrowColorYellow50Percent;
+			} else if (color.equals(Color.RED)) {
+				gradientFrom = arrowColorRed20Percent;
+				gradientTo = arrowColorRed50Percent;
 			}
 			g2.setPaint(new GradientPaint(x1, y1 ,gradientFrom,x2, y2, gradientTo));
 			g2.fill(createArrowShape(new Point(x1,y1), new Point(x2,y2), squareSize));
