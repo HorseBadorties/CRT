@@ -345,6 +345,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				tryVariation.removeGameListener(AppFrame.this);
 				tryVariation = null;				
 				updateBoard(false);
+				btnTryVariation.setIcon(loadIcon("Whole Hand"));
 			} else {
 				Position start = getCurrentPosition();
 				tryVariation = new Game();
@@ -352,6 +353,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				tryVariation.addMove(start.getMove(), start.getFen());
 				tryVariation.addGameListener(AppFrame.this);
 				updateBoard(false);
+				btnTryVariation.setIcon(loadIcon("Whole Hand red"));
 			}
 		}
 	};
@@ -470,7 +472,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlEast.add(splitEast);
 		
 		pnlToolBar.add(btnEngine = createButton(actionEngine, "Superman", true)); //"Robot-64.png
-		pnlToolBar.add(btnTryVariation = createButton(actionTryVariation, "Robot", true)); 
+		pnlToolBar.add(btnTryVariation = createButton(actionTryVariation, "Whole Hand", true)); 
 		
 		txtStatus = new JLabel();
 		txtStatus.setBorder(BorderFactory.createLoweredBevelBorder());	
