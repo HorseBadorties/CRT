@@ -46,6 +46,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private DefaultListModel<Position> modelVariations;
 	private DrillStatusPanel pnlDrillStatus;
 	private JPanel pnlTryVariation;
+	private JLabel lblTryVariation;
 	private JPanel pnlToolBar;
 	private JCheckBox cbOnlyMainline;
 	private JCheckBox cbShowComments;
@@ -265,7 +266,10 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	
 	private Action actionShowComments = new AbstractAction("Show arrows/colored squares?") {
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(ActionEvent e) {			
+			if (e != null && e.getSource() != cbShowComments) {
+				cbShowComments.setSelected(!cbShowComments.isSelected());
+			}
 			board.setShowGraphicsComments(cbShowComments.isSelected());
 			if (getCurrentGame() != null) updateBoard(false);
 		}
@@ -401,9 +405,10 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		cbRandomDrill.setSelected(prefs.getBoolean(PREFS_RANDOM_DRILL, false));
 		pnlToolBar.add(cbRandomDrill);		
 
-		JPopupMenu popUpFlipBoard = new JPopupMenu();
-		popUpFlipBoard.add(actionFlip);
-		board.setComponentPopupMenu(popUpFlipBoard);
+		JPopupMenu popUpBoard = new JPopupMenu();
+		popUpBoard.add(actionFlip);
+		popUpBoard.add(actionShowComments);
+		board.setComponentPopupMenu(popUpBoard);
 		JPanel pnlBoard = new JPanel(new BorderLayout());
 		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 5));
 		pnlBoard.add(board, BorderLayout.CENTER);
@@ -450,7 +455,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 //		pnlMoves.setPreferredSize(new Dimension(150, 500));
 		
 		pnlTryVariation = new JPanel(new BorderLayout());
-		JLabel lblTryVariation = new JLabel("<html><FONT COLOR=\"RED\"><b>Trying Variation<b></FONT></html>");
+		lblTryVariation = new JLabel("Trying Variation");
+		lblTryVariation.setForeground(Color.RED);
 		lblTryVariation.setHorizontalAlignment(SwingConstants.CENTER);
 		pnlTryVariation.add(lblTryVariation);
 		pnlVariationsAndDrillStatus = new JPanel(new BorderLayout());
@@ -678,6 +684,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		cbRandomDrill.setEnabled(true);
 		actionDrill.putValue(Action.NAME, "Begin Drill");
 		btnDrill.setIcon(loadIcon("Make Decision"));
+		btnDrill.setSelected(false);
 		updateBoard(false);
 		setPanelVisible(pnlVariations);
 		
@@ -699,7 +706,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlVariationsAndDrillStatus.repaint();
 	}
 	
-	private void setFonts(Font f) {		
+	private void setFonts(Font f) {	
+		lblTryVariation.setFont(f);
 		lstVariations.setFont(f);
 		tblMoves.setFont(f);	
 		((javax.swing.border.TitledBorder)pnlVariations.getBorder()).setTitleFont(f);

@@ -157,9 +157,11 @@ public class Board extends JPanel {
 		private static final Color darkGreen = new Color(81, 160, 104);
 		private static final Color lightGray = new Color(223, 223, 223);
 		private static final Color darkGray = new Color(128, 128, 128);		
+		private static final Color lighBrown = new Color(208, 192, 160);
+		private static final Color darkBrown = new Color(160, 128, 80);		
 		
-		private static final Color squareColorWhite = lightGray; 
-		private static final Color squareColorBlack = darkGray;
+		private static final Color squareColorWhite = lighBrown; 
+		private static final Color squareColorBlack = darkBrown;
 		
 		private Font fontPositionEval = new Font("Frutiger Standard", Font.PLAIN, 200); 
 		private static final Color colorPositionEval = new Color(1f, .0f, .0f, .6f); ;
@@ -311,9 +313,9 @@ public class Board extends JPanel {
 		private void loadImages() {
 			try {
 				//maple.jpg wood-1024.jpg metal-1024.jpg
-				boardImage = ImageIO.read(Board.class.getResource("/images/board/maple.jpg"));
+				//boardImage = ImageIO.read(Board.class.getResource("/images/board/maple.jpg"));
 				SVGUniverse svgUniverse = new SVGUniverse();
-				String folder = "merida"; //"merida";
+				String folder = "merida"; //"cburnett", "merida", "pirouetti";
 				wK = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wK.svg"));
 				wQ = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wQ.svg"));
 				wR = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wR.svg"));
