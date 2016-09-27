@@ -16,7 +16,7 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 	private Drill drill;
 	private JProgressBar pbPositionCount;
 	private JLabel lblLast;
-	private JButton btnShowMove;
+	private AbstractButton btnShowMove;
 	
 	private Action actionShowMove = new AbstractAction("Show Move") {
 		@Override
@@ -47,7 +47,7 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 		add(lblLast);
 		add(Box.createRigidArea(new Dimension(0,10)));
 		add(Box.createVerticalGlue());
-		btnShowMove = AppFrame.createButton(actionShowMove, "Idea", true);
+		btnShowMove = AppFrame.createButton(actionShowMove, "Idea", true, false);
 		btnShowMove.setVerticalTextPosition(SwingConstants.CENTER);
 		btnShowMove.setHorizontalTextPosition(SwingConstants.TRAILING);
 		btnShowMove.setAlignmentX(Component.CENTER_ALIGNMENT);		

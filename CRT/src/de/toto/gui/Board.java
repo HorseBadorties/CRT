@@ -151,15 +151,15 @@ public class Board extends JPanel {
 		private static final Color arrowColorBlack20Percent = new Color(0f, 0f, 0f, .2f);
 		
 		
-		private static final Color lightBlue = new Color(230, 245, 250);
-		private static final Color darkBlue = new Color(150, 190, 200);
-		private static final Color lightGreen = new Color(240, 250, 240);
-		private static final Color darkGreen = new Color(113, 170, 85);
-		private static final Color lightGray = new Color(240, 240, 240);
-		private static final Color darkGray = Color.GRAY;		
+		private static final Color lightBlue = new Color(243, 243, 243);
+		private static final Color darkBlue = new Color(115, 137, 182);
+		private static final Color lightGreen = new Color(208, 217, 168);
+		private static final Color darkGreen = new Color(81, 160, 104);
+		private static final Color lightGray = new Color(223, 223, 223);
+		private static final Color darkGray = new Color(128, 128, 128);		
 		
-		private static final Color squareColorWhite = lightGreen; 
-		private static final Color squareColorBlack = darkGreen;
+		private static final Color squareColorWhite = lightGray; 
+		private static final Color squareColorBlack = darkGray;
 		
 		private Font fontPositionEval = new Font("Frutiger Standard", Font.PLAIN, 200); 
 		private static final Color colorPositionEval = new Color(1f, .0f, .0f, .6f); ;

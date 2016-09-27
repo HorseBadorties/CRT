@@ -42,20 +42,21 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private PositionTableModel modelMoves;
 	private JList<Position> lstVariations;
 	private JPanel pnlVariationsAndDrillStatus;
-	private JPanel pnlVariations;
+	private JPanel pnlVariations;	
 	private DefaultListModel<Position> modelVariations;
 	private DrillStatusPanel pnlDrillStatus;
+	private JPanel pnlTryVariation;
 	private JPanel pnlToolBar;
 	private JCheckBox cbOnlyMainline;
 	private JCheckBox cbShowComments;
 	private JCheckBox cbRandomDrill;
-	private JButton btnLoadPGN;
-	private JButton btnDrill;
-	private JButton btnTryVariation;
-	private JButton btnEngine;
-	private JButton btnBack;
-	private JButton btnNext;
-	private JButton btnFlip;	
+	private AbstractButton btnLoadPGN;
+	private AbstractButton btnDrill;
+	private AbstractButton btnTryVariation;
+	private AbstractButton btnEngine;
+	private AbstractButton btnBack;
+	private AbstractButton btnNext;
+	private AbstractButton btnFlip;	
 	
 	private JSplitPane splitCenter;
 	private JSplitPane splitEast;
@@ -345,7 +346,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				tryVariation.removeGameListener(AppFrame.this);
 				tryVariation = null;				
 				updateBoard(false);
-				btnTryVariation.setIcon(loadIcon("Whole Hand"));
+				btnTryVariation.setIcon(loadIcon("Microscope"));
+				this.putValue(Action.NAME, "Try Variation");
+				setPanelVisible(drill != null ? pnlDrillStatus : pnlVariations);
 			} else {
 				Position start = getCurrentPosition();
 				tryVariation = new Game();
@@ -353,7 +356,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				tryVariation.addMove(start.getMove(), start.getFen());
 				tryVariation.addGameListener(AppFrame.this);
 				updateBoard(false);
-				btnTryVariation.setIcon(loadIcon("Whole Hand red"));
+				btnTryVariation.setIcon(loadIcon("Microscope red"));
+				this.putValue(Action.NAME, "End Variation");
+				setPanelVisible(pnlTryVariation);
 			}
 		}
 	};
@@ -377,7 +382,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 		
-		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true));
+		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true, false));
 		
 		cbShowComments = new JCheckBox(actionShowComments);
 		cbShowComments.setFocusable(false);
@@ -385,7 +390,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		actionShowComments.actionPerformed(null);
 		pnlToolBar.add(cbShowComments);
 				
-		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true));		
+		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true, true));		
 		cbOnlyMainline = new JCheckBox("Accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
 		cbOnlyMainline.setFocusable(false);
@@ -404,9 +409,9 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlBoard.add(board, BorderLayout.CENTER);
 		JPanel pnlCenterSouth = new JPanel(new BorderLayout());
 		JPanel pnlBoardControls = new JPanel();
-		pnlBoardControls.add(btnBack = createButton(actionBack, "Circled Left 2", false));	
-		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Available Updates", false)); //Rotate Right-64.png
-		pnlBoardControls.add(btnNext = createButton(actionNext, "Circled Right 2", false));	
+		pnlBoardControls.add(btnBack = createButton(actionBack, "Circled Left 2", false, false));	
+		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Available Updates", false, false)); //Rotate Right-64.png
+		pnlBoardControls.add(btnNext = createButton(actionNext, "Circled Right 2", false, false));	
 		pnlCenterSouth.add(txtComment = new JLabel(), BorderLayout.PAGE_START);
 		pnlCenterSouth.add(pnlBoardControls, BorderLayout.CENTER);
 		pnlCenter.add(pnlBoard, BorderLayout.CENTER);		
@@ -444,9 +449,13 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlMoves.add(new JScrollPane(tblMoves));
 //		pnlMoves.setPreferredSize(new Dimension(150, 500));
 		
+		pnlTryVariation = new JPanel(new BorderLayout());
+		JLabel lblTryVariation = new JLabel("<html><FONT COLOR=\"RED\"><b>Trying Variation<b></FONT></html>");
+		lblTryVariation.setHorizontalAlignment(SwingConstants.CENTER);
+		pnlTryVariation.add(lblTryVariation);
 		pnlVariationsAndDrillStatus = new JPanel(new BorderLayout());
 		pnlVariations = new JPanel(new BorderLayout());
-		pnlVariations.setBorder(BorderFactory.createTitledBorder("Variations"));
+		pnlVariations.setBorder(BorderFactory.createTitledBorder("Repertoire Variations"));
 		modelVariations = new DefaultListModel<Position>();
 		lstVariations = new JList<Position>(modelVariations);		
 		lstVariations.setFocusable(false);		
@@ -471,8 +480,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 		pnlEast.add(splitEast);
 		
-		pnlToolBar.add(btnEngine = createButton(actionEngine, "Superman", true)); //"Robot-64.png
-		pnlToolBar.add(btnTryVariation = createButton(actionTryVariation, "Whole Hand", true)); 
+		pnlToolBar.add(btnEngine = createButton(actionEngine, "Superman", true, true)); //"Robot-64.png
+		pnlToolBar.add(btnTryVariation = createButton(actionTryVariation, "Microscope", true, true)); 
 		
 		txtStatus = new JLabel();
 		txtStatus.setBorder(BorderFactory.createLoweredBevelBorder());	
@@ -528,8 +537,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pathToEngine = prefs.get(PREFS_PATH_TO_ENGINE, null);
 	}
 	
-	public static JButton createButton(Action action, String icon, boolean showText) {
-		JButton btn = new JButton(action);
+	public static AbstractButton createButton(Action action, String icon, boolean showText, boolean toggleButton) {
+		AbstractButton btn = toggleButton ? new JToggleButton(action) : new JButton(action);
 		if (icon != null) {
 			btn.setIcon(loadIcon(icon));
 			btn.setVerticalTextPosition(SwingConstants.BOTTOM);
