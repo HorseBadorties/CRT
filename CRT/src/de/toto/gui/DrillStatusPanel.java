@@ -21,7 +21,7 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 	private Action actionShowMove = new AbstractAction("Show Move") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (drill != null && drill.isCurrentDrillPosition()) {
+			if (drill != null && !drill.isInDrillHistory()) {
 				String message = drill.getPosition().hasNext() ? drill.getPosition().getNext().toString() : "Repertoire move missing for current position";
 				JOptionPane.showMessageDialog(DrillStatusPanel.this, message, "Repertoire move", JOptionPane.INFORMATION_MESSAGE);
 			}

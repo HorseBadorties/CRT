@@ -140,7 +140,7 @@ public class Drill extends Game {
 			if (correctSquareNames[0].equals(squareName) || correctSquareNames[1].equals(squareName)) {
 				result = true;
 			}
-			if (currentPosition != drillStats.lastDrilledPosition) {
+			if (!isInDrillHistory() && currentPosition != drillStats.lastDrilledPosition) {
 				if (result) {
 					drillStats.correctPositions++;
 					fireDrillEvent(new DrillEvent(DrillEvent.ID_WAS_CORRECT, this, squareName));		
@@ -351,12 +351,17 @@ public class Drill extends Game {
 			return drillHistory.indexOf(currentPosition) > 0;
 		}
 	}
-	
-	public boolean isCurrentDrillPosition() {
-		return currentPosition == currentDrillPosition;
+		
+	public boolean isInDrillHistory() {
+		return drillHistory.contains(currentPosition);
 	}
 	
-	
+	public void goToCurrentDrillPosition() {
+		if (currentPosition != currentDrillPosition) {
+			currentPosition = currentDrillPosition;			
+			firePositionChangedEvent();
+		}
+	}
 	
 			
 }

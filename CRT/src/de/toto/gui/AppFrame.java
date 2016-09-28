@@ -45,6 +45,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private JPanel pnlVariations;	
 	private DefaultListModel<Position> modelVariations;
 	private DrillStatusPanel pnlDrillStatus;
+	private JPanel pnlDrillHistory;
+	private JLabel lblDrillHistory;	
 	private JPanel pnlTryVariation;
 	private JLabel lblTryVariation;
 	private JPanel pnlToolBar;
@@ -57,7 +59,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private AbstractButton btnEngine;
 	private AbstractButton btnBack;
 	private AbstractButton btnNext;
-	private AbstractButton btnFlip;	
+	private AbstractButton btnFlip;
+	private AbstractButton btnBackToCurrentDrillPosition;
 	
 	private JSplitPane splitCenter;
 	private JSplitPane splitEast;
@@ -351,18 +354,24 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				tryVariation = null;				
 				updateBoard(false);
 				btnTryVariation.setIcon(loadIcon("Microscope"));
-				this.putValue(Action.NAME, "Try Variation");
-				setPanelVisible(drill != null ? pnlDrillStatus : pnlVariations);
+				this.putValue(Action.NAME, "Try Variation");				
+				
 			} else {
 				Position start = getCurrentPosition();
-				tryVariation = new Game();
-				tryVariation.start();
-				tryVariation.addMove(start.getMove(), start.getFen());
+				tryVariation = new Game(new Position(null, start.getMove(), start.getFen()));				
 				tryVariation.addGameListener(AppFrame.this);
 				updateBoard(false);
 				btnTryVariation.setIcon(loadIcon("Microscope red"));
-				this.putValue(Action.NAME, "End Variation");
-				setPanelVisible(pnlTryVariation);
+				this.putValue(Action.NAME, "End Variation");				
+			}
+		}
+	};
+	
+	private Action actionBackToCurrentDrillPosition = new AbstractAction("Back to current drill position") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (drill != null && drill.isInDrillHistory()) {
+				drill.goToCurrentDrillPosition();
 			}
 		}
 	};
@@ -447,7 +456,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 				int row = tblMoves.rowAtPoint(e.getPoint());
 				if (column >= 0 && row >= 0) {
 					Position p = modelMoves.getPositionAt(row, column);
-					repertoire.gotoPosition(p);					
+					getCurrentGame().gotoPosition(p);					
 				}				
 			}			
 		});
@@ -478,6 +487,18 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlVariations.add(new JScrollPane(lstVariations));		
 //		pnlVariations.setPreferredSize(new Dimension(150, 200));
 		pnlVariationsAndDrillStatus.add(pnlVariations);
+		
+		pnlDrillHistory = new JPanel();
+		pnlDrillHistory.setLayout(new BoxLayout(pnlDrillHistory, BoxLayout.PAGE_AXIS));
+		lblDrillHistory = new JLabel("Browsing Drill History");
+		lblDrillHistory.setForeground(Color.RED);		
+		btnBackToCurrentDrillPosition = createButton(actionBackToCurrentDrillPosition, "Make Decision red2", true, false);
+		btnBackToCurrentDrillPosition.setAlignmentX(Component.CENTER_ALIGNMENT);
+		lblDrillHistory.setAlignmentX(Component.CENTER_ALIGNMENT);
+		pnlDrillHistory.add(Box.createRigidArea(new Dimension(0,10)));
+		pnlDrillHistory.add(lblDrillHistory);
+		pnlDrillHistory.add(Box.createRigidArea(new Dimension(0,10)));
+		pnlDrillHistory.add(btnBackToCurrentDrillPosition);
 		splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlVariationsAndDrillStatus, pnlMoves);
 		splitEast.setBorder(null);
 		int splitEastPosition = prefs.getInt(PREFS_SPLITTER_EAST_POSITION, 0);
@@ -568,7 +589,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		Position p = getCurrentPosition();
 		board.setCurrentPosition(p);
 		String comment = p != null ? p.getCommentText() : null;
-		if (comment != null && comment.length() > 0) {
+		if (comment != null && comment.trim().length() > 0) {
 			comment = "<html>Move comment: <b>" + comment + "</b></html>";
 		} else {
 			comment = " ";
@@ -588,11 +609,23 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 			for (Position variation : p.getVariations()) {
 				modelVariations.addElement(variation);
 			}
-		}		
+		} 
 		if (engine != null && engine.isStarted()) {
 			engine.setFEN(p.getFen());
 		} else {
 			txtStatus.setText(p.getFen());
+		}
+		
+		if (tryVariation != null) {
+			setPanelVisible(pnlTryVariation);
+		} else if (drill != null) {			
+			if (drill.isInDrillHistory()) {
+				setPanelVisible(pnlDrillHistory);
+			} else {
+				setPanelVisible(pnlDrillStatus);
+			}
+		} else {
+			setPanelVisible(pnlVariations);
 		}
 		
 		Game g = getCurrentGame();
@@ -613,14 +646,18 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		if (tryVariation != null) {
 			tryVariation.addMove(move);
 		} else if (drill != null) {
-			if (drill.isCurrentDrillPosition()) {
+			if (drill.isInDrillHistory()) {
+				if (drill.isCorrectMove(move)) {
+					drill.doMove(move);				
+				}				
+			} else {				
 				if (drill.isCorrectMove(move)) {
 					drill.doMove(move);				
 					waitAndLoadNextDrillPosition(drill.getPosition());
 				} else if (drill.getPosition().hasNext()) {
 					Sounds.wrong();
 				}
-			}		
+			}
 		} else {
 			if (repertoire.isCorrectMove(move)) {
 				repertoire.doMove(move);				
@@ -632,11 +669,17 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	public void userClickedSquare(String squareName) {
 		Game g = getCurrentGame();
 		if (g instanceof Drill) {			
-			if (drill.isCorrectSquare(squareName)) {
-				drill.gotoPosition(drill.getPosition().getNext());				
-				waitAndLoadNextDrillPosition(drill.getPosition());
-			} else if (drill.getPosition().hasNext()) {
-				Sounds.wrong();
+			if (drill.isInDrillHistory()) {
+				if (drill.isCorrectSquare(squareName)) {
+					drill.gotoPosition(drill.getPosition().getNext());	
+				}				
+			} else {
+				if (drill.isCorrectSquare(squareName)) {
+					drill.gotoPosition(drill.getPosition().getNext());				
+					waitAndLoadNextDrillPosition(drill.getPosition());
+				} else if (drill.getPosition().hasNext()) {
+					Sounds.wrong();
+				}
 			}
 		} else {
 			for (Position variation : g.getPosition().getVariations()) {
@@ -708,6 +751,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	
 	private void setFonts(Font f) {	
 		lblTryVariation.setFont(f);
+		lblDrillHistory.setFont(f);
+		btnBackToCurrentDrillPosition.setFont(f);
 		lstVariations.setFont(f);
 		tblMoves.setFont(f);	
 		((javax.swing.border.TitledBorder)pnlVariations.getBorder()).setTitleFont(f);

@@ -41,7 +41,16 @@ public class PositionTableModel extends AbstractTableModel {
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {		
 		Position p = getPositionAt(rowIndex, columnIndex);
-		return p != null ? p.getMoveNotation(p.whiteMoved()) : "";
+		if (p != null) {
+			return p.getMoveNotation(p.whiteMoved());
+		} else {
+			if (columnIndex == 1) {
+				return "";
+			} else {
+				Position blackMove = getPositionAt(rowIndex, 1);
+				return blackMove != null ? blackMove.getMoveNumber()+"..." : "";
+			}
+		}
 	}
 	
 	public Position getPositionAt(int rowIndex, int columnIndex) {		
@@ -52,22 +61,26 @@ public class PositionTableModel extends AbstractTableModel {
 	public void setPosition(Position p) {
 		white.clear();
 		black.clear();
-		Position _p = p;
-		while (_p != null) {
-			putPosition(_p);
-			_p = _p.getPrevious();
+		List<Position> moves = new ArrayList<Position>();		
+		for (;;) {
+			if (p.getMoveNumber() > 0) {
+				moves.add(0, p);
+			}
+			if (p.hasPrevious()) {
+				p = p.getPrevious();
+			} else {
+				break;
+			}
+		}		
+		//if the first move is a black move add a null Position into white
+		if (!moves.isEmpty() && !moves.get(0).whiteMoved()) {
+			white.add(null);
+		}
+		for (Position pos : moves) {
+			List<Position> l = pos.whiteMoved() ? white : black;
+			l.add(pos);			
 		}
 		fireTableDataChanged();
-	}
-	
-	private void putPosition(Position p) {
-		if (p.getPrevious() == null) return;
-		List<Position> l = p.whiteMoved() ? white : black;
-		if (l.isEmpty()) {
-			l.add(p);
-		} else {
-			l.add(0, p);
-		}
 	}
 	
 

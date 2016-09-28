@@ -43,14 +43,18 @@ public class Position {
 	
 	public Position(Position previous, String move, String fen, boolean asVariation) {
 		this.previous = previous;			
-		this.variationLevel = asVariation ? previous.variationLevel+1 : previous.variationLevel;
+		if (previous != null) {
+			this.variationLevel = asVariation ? previous.variationLevel+1 : previous.variationLevel;
+		}
 		if (fen != null) {
 			setMove(move, false);
 			setFen(fen, true);		
 		} else if (move != null) {
 			setMove(move, true);
 		}
-		previous.addNextPosition(this, asVariation);	
+		if (previous != null) {
+			previous.addNextPosition(this, asVariation);
+		}
 	}	
 				
 	@Override
@@ -66,6 +70,10 @@ public class Position {
 	
 	public boolean isSamePositionAs(Position other) {
 		return fen != null ? fen.equals(other.fen) : equals(other);
+	}
+	
+	public boolean isStartPosition() {
+		return FEN_STARTPOSITION.equals(fen) ;
 	}
 
 	public String getComment() {

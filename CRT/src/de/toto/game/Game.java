@@ -20,6 +20,15 @@ public class Game {
 		listener.remove(l);
 	}
 	
+	public Game() {
+		
+	}
+	
+	public Game(Position startPosition) {
+		currentPosition = startPosition;
+		firePositionChangedEvent();
+	}
+	
 	protected void firePositionChangedEvent() {
 		GameEvent e = new GameEvent(this);
 		for (GameListener l : listener) {
