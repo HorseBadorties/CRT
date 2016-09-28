@@ -71,7 +71,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	
 	private static Logger log = Logger.getLogger("AppFrame");
 
-	private static final String PREFS_PATH_TO_ENGINE = "PREFS_PATH_TO_ENGINE";
+	private static final String PREFS_PATH_TO_ENGINE = "PATH_TO_ENGINE";
 	private static final String PREFS_FRAME_WIDTH = "FRAME_WIDTH";
 	private static final String PREFS_FRAME_HEIGHT = "FRAME_HEIGHT";
 	private static final String PREFS_FRAME_EXTENDED_STATE = "FRAME_EXTENDED_STATE";
