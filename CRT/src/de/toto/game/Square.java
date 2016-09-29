@@ -225,14 +225,15 @@ public class Square {
 			int startRank = p.whiteMoved() ? 2 : 7;  
 			// move one square
 			Square s = getSquare(p, p.whiteMoved() ? rank+1 : rank-1, file);
-			if (other.equals(s)) return true;			
+			if (other.equals(s) && s.piece == null) return true;			
 			if (rank == startRank && s.piece == null) {
 				// move two squares
 				s = getSquare(p, p.whiteMoved() ? rank+2 : rank-2, file);
-				if (other.equals(s)) return true;	
+				if (other.equals(s) && s.piece == null) return true;	
 			}
 			// try captures (with en passant)
-			String enPassantField = p.getPrevious() != null ? p.getPrevious().getFen().split(" ")[3] : null; 
+			String fen = p.getFen() != null ? p.getFen() : p.getPrevious().getFen();
+			String enPassantField = fen.split(" ")[3];  
 			s = getSquare(p, p.whiteMoved() ? rank+1 : rank-1, file+1);
 			if (other.equals(s) && ((s.piece != null && s.piece.isWhite != p.whiteMoved()) || s.getName().equals(enPassantField))) return true;	
 			s = getSquare(p, p.whiteMoved() ? rank+1 : rank-1, file-1);
@@ -245,14 +246,15 @@ public class Square {
 			int startRank = p.isWhiteToMove() ? 2 : 7;  
 			// move one square
 			Square s = getSquare(p, p.isWhiteToMove() ? rank+1 : rank-1, file);
-			if (other.equals(s)) return true;			
+			if (other.equals(s) && s.piece == null) return true;			
 			if (rank == startRank && s.piece == null) {
 				// move two squares
 				s = getSquare(p, p.isWhiteToMove() ? rank+2 : rank-2, file);
 				if (other.equals(s)) return true;	
 			}
 			// try captures (with en passant)
-			String enPassantField = p.getPrevious() != null ? p.getPrevious().getFen().split(" ")[3] : null; 
+			String fen = p.getFen() != null ? p.getFen() : p.getPrevious().getFen();
+			String enPassantField = fen.split(" ")[3]; 
 			s = getSquare(p, p.isWhiteToMove() ? rank+1 : rank-1, file+1);
 			if (other.equals(s) && ((s.piece != null && s.piece.isWhite != p.isWhiteToMove()) || s.getName().equals(enPassantField))) return true;	
 			s = getSquare(p, p.isWhiteToMove() ? rank+1 : rank-1, file-1);

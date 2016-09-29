@@ -129,8 +129,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		if (engine != null) {
 			prefs.put(PREFS_PATH_TO_ENGINE, pathToEngine);
 		}
-	}
-	
+	}	
 	
 	private void loadPgn(final File pgn) {
 		try {
@@ -265,7 +264,6 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 			}			
 		}
 	};
-	
 	
 	private Action actionShowComments = new AbstractAction("Show arrows/colored squares?") {
 		@Override

@@ -120,8 +120,7 @@ public class Position {
 		}
 		return result;
 	}
-	
-	
+		
 
 	public void setComment(String comment) {
 		this.comment = comment;
