@@ -381,6 +381,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		
 		JPanel pnlAll = new JPanel(new BorderLayout());
 		pnlToolBar = new JPanel();
+		pnlToolBar.setLayout(new BoxLayout(pnlToolBar, BoxLayout.LINE_AXIS));
 		JPanel pnlCenter = new JPanel(new BorderLayout());
 		JPanel pnlEast = new JPanel(new BorderLayout());
 		JPanel pnlSouth = new JPanel(new BorderLayout());
@@ -393,24 +394,20 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 		
-		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true, false));
+		
 		
 		cbShowComments = new JCheckBox(actionShowComments);
 		cbShowComments.setFocusable(false);
 		cbShowComments.setSelected(prefs.getBoolean(PREFS_SHOW_COMMENTS, false));
-		actionShowComments.actionPerformed(null);
-		pnlToolBar.add(cbShowComments);
-				
-		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true, true));		
+		actionShowComments.actionPerformed(null);		
+						
 		cbOnlyMainline = new JCheckBox("Accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
 		cbOnlyMainline.setFocusable(false);
-		cbOnlyMainline.setEnabled(false);
-		pnlToolBar.add(cbOnlyMainline);
+		cbOnlyMainline.setEnabled(false);		
 		cbRandomDrill = new JCheckBox("Random position drill?");
 		cbRandomDrill.setFocusable(false);
 		cbRandomDrill.setSelected(prefs.getBoolean(PREFS_RANDOM_DRILL, false));
-		pnlToolBar.add(cbRandomDrill);		
 
 		JPopupMenu popUpBoard = new JPopupMenu();
 		popUpBoard.add(actionFlip);
@@ -505,8 +502,18 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 		pnlEast.add(splitEast);
 		
+
+		pnlToolBar.add(Box.createHorizontalStrut(10));
+		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true, false));
+//		pnlToolBar.add(cbShowComments);
+		pnlToolBar.add(Box.createHorizontalGlue());
+		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true, true));		
+		//pnlToolBar.add(cbOnlyMainline);
+//		pnlToolBar.add(cbRandomDrill);
+		pnlToolBar.add(Box.createHorizontalGlue());
 		pnlToolBar.add(btnEngine = createButton(actionEngine, "Superman", true, true)); //"Robot-64.png
 		pnlToolBar.add(btnTryVariation = createButton(actionTryVariation, "Microscope", true, true)); 
+		pnlToolBar.add(Box.createHorizontalStrut(10));
 		
 		txtStatus = new JLabel();
 		txtStatus.setBorder(BorderFactory.createLoweredBevelBorder());	
@@ -759,9 +766,31 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 			c.setFont(f);
 		}
 		txtComment.setFont(f);
-		txtStatus.setFont(f);
+		txtStatus.setFont(f);		
 		revalidate();
 		repaint();		
+		resizeToolbarButtons();		
+	}
+	
+	private void resizeToolbarButtons() {
+		Dimension dim = new Dimension();
+		for (Component c : pnlToolBar.getComponents()) {
+			if (c instanceof AbstractButton) {
+				c.doLayout();
+				dim.height = Math.max(dim.height, c.getPreferredSize().height);
+				dim.width = Math.max(dim.width, c.getPreferredSize().width);
+			}
+		}
+		log.info(dim.toString());
+		for (Component c : pnlToolBar.getComponents()) {
+			if (c instanceof AbstractButton) {
+				c.setPreferredSize(dim);
+				c.setMinimumSize(dim);
+				c.setMaximumSize(dim);
+			}
+		}
+		
+		
 	}
 
 	@Override
