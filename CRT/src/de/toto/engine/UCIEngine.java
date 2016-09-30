@@ -13,6 +13,7 @@ public class UCIEngine {
 	private OutputStreamWriter writer;	
 	private OutputReader outputListener;
 	private List<EngineListener> listener = new ArrayList<EngineListener>();
+	private String fen;
 	
 	private static Logger log = Logger.getLogger("UCIEngine");
 
@@ -101,10 +102,13 @@ public class UCIEngine {
 		
 	}
 	
-	public void setFEN(String fen) {
-		sendCommand("stop");
-		sendCommand("position fen " + fen);
-		sendCommand("go infinite");
+	public void setFEN(String newFEN) {
+		if (!newFEN.equals(this.fen)) {
+			this.fen = newFEN;
+			sendCommand("stop");
+			sendCommand("position fen " + newFEN);
+			sendCommand("go infinite");
+		}
 	}
 	
 	private static class OutputReader implements Runnable {
@@ -137,7 +141,7 @@ public class UCIEngine {
 		private void readEngineOutput() {			
 			try {
 				String line = null;
-				while (isAlive && (line = engine.reader.readLine()) != null) {					
+				while (isAlive && (line = engine.reader.readLine()) != null) {
 					Score newScore = Score.parse(line);
 					if (newScore != null) {
 						engine.fireNewScore(newScore);
@@ -151,17 +155,18 @@ public class UCIEngine {
 	}
 	
 	// C:\\Scid vs PC-4.12\\bin\\engines\\stockfish\\stockfish 7 x64.exe
-	// C:\\Scid vs PC-4.12\\bin\\engines\toga\\TogaII.exe	
+	// C:\\Scid vs PC-4.12\\bin\\engines\\toga\\TogaII.exe	
+	// C:\\Scid vs PC-4.12\\bin\\engines\\komodo-8_2d3f23\\Windows\\komodo-8-64bit.exe
 	public static void main(String[] args) {
-		UCIEngine engine = new UCIEngine("C:\\Scid vs PC-4.12\\bin\\engines\\stockfish\\stockfish 7 x64.exe");		
+		UCIEngine engine = new UCIEngine("C:\\Scid vs PC-4.12\\bin\\engines\\komodo-8_2d3f23\\Windows\\komodo-8-64bit.exe");		
 		try {
 			engine.addEngineListener(new EngineListener() {
 
 				@Override
 				public void newEngineScore(Score s) {
-					System.out.println(s.toString());					
+					System.out.println("*** Score: *** " + s.toString());					
 				}
-				
+
 			});
 			engine.start();
 			engine.setFEN("r2qkb1r/pQnbpppp/8/2p5/3n4/2N3P1/PP1PPPBP/R1B1K1NR w KQkq - 1 9");

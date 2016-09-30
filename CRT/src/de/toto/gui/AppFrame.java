@@ -509,7 +509,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlToolBar.add(Box.createHorizontalGlue());
 		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true, true));		
 		//pnlToolBar.add(cbOnlyMainline);
-//		pnlToolBar.add(cbRandomDrill);
+		pnlToolBar.add(cbRandomDrill);
 		pnlToolBar.add(Box.createHorizontalGlue());
 		pnlToolBar.add(btnEngine = createButton(actionEngine, "Superman", true, true)); //"Robot-64.png
 		pnlToolBar.add(btnTryVariation = createButton(actionTryVariation, "Microscope", true, true)); 
@@ -775,15 +775,14 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private void resizeToolbarButtons() {
 		Dimension dim = new Dimension();
 		for (Component c : pnlToolBar.getComponents()) {
-			if (c instanceof AbstractButton) {
+			if (c instanceof AbstractButton && !(c instanceof JCheckBox)) {
 				c.doLayout();
 				dim.height = Math.max(dim.height, c.getPreferredSize().height);
 				dim.width = Math.max(dim.width, c.getPreferredSize().width);
 			}
 		}
-		log.info(dim.toString());
 		for (Component c : pnlToolBar.getComponents()) {
-			if (c instanceof AbstractButton) {
+			if (c instanceof AbstractButton && !(c instanceof JCheckBox)) {
 				c.setPreferredSize(dim);
 				c.setMinimumSize(dim);
 				c.setMaximumSize(dim);
@@ -829,9 +828,10 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		});
 		
 	}
-	
+
 	private static boolean isUltraHighResolution() {
 		return Toolkit.getDefaultToolkit().getScreenSize().width >= 1600;
 	}
+
 
 }
