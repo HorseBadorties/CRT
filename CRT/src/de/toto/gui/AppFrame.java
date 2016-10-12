@@ -189,7 +189,10 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private Action actionNext = new AbstractAction("Next move") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (drill != null) {
+			Game g = getCurrentGame();
+			if (g == tryVariation) {
+				g.goForward();
+			} else if (g == drill) {
 				//gotoNextDrillPosition();
 				drill.goForward();
 			} else if (lstVariations.getSelectedIndex() >= 0) {
