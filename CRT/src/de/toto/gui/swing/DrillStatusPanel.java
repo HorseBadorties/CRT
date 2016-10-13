@@ -1,4 +1,4 @@
-package de.toto.gui;
+package de.toto.gui.swing;
 
 import java.awt.Component;
 import java.awt.Dimension;

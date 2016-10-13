@@ -1,4 +1,4 @@
-package de.toto.gui;
+package de.toto.gui.swing;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -25,7 +25,6 @@ import de.toto.game.GameEvent;
 import de.toto.game.GameListener;
 import de.toto.game.Position;
 import de.toto.pgn.PGNReader;
-import de.toto.sound.Sounds;
 
 @SuppressWarnings("serial")
 public class AppFrame extends JFrame implements BoardListener, GameListener, DrillListener, EngineListener {

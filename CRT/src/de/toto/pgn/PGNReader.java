@@ -1,7 +1,6 @@
 package de.toto.pgn;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;

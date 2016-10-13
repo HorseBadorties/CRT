@@ -1,4 +1,4 @@
-package de.toto.sound;
+package de.toto.gui.swing;
 
 import java.net.URL;
 

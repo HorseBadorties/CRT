@@ -2,7 +2,7 @@ package de.toto;
 
 import javax.swing.UIManager;
 
-import de.toto.gui.AppFrame;
+import de.toto.gui.swing.AppFrame;
 
 public class Main {
 
