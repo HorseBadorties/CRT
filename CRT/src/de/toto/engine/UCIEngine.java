@@ -14,6 +14,7 @@ public class UCIEngine {
 	private OutputReader outputListener;
 	private List<EngineListener> listener = new ArrayList<EngineListener>();
 	private String fen;
+	private String name;
 	
 	private static Logger log = Logger.getLogger("UCIEngine");
 
@@ -47,8 +48,9 @@ public class UCIEngine {
 			String line = null;
 			boolean idReceived = false;
 			while ((line = reader.readLine()) != null) {
-				if (line.startsWith("id ")) {
+				if (line.startsWith("id name")) {
 					idReceived = true;
+					name = line.substring(7, line.length()).trim();
 					break;
 				}
 			}
@@ -67,6 +69,10 @@ public class UCIEngine {
 				throw (RuntimeException)e;
 			}
 		}	
+	}
+	
+	public String getName() {
+		return name;
 	}
 	
 	public boolean isStarted() {

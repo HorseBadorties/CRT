@@ -313,12 +313,14 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 					engine.stop();
 					this.putValue(Action.NAME, "Start Engine");
 					btnEngine.setIcon(loadIcon("Superman"));
+					btnEngine.setToolTipText("Start Engine");
 					txtStatus.setText("Engine stopped");
 					engineMove = null;
 				} else {
-					engine.start();
+					engine.start();					
 					engine.setFEN(getCurrentPosition().getFen());	
 					this.putValue(Action.NAME, "Stop Engine");
+					btnEngine.setToolTipText(engine.getName());
 					btnEngine.setIcon(loadIcon("Superman red"));
 				}
 				updateBoard(false);
