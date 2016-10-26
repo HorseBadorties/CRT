@@ -378,6 +378,23 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
+	private Action actionShowNovelties = new AbstractAction("Show Novelties") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			File lastDir = pgn != null ? pgn.getParentFile() : null;
+			JFileChooser fc = new JFileChooser(lastDir);
+			fc.setDialogTitle("Please choose a PGN file that contains your games!");
+			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			fc.setFileFilter(new FileNameExtensionFilter("*.pgn", "pgn"));
+			int ok = fc.showOpenDialog(AppFrame.this);
+			if (ok == JFileChooser.APPROVE_OPTION) {
+				for (Game g : PGNReader.parse(fc.getSelectedFile())) {
+					repertoire.findNovelty(g);
+				}
+			}		
+		}
+	};
+	
 	private void doUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -509,6 +526,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 
 		pnlToolBar.add(Box.createHorizontalStrut(10));
 		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true, false));
+		pnlToolBar.add(createButton(actionShowNovelties, "Open in Popup", true, false));
 //		pnlToolBar.add(cbShowComments);
 		pnlToolBar.add(Box.createHorizontalGlue());
 		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true, true));		

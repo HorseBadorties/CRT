@@ -234,6 +234,66 @@ public class Game {
 	public String toString() {
 		return String.format("%s - %s: %s", getTagValue("White"), getTagValue("Black"), getTagValue("Event")); 
 	}
+	
+	public Position findNovelty1(Game other) {
+		Position currentPositionBackup = currentPosition;
+		try {
+			other.gotoStartPosition(); 
+			gotoStartPosition();
+			
+			Position first = getPosition();
+			Position second = other.getPosition();
+			
+			for (;;) {
+				if (!second.hasNext()) return null;
+				second = second.getNext();
+				if (second == null) return null;
+				if (!first.hasVariation(second)) {					
+					log.info(String.format("findNovelty in %s: %s", other, second));
+					return second;					
+				} else {
+					first = first.getVariation(second);
+				}				
+			}
+		} finally {
+			currentPosition = currentPositionBackup;
+		}
+	}
+	
+	public Position findNovelty(Game other) {
+		Position otherPosition = other.gotoStartPosition();
+		
+		//go to other's last Position 
+		while (otherPosition.hasNext()) {
+			otherPosition = otherPosition.getNext();
+		}
+		
+		//find first match 
+		while (otherPosition != null) {
+			if (this.contains(otherPosition)) break;
+			otherPosition = otherPosition.getPrevious();
+		}
+		
+		//novelty is the next move after our match
+		Position novelty = null;
+		if (otherPosition == null) {
+			novelty = other.gotoStartPosition();			
+		} else if (otherPosition.hasNext()) {
+			novelty = otherPosition.getNext();
+		} else {
+			novelty = otherPosition;
+		}
+		log.info(String.format("findNovelty in %s: %s", other, novelty));
+		return novelty;
+		
+	}
+	
+	public boolean contains(Position aPosition) {
+		for (Position p : getAllPositions()) {
+			if (p.isSamePositionAs(aPosition)) return true;
+		}
+		return false;
+	}
 		
 	
 }

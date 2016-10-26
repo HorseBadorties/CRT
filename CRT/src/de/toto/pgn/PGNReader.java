@@ -76,6 +76,7 @@ public class PGNReader {
 		StringBuilder movetext = null;
 		Game currentGame = null;
 		for (int i = 0; i < pgnLines.size(); i++) {			
+			try {
 			String line = pgnLines.get(i).trim();
 			if (isEmpty(line)) {
 				continue;
@@ -95,7 +96,10 @@ public class PGNReader {
 				line = line.replaceAll("\\[|\\]", ""); //strip "[" and "]"
 				String name = line.substring(0, line.indexOf(" "));
 				String value = line.substring(line.indexOf(" "), line.length()).trim().replace("\"", "");
-				currentGame.addTag(name, value);							
+				currentGame.addTag(name, value);
+				if ("FEN".equals(name)) {
+					currentGame.addMove("--", value);
+				}
 			} else {
 				movetext.append(line).append(" ");
 				if (line.endsWith(currentGame.getTagValue("Result"))) {
@@ -112,6 +116,10 @@ public class PGNReader {
 					}
 					
 				}
+			}
+			} catch (RuntimeException ex) {
+				System.err.println("parsing error at line no " + i);
+				throw ex;
 			}
 		}
 		//add last game
