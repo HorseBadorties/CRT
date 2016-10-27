@@ -439,6 +439,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlBoard.add(board, BorderLayout.CENTER);
 		JPanel pnlCenterSouth = new JPanel(new BorderLayout());
 		JPanel pnlBoardControls = new JPanel();
+		pnlBoardControls.add(cbShowComments);
 		pnlBoardControls.add(btnBack = createButton(actionBack, "Circled Left 2", false, false));	
 		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Available Updates", false, false)); //Rotate Right-64.png
 		pnlBoardControls.add(btnNext = createButton(actionNext, "Circled Right 2", false, false));	
