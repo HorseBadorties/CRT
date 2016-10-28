@@ -429,21 +429,24 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		cbRandomDrill = new JCheckBox("Random position drill?");
 		cbRandomDrill.setFocusable(false);
 		cbRandomDrill.setSelected(prefs.getBoolean(PREFS_RANDOM_DRILL, false));
-
-		JPopupMenu popUpBoard = new JPopupMenu();
-		popUpBoard.add(actionFlip);
-		popUpBoard.add(actionShowComments);
-		board.setComponentPopupMenu(popUpBoard);
+		
 		JPanel pnlBoard = new JPanel(new BorderLayout());
 		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 5));
 		pnlBoard.add(board, BorderLayout.CENTER);
 		JPanel pnlCenterSouth = new JPanel(new BorderLayout());
+		JPanel pnlMoveComments = new JPanel();
+		pnlMoveComments.setLayout(new BoxLayout(pnlMoveComments, BoxLayout.LINE_AXIS));
+		pnlMoveComments.add(txtComment = new JLabel());
+		pnlMoveComments.add(Box.createHorizontalGlue());
+		pnlMoveComments.add(cbShowComments);
+		pnlCenterSouth.add(pnlMoveComments, BorderLayout.PAGE_START);
 		JPanel pnlBoardControls = new JPanel();
-		pnlBoardControls.add(cbShowComments);
+		pnlBoardControls.setLayout(new BoxLayout(pnlBoardControls, BoxLayout.LINE_AXIS));
+		pnlBoardControls.add(Box.createHorizontalGlue());
 		pnlBoardControls.add(btnBack = createButton(actionBack, "Circled Left 2", false, false));	
 		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Available Updates", false, false)); //Rotate Right-64.png
 		pnlBoardControls.add(btnNext = createButton(actionNext, "Circled Right 2", false, false));	
-		pnlCenterSouth.add(txtComment = new JLabel(), BorderLayout.PAGE_START);
+		pnlBoardControls.add(Box.createHorizontalGlue());
 		pnlCenterSouth.add(pnlBoardControls, BorderLayout.CENTER);
 		pnlCenter.add(pnlBoard, BorderLayout.CENTER);		
 		pnlCenter.add(pnlCenterSouth, BorderLayout.PAGE_END);
