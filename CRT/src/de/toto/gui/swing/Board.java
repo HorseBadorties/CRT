@@ -31,6 +31,7 @@ public class Board extends JPanel {
 	private boolean showBoard = true;
 	private boolean showGraphicsComments = true;
 	private boolean showPieces = true;
+	private boolean showCoordinates = true;
 	private java.util.List<GraphicsComment> additionalGraphicsComment = new ArrayList<GraphicsComment>();  
 	
 	public Position getCurrentPosition() {
@@ -53,6 +54,10 @@ public class Board extends JPanel {
 	
 	public void setShowBoard(boolean value) {
 		showBoard = value;	
+	}
+	
+	public void setShowCoordinates(boolean value) {
+		showCoordinates = value;	
 	}
 	
 	public void clearAdditionalGraphicsComment() {
@@ -496,10 +501,12 @@ public class Board extends JPanel {
 						if (boardImageScaled == null) {
 							g2.setColor(square.isWhite ? squareColorWhite : squareColorBlack);
 							g2.fillRect(square.topLeftOnBoard.x, square.topLeftOnBoard.y, squareSize, squareSize);
+							// draw square coordinates?	
+							if (board.showCoordinates && ((isOrientationWhite && (square.rank == 1 || square.file == 1)) || (!isOrientationWhite && (square.rank == 8 || square.file == 8)))) {
+								g2.setColor(square.isWhite ? squareColorBlack : squareColorWhite);//															
+								g2.drawString(square.getName(), square.topLeftOnBoard.x + 3, square.topLeftOnBoard.y + 13);
+							}
 						}	
-						// draw square coordinates?					
-//						g2.setColor(Color.BLACK);
-//						g2.drawString(square.getName(), square.topLeftOnBoard.x + 3, square.topLeftOnBoard.y+13);
 					}
 				}
 			}
