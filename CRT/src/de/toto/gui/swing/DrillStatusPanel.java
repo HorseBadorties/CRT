@@ -69,8 +69,10 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 			((javax.swing.border.TitledBorder)getBorder()).setTitleFont(f);
 		}
 	}
-
-
+	
+	public void setLast(String s) {
+		lblLast.setText(s);
+	}
 
 	@Override
 	public void drillEnded(DrillEvent e) {

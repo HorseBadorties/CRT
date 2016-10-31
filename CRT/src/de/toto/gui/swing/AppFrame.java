@@ -932,14 +932,21 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		if (event instanceof KeyEvent) {
 			KeyEvent keyEvent = (KeyEvent)event;			
 			if (keyEvent.getID() == KeyEvent.KEY_TYPED) {				
-				char c = keyEvent.getKeyChar();
-				if ((c >= 'a' && c <= 'h') || (c >= '1' && c <= '8')) {
+				char c = keyEvent.getKeyChar();				
+				if (c == 'K' || c == 'Q' || c == 'B'|| c == 'N'|| c == 'R') {
+					keysTyped = String.valueOf(c);
+				} else if (c == 'x' && keysTyped.length() == 1 && keysTyped.charAt(0) >= 'B') {
+					keysTyped = keysTyped + String.valueOf(c);
+				} else if ((c >= 'a' && c <= 'h') || (c >= '1' && c <= '8')) {
 					keysTyped = keysTyped + String.valueOf(c);
 				} else {
 					keysTyped = "";
 				}
-				if (keysTyped.length() == 2) {
-					userTypedSquare(keysTyped);
+				if (getCurrentGame() == drill) {
+					pnlDrillStatus.setLast(keysTyped);
+				}
+				if (keysTyped.length() >= 2 && Character.isDigit(keysTyped.charAt(keysTyped.length()-1))) {
+					userTypedSquare(keysTyped.substring(keysTyped.length()-2, keysTyped.length()));
 					keysTyped = "";
 				}
 			}

@@ -494,7 +494,7 @@ public class Board extends JPanel {
 			
 			// draw square background if no boardImage is loaded
 			if (boardImageScaled == null) {
-				Font font = new Font("SansSerif", Font.PLAIN, squareSize / 7);
+				Font font = new Font("Dialog", Font.PLAIN, squareSize / 7);
 				float fontHeight = g2.getFontMetrics().getAscent();	
 				g2.setFont(font);
 				int span = squareSize / 25;
