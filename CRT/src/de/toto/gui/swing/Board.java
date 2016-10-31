@@ -11,7 +11,6 @@ import java.awt.image.*;
 import java.net.URL;
 import java.util.ArrayList;
 
-import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -29,7 +28,9 @@ public class Board extends JPanel {
 	
 	private Position currentPosition = new Position();
 	private BoardCanvas boardCanvas = new BoardCanvas(this);
+	private boolean showBoard = true;
 	private boolean showGraphicsComments = true;
+	private boolean showPieces = true;
 	private java.util.List<GraphicsComment> additionalGraphicsComment = new ArrayList<GraphicsComment>();  
 	
 	public Position getCurrentPosition() {
@@ -44,6 +45,14 @@ public class Board extends JPanel {
 	
 	public void setShowGraphicsComments(boolean value) {
 		showGraphicsComments = value;	
+	}
+	
+	public void setShowPieces(boolean value) {
+		showPieces = value;	
+	}
+	
+	public void setShowBoard(boolean value) {
+		showBoard = value;	
 	}
 	
 	public void clearAdditionalGraphicsComment() {
@@ -464,6 +473,8 @@ public class Board extends JPanel {
 
 		@Override
 		public void paint(Graphics g) {
+			if (!board.showBoard) return;
+			
 			if (scaleSize != getSquareSize()) {
 				rescaleAll();
 			}
@@ -513,14 +524,17 @@ public class Board extends JPanel {
 				}
 			}
 						
-			for (int rank = 1; rank <= 8; rank++) {
-				for (int file = 1; file <= 8; file++) {
-					Square square = getSquare(rank, file);
-					if (square.gameSquare.piece != null && !square.isDragSource) {
-						getIconFor(square.gameSquare.piece).paintIcon(this, g2, 
-								square.topLeftOnBoard.x, square.topLeftOnBoard.y);
-						
-					}	
+			//draw pieces
+			if (board.showPieces) {
+				for (int rank = 1; rank <= 8; rank++) {
+					for (int file = 1; file <= 8; file++) {
+						Square square = getSquare(rank, file);
+						if (square.gameSquare.piece != null && !square.isDragSource) {
+							getIconFor(square.gameSquare.piece).paintIcon(this, g2, 
+									square.topLeftOnBoard.x, square.topLeftOnBoard.y);
+							
+						}	
+					}
 				}
 			}
 			
@@ -534,7 +548,7 @@ public class Board extends JPanel {
 						}
 					}
 				}
-				if (dragSquare.gameSquare.piece != null) {
+				if (board.showPieces && dragSquare.gameSquare.piece != null) {
 					getIconFor(dragSquare.gameSquare.piece).paintIcon(this, g2, 
 							cursorLocation.x - squareSize / 2, cursorLocation.y - squareSize / 2);
 				}

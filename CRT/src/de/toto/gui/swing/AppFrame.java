@@ -27,7 +27,9 @@ import de.toto.game.Position;
 import de.toto.pgn.PGNReader;
 
 @SuppressWarnings("serial")
-public class AppFrame extends JFrame implements BoardListener, GameListener, DrillListener, EngineListener {
+public class AppFrame extends JFrame 
+implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventListener 
+{
 	
 	private File pgn = null;
 	private Game repertoire;
@@ -51,6 +53,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private JPanel pnlToolBar;
 	private JCheckBox cbOnlyMainline;
 	private JCheckBox cbShowComments;
+	private JCheckBox cbShowPieces;
+	private JCheckBox cbShowBoard;
 	private JCheckBox cbRandomDrill;
 	private AbstractButton btnLoadPGN;
 	private AbstractButton btnDrill;
@@ -67,6 +71,7 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private UCIEngine engine;
 	private String engineMove;
 	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
+	private String keysTyped = "";
 	
 	private static Logger log = Logger.getLogger("AppFrame");
 
@@ -82,9 +87,12 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private static final String PREFS_FONT_NAME = "FONT_NAME";
 	private static final String PREFS_ONLY_MAINLINE = "ONLY_MAINLINE";
 	private static final String PREFS_SHOW_COMMENTS = "SHOW_COMMENTS";
+	private static final String PREFS_SHOW_PIECES = "SHOW_PIECES";
+	private static final String PREFS_SHOW_BOARD = "SHOW_BOARD";
 	private static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
 	
 	public AppFrame() throws HeadlessException {
+		Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.KEY_EVENT_MASK);
 		setIconImage(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource("/images/icon/Knight50.png")));
 		board = new Board();
 		board.addBoardListener(this);		
@@ -125,6 +133,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		prefs.putBoolean(PREFS_ONLY_MAINLINE, cbOnlyMainline.isSelected());
 		prefs.putBoolean(PREFS_RANDOM_DRILL, cbRandomDrill.isSelected());
 		prefs.putBoolean(PREFS_SHOW_COMMENTS, cbShowComments.isSelected());
+		prefs.putBoolean(PREFS_SHOW_PIECES, cbShowPieces.isSelected());
+		prefs.putBoolean(PREFS_SHOW_BOARD, cbShowBoard.isSelected());
 		if (engine != null) {
 			prefs.put(PREFS_PATH_TO_ENGINE, pathToEngine);
 		}
@@ -278,6 +288,28 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	};
 	
+	private Action actionShowPieces = new AbstractAction("Show pieces?") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			if (e != null && e.getSource() != cbShowPieces) {
+				cbShowPieces.setSelected(!cbShowPieces.isSelected());
+			}
+			board.setShowPieces(cbShowPieces.isSelected());
+			if (getCurrentGame() != null) updateBoard(false);
+		}
+	};
+	
+	private Action actionShowBoard = new AbstractAction("Show board?") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			if (e != null && e.getSource() != cbShowBoard) {
+				cbShowBoard.setSelected(!cbShowBoard.isSelected());
+			}
+			board.setShowBoard(cbShowBoard.isSelected());
+			if (getCurrentGame() != null) updateBoard(false);
+		}
+	};
+	
 	private Action actionChooseFont = new AbstractAction("Choose Font") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -421,6 +453,16 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		cbShowComments.setFocusable(false);
 		cbShowComments.setSelected(prefs.getBoolean(PREFS_SHOW_COMMENTS, false));
 		actionShowComments.actionPerformed(null);		
+		
+		cbShowPieces = new JCheckBox(actionShowPieces);
+		cbShowPieces.setFocusable(false);
+		cbShowPieces.setSelected(prefs.getBoolean(PREFS_SHOW_PIECES, true));
+		actionShowPieces.actionPerformed(null);		
+		
+		cbShowBoard = new JCheckBox(actionShowBoard);
+		cbShowBoard.setFocusable(false);
+		cbShowBoard.setSelected(prefs.getBoolean(PREFS_SHOW_BOARD, false));
+		actionShowBoard.actionPerformed(null);		
 						
 		cbOnlyMainline = new JCheckBox("Accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
@@ -438,6 +480,8 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		pnlMoveComments.setLayout(new BoxLayout(pnlMoveComments, BoxLayout.LINE_AXIS));
 		pnlMoveComments.add(txtComment = new JLabel());
 		pnlMoveComments.add(Box.createHorizontalGlue());
+		pnlMoveComments.add(cbShowBoard);
+		pnlMoveComments.add(cbShowPieces);
 		pnlMoveComments.add(cbShowComments);
 		pnlCenterSouth.add(pnlMoveComments, BorderLayout.PAGE_START);
 		JPanel pnlBoardControls = new JPanel();
@@ -722,6 +766,10 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 		}
 	}
 	
+	private void userTypedSquare(String squareName) {
+		userClickedSquare(squareName);
+	}
+	
 	private void waitAndLoadNextDrillPosition(final Position p) {
 		new SwingWorker<Void,Void>() {
 			
@@ -858,6 +906,26 @@ public class AppFrame extends JFrame implements BoardListener, GameListener, Dri
 	private static boolean isUltraHighResolution() {
 		return Toolkit.getDefaultToolkit().getScreenSize().width >= 1600;
 	}
-
-
+	
+	@Override
+	public void eventDispatched(AWTEvent event) {
+		if (event instanceof KeyEvent) {
+			KeyEvent keyEvent = (KeyEvent)event;			
+			if (keyEvent.getID() == KeyEvent.KEY_TYPED) {				
+				char c = keyEvent.getKeyChar();
+				if ((c >= 'a' && c <= 'h') || (c >= '1' && c <= '8')) {
+					keysTyped = keysTyped + String.valueOf(c);
+				} else {
+					keysTyped = "";
+				}
+				if (keysTyped.length() == 2) {
+					userTypedSquare(keysTyped);
+					keysTyped = "";
+				}
+			}
+		}
+    }
+	
+	
+	
 }
