@@ -478,7 +478,7 @@ public class Board extends JPanel {
 
 		@Override
 		public void paint(Graphics g) {
-			if (!board.showBoard) return;
+			if (!board.showBoard) return;			
 			
 			if (scaleSize != getSquareSize()) {
 				rescaleAll();
@@ -489,11 +489,15 @@ public class Board extends JPanel {
 				g2.drawImage(boardImageScaled, 0, 0, null);
 			}
 
-			int squareSize = getSquareSize();
+			int squareSize = getSquareSize();			
 			Position position = board.getCurrentPosition();
 			
 			// draw square background if no boardImage is loaded
 			if (boardImageScaled == null) {
+				Font font = new Font("SansSerif", Font.PLAIN, squareSize / 7);
+				float fontHeight = g2.getFontMetrics().getAscent();	
+				g2.setFont(font);
+				int span = squareSize / 25;
 				for (int rank = 1; rank <= 8; rank++) {
 					for (int file = 1; file <= 8; file++) {
 						Square square = getSquare(rank, file);
@@ -504,7 +508,7 @@ public class Board extends JPanel {
 							// draw square coordinates?	
 							if (board.showCoordinates && ((isOrientationWhite && (square.rank == 1 || square.file == 1)) || (!isOrientationWhite && (square.rank == 8 || square.file == 8)))) {
 								g2.setColor(square.isWhite ? squareColorBlack : squareColorWhite);//															
-								g2.drawString(square.getName(), square.topLeftOnBoard.x + 3, square.topLeftOnBoard.y + 13);
+								g2.drawString(square.getName(), square.topLeftOnBoard.x + span, square.topLeftOnBoard.y + fontHeight + span);
 							}
 						}	
 					}
