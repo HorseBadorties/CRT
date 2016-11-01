@@ -252,6 +252,14 @@ public class Board extends JPanel {
 							move += "-";
 						}
 						move += dropSquare.getName();
+						// Promotion?
+						if (dragSquare.gameSquare.piece.type == PieceType.PAWN) {
+							if ((dragSquare.gameSquare.piece.isWhite && dropSquare.rank == 8) 
+									|| (!dragSquare.gameSquare.piece.isWhite && dropSquare.rank == 1)) 
+							{
+								move += "=Q";
+							}
+						}
 						// Castles?
 						if (dragSquare.gameSquare.piece.type == de.toto.game.Rules.PieceType.KING
 								&& dragSquare.file == 5) 
@@ -262,7 +270,7 @@ public class Board extends JPanel {
 								move = "0-0";
 							}
 						}
-						// TODO check, mate, promotion
+						// TODO check, mate
 						board.fireUserMoved(move.trim());
 					}
 				}

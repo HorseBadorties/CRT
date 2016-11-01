@@ -650,7 +650,11 @@ public class Position {
 	}
 	
 	public Square findOurKing() {
-		Piece ourKing = whiteMoved() ? Piece.WHITE_KING : Piece.BLACK_KING;
+		return findKing(whiteMoved());
+	}
+	
+	public Square findKing(boolean white) {
+		Piece ourKing = white ? Piece.WHITE_KING : Piece.BLACK_KING;
 		for (int _rank = 1; _rank <= 8; _rank++) {
 			for (int _file = 1; _file <= 8; _file++) {
 				if (squares[_rank - 1][_file - 1].piece == ourKing) {
@@ -659,6 +663,29 @@ public class Position {
 			}
 		}
 		return null;	
+	}
+	
+	// translates an engine move like "g1f3" into a LAN move like "Ng1xf3"
+	public String translateMove(String engineMove) {
+		Square from = getSquare(engineMove.substring(0,2));
+		Square to = getSquare(engineMove.substring(2,4));
+		StringBuilder result = new StringBuilder();
+		// Consider castling 
+		if (from.piece.type == PieceType.KING && (to.file == from.file + 2 || to.file == from.file - 2)) {
+			if (to.file == 7) return "0-0";
+			if (to.file == 3) return "0-0-0";
+		}
+		result.append(from.getNameWithPieceSuffix());
+		if (to.piece != null) {
+			result.append("x");
+		} else if (from.piece.type == PieceType.PAWN && from.file != to.file) {
+			// Consider en passant
+			result.append("x");
+		} else {
+			result.append("-");
+		}
+		result.append(to.getName());
+		return result.toString().trim();
 	}
 	
 	public static class GraphicsComment {

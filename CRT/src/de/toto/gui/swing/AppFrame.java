@@ -364,7 +364,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					engineMove = null;
 				} else {
 					engine.start();					
-					engine.setFEN(getCurrentPosition().getFen());	
+					//engine.setFEN(getCurrentPosition().getFen());	
 					this.putValue(Action.NAME, "Stop Engine");
 					btnEngine.setToolTipText(engine.getName());
 					btnEngine.setIcon(loadIcon("Superman red"));
@@ -497,8 +497,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		JPanel pnlCenterSouth = new JPanel(new BorderLayout());
 		JPanel pnlMoveComments = new JPanel();
 		pnlMoveComments.setLayout(new BoxLayout(pnlMoveComments, BoxLayout.LINE_AXIS));
-		pnlMoveComments.add(txtComment = new JLabel());
-		pnlMoveComments.add(Box.createHorizontalGlue());
+		txtComment = new JLabel();
+//		pnlMoveComments.add(txtComment);
+//		pnlMoveComments.add(Box.createHorizontalGlue());
 		pnlMoveComments.add(cbShowBoard);
 		pnlMoveComments.add(cbShowPieces);
 		pnlMoveComments.add(cbShowCoordinates);
@@ -679,7 +680,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		String suffix = isUltraHighResolution() ? "-64.png" : "-32.png"; 
 		return new ImageIcon(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource("/images/icon/" + icon + suffix)));
 	}
-
+	
 	private void updateBoard(boolean playSound) {	
 		Position p = getCurrentPosition();
 		board.setCurrentPosition(p);
@@ -706,7 +707,11 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			}
 		} 
 		if (engine != null && engine.isStarted()) {
-			engine.setFEN(p.getFen());
+			if (getCurrentGame() == tryVariation && (board.isOrientationWhite() != getCurrentPosition().isWhiteToMove())) {
+				engine.setFENandMove(p.getFen());
+			} else {
+				//engine.setFEN(p.getFen());	
+			}
 		} else {
 			txtStatus.setText(p.getFen());
 		}
@@ -921,6 +926,11 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			
 		});
 		
+	}
+	
+	@Override
+	public void engineMoved(String engineMove) {
+		tryVariation.addMove(getCurrentPosition().translateMove(engineMove));
 	}
 
 	private static boolean isUltraHighResolution() {

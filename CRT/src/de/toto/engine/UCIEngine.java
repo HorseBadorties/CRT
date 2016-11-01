@@ -38,6 +38,12 @@ public class UCIEngine {
 		}
 	}
 	
+	private void fireEngineMoved(String engineMove) {
+		for (EngineListener l : listener) {
+			l.engineMoved(engineMove);
+		}
+	}
+	
 	public void start() {
 		if (isStarted()) return;
 		try {
@@ -57,6 +63,7 @@ public class UCIEngine {
 			if (!idReceived) {
 				throw new RuntimeException("process did not send an ID token - it's not a valid UCI engine");
 			}
+			sendCommand("setoption name Skill Level value 1");
 			outputListener = new OutputReader(this);
 		} catch (Exception e) {
 			log.severe(e.getLocalizedMessage());
@@ -117,6 +124,15 @@ public class UCIEngine {
 		}
 	}
 	
+	public void setFENandMove(String newFEN) {
+		if (!newFEN.equals(this.fen)) {
+			this.fen = newFEN;
+			//sendCommand("stop");
+			sendCommand("position fen " + newFEN);
+			sendCommand("go");
+		}
+	}
+	
 	private static class OutputReader implements Runnable {
 		
 		private UCIEngine engine;
@@ -151,6 +167,8 @@ public class UCIEngine {
 					Score newScore = Score.parse(line);
 					if (newScore != null) {
 						engine.fireNewScore(newScore);
+					} else if (line.startsWith("bestmove")) {
+						engine.fireEngineMoved(line.split(" ")[1]);
 					}
 				}
 			} catch (IOException ex) {
@@ -160,11 +178,11 @@ public class UCIEngine {
 		
 	}
 	
-	// C:\\Scid vs PC-4.12\\bin\\engines\\stockfish\\stockfish 7 x64.exe
+	// C:\Program Files\Stockfish\\stockfish 7 x64.exe
 	// C:\\Scid vs PC-4.12\\bin\\engines\\toga\\TogaII.exe	
 	// C:\\Scid vs PC-4.12\\bin\\engines\\komodo-8_2d3f23\\Windows\\komodo-8-64bit.exe
 	public static void main(String[] args) {
-		UCIEngine engine = new UCIEngine("C:\\Scid vs PC-4.12\\bin\\engines\\komodo-8_2d3f23\\Windows\\komodo-8-64bit.exe");		
+		UCIEngine engine = new UCIEngine("C:\\Program Files\\Stockfish\\stockfish 7 x64.exe");		
 		try {
 			engine.addEngineListener(new EngineListener() {
 
@@ -173,9 +191,16 @@ public class UCIEngine {
 					System.out.println("*** Score: *** " + s.toString());					
 				}
 
+				@Override
+				public void engineMoved(String engineMove) {
+					System.out.println("Engine moved: " + engineMove);		
+					
+				}
+				
+
 			});
 			engine.start();
-			engine.setFEN("r2qkb1r/pQnbpppp/8/2p5/3n4/2N3P1/PP1PPPBP/R1B1K1NR w KQkq - 1 9");
+			engine.setFENandMove("r2qkb1r/pQnbpppp/8/2p5/3n4/2N3P1/PP1PPPBP/R1B1K1NR w KQkq - 1 9");
 			try {
 				Thread.sleep(50000);
 			} catch (InterruptedException e) {
