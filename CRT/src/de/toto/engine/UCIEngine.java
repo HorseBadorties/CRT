@@ -53,17 +53,24 @@ public class UCIEngine {
 			sendCommand("uci");
 			String line = null;
 			boolean idReceived = false;
+			boolean uciokReceived = false;
 			while ((line = reader.readLine()) != null) {
 				if (line.startsWith("id name")) {
 					idReceived = true;
 					name = line.substring(7, line.length()).trim();
+				} else if (line.startsWith("uciok")) {
+					uciokReceived = true;
 					break;
 				}
 			}
 			if (!idReceived) {
 				throw new RuntimeException("process did not send an ID token - it's not a valid UCI engine");
 			}
-			sendCommand("setoption name Skill Level value 1");
+			if (!uciokReceived) {
+				throw new RuntimeException("process did not send 'uciok'");
+			}
+			sendCommand("setoption name Skill Level value 0");
+			sendCommand("isready");
 			outputListener = new OutputReader(this);
 		} catch (Exception e) {
 			log.severe(e.getLocalizedMessage());
@@ -164,6 +171,7 @@ public class UCIEngine {
 			try {
 				String line = null;
 				while (isAlive && (line = engine.reader.readLine()) != null) {
+					System.out.println("engine: " + line);
 					Score newScore = Score.parse(line);
 					if (newScore != null) {
 						engine.fireNewScore(newScore);
