@@ -297,7 +297,7 @@ public class Drill extends Game {
 				break;
 			}
 			drillPosition = nextDrillPosition;
-		} 
+		}
 		return result;
 	}
 	

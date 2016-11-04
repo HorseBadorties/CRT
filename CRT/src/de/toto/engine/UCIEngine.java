@@ -15,6 +15,7 @@ public class UCIEngine {
 	private List<EngineListener> listener = new ArrayList<EngineListener>();
 	private String fen;
 	private String name;
+	private boolean announcesBestMove = false;
 	
 	private static Logger log = Logger.getLogger("UCIEngine");
 
@@ -69,7 +70,6 @@ public class UCIEngine {
 			if (!uciokReceived) {
 				throw new RuntimeException("process did not send 'uciok'");
 			}
-			sendCommand("setoption name Skill Level value 0");
 			sendCommand("isready");
 			outputListener = new OutputReader(this);
 		} catch (Exception e) {
@@ -110,6 +110,7 @@ public class UCIEngine {
 	public void stop() {
 		if (!isStarted()) return;
 		try {
+			sendCommand("stop");
 			sendCommand("quit");
 			if (outputListener != null) outputListener.stop();
 			reader.close();
@@ -124,6 +125,7 @@ public class UCIEngine {
 	
 	public void setFEN(String newFEN) {
 		if (!newFEN.equals(this.fen)) {
+			this.announcesBestMove = false;
 			this.fen = newFEN;
 			sendCommand("stop");
 			sendCommand("position fen " + newFEN);
@@ -131,12 +133,33 @@ public class UCIEngine {
 		}
 	}
 	
+	public void startGame(int level) {
+		if (!isStarted()) {
+			start();
+		}
+		sendCommand("stop");
+		sendCommand("setoption name Skill Level value " + level);
+		sendCommand("ucinewgame");
+		sendCommand("isready");
+	}
+	
+	public void endGame() {
+		if (isStarted()) {
+			sendCommand("stop");
+			sendCommand("setoption name Skill Level value 20");
+			sendCommand("ucinewgame");
+			sendCommand("isready");
+			this.announcesBestMove = false;
+		}
+	}
+	
 	public void setFENandMove(String newFEN) {
 		if (!newFEN.equals(this.fen)) {
 			this.fen = newFEN;
+			this.announcesBestMove = true;
 			//sendCommand("stop");
 			sendCommand("position fen " + newFEN);
-			sendCommand("go");
+			sendCommand("go depth 10");
 		}
 	}
 	
@@ -171,12 +194,13 @@ public class UCIEngine {
 			try {
 				String line = null;
 				while (isAlive && (line = engine.reader.readLine()) != null) {
-					System.out.println("engine: " + line);
 					Score newScore = Score.parse(line);
 					if (newScore != null) {
 						engine.fireNewScore(newScore);
 					} else if (line.startsWith("bestmove")) {
-						engine.fireEngineMoved(line.split(" ")[1]);
+						if (engine.announcesBestMove) {
+							engine.fireEngineMoved(line.split(" ")[1]);
+						} 
 					}
 				}
 			} catch (IOException ex) {

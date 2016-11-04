@@ -592,18 +592,6 @@ public class Board extends JPanel {
 					}
 				}
 			}
-			
-			/*
-			//position eval						 
-			if (positionEval != null && positionEval.length() > 0) {				
-				g2.setColor(colorPositionEval);
-				g2.setFont(fontPositionEval);				
-				FontMetrics metrics = g2.getFontMetrics();
-				int x = (getWidth() / 2) - (metrics.stringWidth(positionEval) / 2);
-				int y = (getHeight() / 2) + (metrics.getHeight() / 4);
-				g2.drawString(positionEval, x, y);
-			}
-			//*/
 		}
 		
 		private void colorSquare(Graphics2D g2, Square s, Color color, int squareSize) {			

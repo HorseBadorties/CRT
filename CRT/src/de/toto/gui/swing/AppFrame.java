@@ -35,6 +35,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private Game repertoire;
 	private Drill drill;
 	private Game tryVariation;
+	private Game gameAgainstTheEngine;
 	private Board board;
 	private JLabel txtComment;
 	private JLabel txtStatus;
@@ -65,6 +66,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private AbstractButton btnNext;
 	private AbstractButton btnFlip;
 	private AbstractButton btnBackToCurrentDrillPosition;
+	private AbstractButton btnGameAgainstTheEngine;
 	
 	private JSplitPane splitCenter;
 	private JSplitPane splitEast;
@@ -190,7 +192,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	
 	private Game getCurrentGame() {
 		Game g = repertoire;
-		if (tryVariation != null) {
+		if (gameAgainstTheEngine != null) {
+			g = gameAgainstTheEngine;
+		} else if (tryVariation != null) {
 			g = tryVariation;
 		} else if (drill != null) {
 			g = drill;
@@ -202,7 +206,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		@Override
 		public void actionPerformed(ActionEvent e) {			
 			Game g = getCurrentGame();
-			if (g == tryVariation) {
+			if (g == tryVariation || g == gameAgainstTheEngine) {
 				g.goForward();
 			} else if (g == drill) {
 				//gotoNextDrillPosition();
@@ -265,7 +269,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				drill.addGameListener(AppFrame.this);
 				drill.addDrillListener(AppFrame.this);
 				modelVariations.clear();
-				actionLoadPGN.setEnabled(false);				
+				actionLoadPGN.setEnabled(false);
+				actionGameAgainstTheEngine.setEnabled(false);
 				cbOnlyMainline.setEnabled(false);
 				cbRandomDrill.setEnabled(false);
 				pnlDrillStatus = new DrillStatusPanel(drill);
@@ -364,7 +369,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					engineMove = null;
 				} else {
 					engine.start();					
-					//engine.setFEN(getCurrentPosition().getFen());	
+					engine.setFEN(getCurrentPosition().getFen());	
 					this.putValue(Action.NAME, "Stop Engine");
 					btnEngine.setToolTipText(engine.getName());
 					btnEngine.setIcon(loadIcon("Superman red"));
@@ -411,6 +416,35 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				updateBoard(false);
 				btnTryVariation.setIcon(loadIcon("Microscope red"));
 				this.putValue(Action.NAME, "End Variation");				
+			}
+		}
+	};
+	
+	private Action actionGameAgainstTheEngine = new AbstractAction("Training Game") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (gameAgainstTheEngine != null) {
+				gameAgainstTheEngine.removeGameListener(AppFrame.this);
+				gameAgainstTheEngine = null;
+				if (engine != null) {
+					engine.endGame();
+				}
+				updateBoard(false);
+				btnGameAgainstTheEngine.setIcon(loadIcon("Robot"));
+				this.putValue(Action.NAME, "Training Game");				
+				
+			} else {
+				if (engine == null || !engine.isStarted()) {
+					actionEngine.actionPerformed(null);
+				}
+				Position start = getCurrentPosition();
+				gameAgainstTheEngine = new Game(new Position(null, start.getMove(), start.getFen()));				
+				gameAgainstTheEngine.addGameListener(AppFrame.this);
+				String result = JOptionPane.showInputDialog(AppFrame.this, "which level?", 3);
+				engine.startGame(Integer.parseInt(result));				
+				updateBoard(false);
+				btnGameAgainstTheEngine.setIcon(loadIcon("Robot red"));
+				this.putValue(Action.NAME, "End Game");				
 			}
 		}
 	};
@@ -603,7 +637,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlToolBar.add(cbRandomDrill);
 		pnlToolBar.add(Box.createHorizontalGlue());
 		pnlToolBar.add(btnEngine = createButton(actionEngine, "Superman", true, true)); //"Robot-64.png
-		pnlToolBar.add(btnTryVariation = createButton(actionTryVariation, "Microscope", true, true)); 
+		pnlToolBar.add(btnTryVariation = createButton(actionTryVariation, "Microscope", true, true));
+		pnlToolBar.add(btnGameAgainstTheEngine = createButton(actionGameAgainstTheEngine, "Robot", true, true));
 		pnlToolBar.add(Box.createHorizontalStrut(10));
 		
 		txtStatus = new JLabel();
@@ -707,16 +742,20 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			}
 		} 
 		if (engine != null && engine.isStarted()) {
-			if (getCurrentGame() == tryVariation && (board.isOrientationWhite() != getCurrentPosition().isWhiteToMove())) {
-				engine.setFENandMove(p.getFen());
+			if (getCurrentGame() == gameAgainstTheEngine) {
+				if (board.isOrientationWhite() != getCurrentPosition().isWhiteToMove()) {
+					if (!gameAgainstTheEngine.getPosition().hasNext()) {
+						engine.setFENandMove(p.getFen());
+					}
+				}
 			} else {
-				//engine.setFEN(p.getFen());	
+				engine.setFEN(p.getFen());
 			}
 		} else {
 			txtStatus.setText(p.getFen());
 		}
 		
-		if (tryVariation != null) {
+		if (gameAgainstTheEngine != null || tryVariation != null) {
 			setPanelVisible(pnlTryVariation);
 		} else if (drill != null) {			
 			if (drill.isInDrillHistory()) {
@@ -743,7 +782,14 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 
 	@Override
 	public void userMove(String move) {
-		if (tryVariation != null) {
+		if (gameAgainstTheEngine != null) {
+			try {
+				gameAgainstTheEngine.addMove(move);
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(AppFrame.this, String.format("Move '%s' is not legal", move), 
+						"Illegal move", JOptionPane.WARNING_MESSAGE);
+			}
+		} else if (tryVariation != null) {
 			tryVariation.addMove(move);
 		} else if (drill != null) {
 			if (drill.isInDrillHistory()) {
@@ -826,7 +872,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	public void drillEnded(DrillEvent e) {		
 		DrillStats drillStats =  drill.getDrillStats();	
 		drill = null;
-		actionLoadPGN.setEnabled(true);		
+		actionLoadPGN.setEnabled(true);	
+		actionGameAgainstTheEngine.setEnabled(true);
 		//cbOnlyMainline.setEnabled(true);
 		cbRandomDrill.setEnabled(true);
 		actionDrill.putValue(Action.NAME, "Begin Drill");
@@ -910,11 +957,15 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			@Override
 			public void run() {	
 				Position currentPosition = getCurrentPosition();
-				boolean whiteToMove = currentPosition.isWhiteToMove();
-				boolean positiveScore = (whiteToMove && s.score >= 0) || (!whiteToMove && s.score < 0);
-				String scoreText = String.format("%d [%s%.2f] %s", 
-						s.depth, positiveScore ? "+" : "-", Math.abs(s.score), s.bestLine);
-				txtStatus.setText(scoreText);
+				if (getCurrentGame() == gameAgainstTheEngine) {
+					txtStatus.setText(currentPosition.getFen());
+				} else {
+					boolean whiteToMove = currentPosition.isWhiteToMove();
+					boolean positiveScore = (whiteToMove && s.score >= 0) || (!whiteToMove && s.score < 0);	
+					String scoreText = String.format("%d [%s%.2f] %s", 
+							s.depth, positiveScore ? "+" : "-", Math.abs(s.score), s.bestLine);
+					txtStatus.setText(scoreText);
+				}
 				//draw move arrow
 				if (!s.bestLine.isEmpty()) {
 					if (!s.bestLine.get(0).equals(engineMove)) {
@@ -930,7 +981,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	
 	@Override
 	public void engineMoved(String engineMove) {
-		tryVariation.addMove(getCurrentPosition().translateMove(engineMove));
+		gameAgainstTheEngine.addMove(getCurrentPosition().translateMove(engineMove));
 	}
 
 	private static boolean isUltraHighResolution() {
@@ -942,23 +993,41 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		if (event instanceof KeyEvent) {
 			KeyEvent keyEvent = (KeyEvent)event;			
 			if (keyEvent.getID() == KeyEvent.KEY_TYPED) {				
-				char c = keyEvent.getKeyChar();				
-				if (c == 'K' || c == 'Q' || c == 'B'|| c == 'N'|| c == 'R') {
-					keysTyped = String.valueOf(c);
-				} else if (c == 'x' && keysTyped.length() == 1 && keysTyped.charAt(0) >= 'B') {
-					keysTyped = keysTyped + String.valueOf(c);
-				} else if ((c >= 'a' && c <= 'h') || (c >= '1' && c <= '8')) {
-					keysTyped = keysTyped + String.valueOf(c);
+				char c = keyEvent.getKeyChar();
+				if (getCurrentGame() == gameAgainstTheEngine) {
+					if (c == '\n') {
+						String move = keysTyped.trim();
+						keysTyped = "";
+						userMove(move);
+					} else if (c == 27) { //ESC
+						keysTyped = "";
+					} else if (c == 8) { //BACKSPACE
+						if (keysTyped.length() > 0)  {
+							keysTyped = keysTyped.substring(0, keysTyped.length() - 1);
+						}
+					} else {
+						keysTyped = keysTyped + String.valueOf(c);
+					}
+					
 				} else {
-					keysTyped = "";
+					if (c == 'K' || c == 'Q' || c == 'B'|| c == 'N'|| c == 'R') {
+						keysTyped = String.valueOf(c);
+					} else if (c == 'x' && keysTyped.length() == 1 && keysTyped.charAt(0) >= 'B') {
+						keysTyped = keysTyped + String.valueOf(c);
+					} else if ((c >= 'a' && c <= 'h') || (c >= '1' && c <= '8')) {
+						keysTyped = keysTyped + String.valueOf(c);
+					} else {
+						keysTyped = "";
+					}
+					if (getCurrentGame() == drill) {
+						pnlDrillStatus.setLast(keysTyped);
+					}
+					if (keysTyped.length() >= 2 && Character.isDigit(keysTyped.charAt(keysTyped.length()-1))) {
+						userTypedSquare(keysTyped.substring(keysTyped.length()-2, keysTyped.length()));
+						keysTyped = "";
+					}
 				}
-				if (getCurrentGame() == drill) {
-					pnlDrillStatus.setLast(keysTyped);
-				}
-				if (keysTyped.length() >= 2 && Character.isDigit(keysTyped.charAt(keysTyped.length()-1))) {
-					userTypedSquare(keysTyped.substring(keysTyped.length()-2, keysTyped.length()));
-					keysTyped = "";
-				}
+				txtStatus.setText(keysTyped.length() == 0 ? " " : keysTyped);
 			}
 		}
     }
