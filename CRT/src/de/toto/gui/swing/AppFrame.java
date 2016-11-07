@@ -72,13 +72,16 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private JSplitPane splitEast;
 	private String pathToEngine;
 	private UCIEngine engine;
-	private String engineMove;
+	private String pathToGameEngine;
+	private UCIEngine gameEngine;
+	private String enginesBestMove;
 	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
 	private String keysTyped = "";
 	
 	private static Logger log = Logger.getLogger("AppFrame");
 
 	private static final String PREFS_PATH_TO_ENGINE = "PATH_TO_ENGINE";
+	private static final String PREFS_PATH_TO_GAME_ENGINE = "PATH_TO_GAME_ENGINE";
 	private static final String PREFS_FRAME_WIDTH = "FRAME_WIDTH";
 	private static final String PREFS_FRAME_HEIGHT = "FRAME_HEIGHT";
 	private static final String PREFS_FRAME_EXTENDED_STATE = "FRAME_EXTENDED_STATE";
@@ -114,6 +117,13 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 						ex.printStackTrace();
 					}
 				}
+				if (gameEngine != null) {
+					try {
+						gameEngine.stop();
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
 			}
 			
 		});
@@ -142,6 +152,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		prefs.putBoolean(PREFS_SHOW_COORDINATES, cbShowCoordinates.isSelected());
 		if (engine != null) {
 			prefs.put(PREFS_PATH_TO_ENGINE, pathToEngine);
+		}
+		if (gameEngine != null) {
+			prefs.put(PREFS_PATH_TO_GAME_ENGINE, pathToGameEngine);
 		}
 	}	
 	
@@ -341,17 +354,24 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
+	private String askForPathToEngine() {
+		JFileChooser fc = new JFileChooser();
+		fc.setDialogTitle("Please choose an UCI-compatible engine!");
+		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		int ok = fc.showOpenDialog(AppFrame.this);
+		if (ok == JFileChooser.APPROVE_OPTION) {
+			return fc.getSelectedFile().getAbsolutePath();
+		} else {
+			return null;
+		}
+		
+	}
+	
 	private Action actionEngine = new AbstractAction("Start Engine") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (pathToEngine == null) {
-				JFileChooser fc = new JFileChooser();
-				fc.setDialogTitle("Please choose an UCI-compatible engine!");
-				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				int ok = fc.showOpenDialog(AppFrame.this);
-				if (ok == JFileChooser.APPROVE_OPTION) {
-					pathToEngine = fc.getSelectedFile().getAbsolutePath();
-				}
+			if (pathToEngine == null) {				
+				pathToEngine = askForPathToEngine();				
 			}
 			if (pathToEngine == null) return;
 			
@@ -366,7 +386,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					btnEngine.setIcon(loadIcon("Superman"));
 					btnEngine.setToolTipText("Start Engine");
 					txtStatus.setText("Engine stopped");
-					engineMove = null;
+					enginesBestMove = null;
 				} else {
 					engine.start();					
 					engine.setFEN(getCurrentPosition().getFen());	
@@ -426,22 +446,27 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			if (gameAgainstTheEngine != null) {
 				gameAgainstTheEngine.removeGameListener(AppFrame.this);
 				gameAgainstTheEngine = null;
-				if (engine != null) {
-					engine.endGame();
+				if (gameEngine != null) {
+					gameEngine.endGame();
 				}
 				updateBoard(false);
 				btnGameAgainstTheEngine.setIcon(loadIcon("Robot"));
 				this.putValue(Action.NAME, "Training Game");				
 				
 			} else {
-				if (engine == null || !engine.isStarted()) {
-					actionEngine.actionPerformed(null);
+				if (pathToGameEngine == null) {				
+					pathToGameEngine = askForPathToEngine();				
+				}
+				if (pathToGameEngine == null) return;				
+				if (gameEngine == null) {				
+					gameEngine = new UCIEngine(pathToGameEngine);
+					gameEngine.addEngineListener(AppFrame.this);
 				}
 				Position start = getCurrentPosition();
 				gameAgainstTheEngine = new Game(new Position(null, start.getMove(), start.getFen()));				
 				gameAgainstTheEngine.addGameListener(AppFrame.this);
 				String result = JOptionPane.showInputDialog(AppFrame.this, "which level?", 3);
-				engine.startGame(Integer.parseInt(result));				
+				gameEngine.startGame(Integer.parseInt(result));				
 				updateBoard(false);
 				btnGameAgainstTheEngine.setIcon(loadIcon("Robot red"));
 				this.putValue(Action.NAME, "End Game");				
@@ -693,6 +718,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		setFonts(new Font(fontName, Font.PLAIN, fontSize));
 		
 		pathToEngine = prefs.get(PREFS_PATH_TO_ENGINE, null);
+		pathToGameEngine = prefs.get(PREFS_PATH_TO_GAME_ENGINE, null);
 	}
 	
 	public static AbstractButton createButton(Action action, String icon, boolean showText, boolean toggleButton) {
@@ -740,17 +766,16 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			for (Position variation : p.getVariations()) {
 				modelVariations.addElement(variation);
 			}
-		} 
-		if (engine != null && engine.isStarted()) {
-			if (getCurrentGame() == gameAgainstTheEngine) {
-				if (board.isOrientationWhite() != getCurrentPosition().isWhiteToMove()) {
-					if (!gameAgainstTheEngine.getPosition().hasNext()) {
-						engine.setFENandMove(p.getFen());
-					}
+		}
+		if (getCurrentGame() == gameAgainstTheEngine) {
+			if (board.isOrientationWhite() != getCurrentPosition().isWhiteToMove()) {
+				if (!gameAgainstTheEngine.getPosition().hasNext()) {
+					gameEngine.setFENandMove(p.getFen());
 				}
-			} else {
-				engine.setFEN(p.getFen());
 			}
+		}
+		if (engine != null && engine.isStarted()) {
+			engine.setFEN(p.getFen());			
 		} else {
 			txtStatus.setText(p.getFen());
 		}
@@ -773,9 +798,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		
 		// Engine move
 		board.clearAdditionalGraphicsComment();	
-		if (engineMove != null) {
-			Square from = p.getSquare(engineMove.substring(0, 2));
-			Square to = p.getSquare(engineMove.substring(2, 4));								
+		if (enginesBestMove != null) {
+			Square from = p.getSquare(enginesBestMove.substring(0, 2));
+			Square to = p.getSquare(enginesBestMove.substring(2, 4));								
 			board.addAdditionalGraphicsComment(new GraphicsComment(from, to, Color.BLACK));
 		}
 	}
@@ -951,37 +976,39 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	}
 
 	@Override
-	public void newEngineScore(final Score s) {
-		SwingUtilities.invokeLater(new Runnable() {
-						
-			@Override
-			public void run() {	
-				Position currentPosition = getCurrentPosition();
-				if (getCurrentGame() == gameAgainstTheEngine) {
-					txtStatus.setText(currentPosition.getFen());
-				} else {
+	public void newEngineScore(final UCIEngine e, final Score s) {
+		if (e == engine) {
+			SwingUtilities.invokeLater(new Runnable() {
+							
+				@Override
+				public void run() {	
+					Position currentPosition = getCurrentPosition();
+				
 					boolean whiteToMove = currentPosition.isWhiteToMove();
 					boolean positiveScore = (whiteToMove && s.score >= 0) || (!whiteToMove && s.score < 0);	
 					String scoreText = String.format("%d [%s%.2f] %s", 
 							s.depth, positiveScore ? "+" : "-", Math.abs(s.score), s.bestLine);
 					txtStatus.setText(scoreText);
-				}
-				//draw move arrow
-				if (!s.bestLine.isEmpty()) {
-					if (!s.bestLine.get(0).equals(engineMove)) {
-						engineMove = s.bestLine.get(0);
-						updateBoard(false);
+					
+					//draw move arrow
+					if (!s.bestLine.isEmpty()) {
+						if (!s.bestLine.get(0).equals(enginesBestMove)) {
+							enginesBestMove = s.bestLine.get(0);
+							updateBoard(false);
+						}
 					}
 				}
-			}
-			
-		});
+				
+			});
+		}
 		
 	}
 	
 	@Override
-	public void engineMoved(String engineMove) {
-		gameAgainstTheEngine.addMove(getCurrentPosition().translateMove(engineMove));
+	public void engineMoved(UCIEngine e, String engineMove) {
+		if (e == gameEngine) {
+			gameAgainstTheEngine.addMove(getCurrentPosition().translateMove(engineMove));
+		}
 	}
 
 	private static boolean isUltraHighResolution() {

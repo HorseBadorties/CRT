@@ -35,13 +35,13 @@ public class UCIEngine {
 
 	private void fireNewScore(Score s) {
 		for (EngineListener l : listener) {
-			l.newEngineScore(s);
+			l.newEngineScore(this, s);
 		}
 	}
 	
 	private void fireEngineMoved(String engineMove) {
 		for (EngineListener l : listener) {
-			l.engineMoved(engineMove);
+			l.engineMoved(this, engineMove);
 		}
 	}
 	
@@ -219,12 +219,12 @@ public class UCIEngine {
 			engine.addEngineListener(new EngineListener() {
 
 				@Override
-				public void newEngineScore(Score s) {
+				public void newEngineScore(UCIEngine e, Score s) {
 					System.out.println("*** Score: *** " + s.toString());					
 				}
 
 				@Override
-				public void engineMoved(String engineMove) {
+				public void engineMoved(UCIEngine e, String engineMove) {
 					System.out.println("Engine moved: " + engineMove);		
 					
 				}
