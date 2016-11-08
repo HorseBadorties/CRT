@@ -465,11 +465,20 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				Position start = getCurrentPosition();
 				gameAgainstTheEngine = new Game(new Position(null, start.getMove(), start.getFen()));				
 				gameAgainstTheEngine.addGameListener(AppFrame.this);
-				String result = JOptionPane.showInputDialog(AppFrame.this, "which level?", 3);
-				gameEngine.startGame(Integer.parseInt(result));				
-				updateBoard(false);
-				btnGameAgainstTheEngine.setIcon(loadIcon("Robot red"));
-				this.putValue(Action.NAME, "End Game");				
+				int[] allSkillLevel = gameEngine.getAllSkillLevel();
+				Integer[] levels = new Integer[allSkillLevel.length];
+				for (int i = 0; i < levels.length; i++) {
+					levels[i] = allSkillLevel[i];
+				}
+				Integer result = (Integer) JOptionPane.showInputDialog(AppFrame.this, "Engine Skill Level", 
+						"Skill Level", JOptionPane.QUESTION_MESSAGE, null, 
+						levels, levels[2]);
+				if (result != null) {
+					gameEngine.startGame(result);				
+					updateBoard(false);
+					btnGameAgainstTheEngine.setIcon(loadIcon("Robot red"));
+					this.putValue(Action.NAME, "End Game");
+				}
 			}
 		}
 	};
