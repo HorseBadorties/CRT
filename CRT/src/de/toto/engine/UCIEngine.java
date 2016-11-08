@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class UCIEngine {
-
+	
 	private String pathToEngine;
 	private Process process;
 	private BufferedReader reader;
@@ -16,6 +16,10 @@ public class UCIEngine {
 	private String fen;
 	private String name;
 	private boolean announcesBestMove = false;
+	private int skillLevel = 8;
+	
+	private static int[] movetimes = {50, 100, 150, 200, 300, 400, 500, 800, 1500 };
+	private static int[] depths = {1, 1, 2, 3, 5, 8, 13, 22, 25};
 	
 	private static Logger log = Logger.getLogger("UCIEngine");
 
@@ -133,16 +137,26 @@ public class UCIEngine {
 		}
 	}
 	
-	public void startGame(int level) {
+	public void startGame(int skillLevel) {
+		this.skillLevel = skillLevel;				
 		if (!isStarted()) {
 			start();
 		}
 		sendCommand("stop");
-		sendCommand("setoption name Skill Level value " + level);
+		sendCommand("setoption name Skill Level value " + translateSkillLevel());
 		sendCommand("ucinewgame");
 		sendCommand("isready");
 	}
 	
+	private int translateSkillLevel() {
+		int result = skillLevel * 20 / 7;
+		return result > 20 ? 20 : result;
+	}
+	
+	public int[] getAllSkillLevel() {
+		return new int[]{1,2,3,4,5,6,7,8};
+	}
+			
 	public void endGame() {
 		if (isStarted()) {
 			sendCommand("stop");
@@ -157,12 +171,12 @@ public class UCIEngine {
 		if (!newFEN.equals(this.fen)) {
 			this.fen = newFEN;
 			this.announcesBestMove = true;
-			//sendCommand("stop");
 			sendCommand("position fen " + newFEN);
-			sendCommand("go depth 10");
+			sendCommand("isready");
+			sendCommand(String.format("go movetime %d depth %d", movetimes[skillLevel-1], depths[skillLevel-1]));
 		}
 	}
-	
+		
 	private static class OutputReader implements Runnable {
 		
 		private UCIEngine engine;

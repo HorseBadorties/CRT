@@ -1007,7 +1007,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	@Override
 	public void engineMoved(UCIEngine e, String engineMove) {
 		if (e == gameEngine) {
-			gameAgainstTheEngine.addMove(getCurrentPosition().translateMove(engineMove));
+			if (!"(none)".equals(engineMove)) {				
+				gameAgainstTheEngine.addMove(getCurrentPosition().translateMove(engineMove));
+			}
 		}
 	}
 
