@@ -2,7 +2,6 @@ package de.toto.game;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -42,16 +41,21 @@ public class Position {
 		this(previous, move, fen, false);
 	}
 	
+	
 	public Position(Position previous, String move, String fen, boolean asVariation) {
+		this(previous, move, fen, asVariation, true);
+	}
+	
+	public Position(Position previous, String move, String fen, boolean asVariation, boolean checkMateOrCheck) {
 		this.previous = previous;			
 		if (previous != null) {
 			this.variationLevel = asVariation ? previous.variationLevel+1 : previous.variationLevel;
 		}
 		if (fen != null) {
-			setMove(move, false);
+			setMove(move, false, false);
 			setFen(fen, true);		
 		} else if (move != null) {
-			setMove(move, true);
+			setMove(move, true, checkMateOrCheck);
 		}
 		if (previous != null) {
 			previous.addNextPosition(this, asVariation);
@@ -463,7 +467,7 @@ public class Position {
 	}
 	
 	// move in LAN, e.g. "Ng1-f3"
-	private void setMove(String move, boolean setupPosition) {
+	private void setMove(String move, boolean setupPosition, boolean checkMateOrCheck) {
 		// ChessBase PGNs contain "O-O" rather than "0-0"...
 		move = move.replaceAll("O-O-O", "0-0-0").replaceAll("O-O", "0-0");
 		if (setupPosition) {
@@ -511,11 +515,13 @@ public class Position {
 						toSquare.piece = piece;
 					}					
 				}
-				createFen(); //getPossiblePositions() needs the FEN...
-				// check or mate?  
-				if (!this.move.endsWith("#") && !this.move.endsWith("+")) {
-					if (checkIfCheck()) {
-						this.move += getPossiblePositions().isEmpty() ? "#" : "+";
+				if (checkMateOrCheck) {
+					createFen(); //getPossiblePositions() needs the FEN...
+					// check or mate?  
+					if (!this.move.endsWith("#") && !this.move.endsWith("+")) {
+						if (checkIfCheck()) {
+							this.move += getPossiblePositions().isEmpty() ? "#" : "+";
+						}
 					}
 				}
 			}			
@@ -712,8 +718,10 @@ public class Position {
 		List<Position> result = new ArrayList<Position>();
 		for (Square pieces : getAllPiecesByColor(isWhiteToMove())) {
 			for (Square s : pieces.getPossibleTargetSquares(this)) {
-				String move = translateMove(pieces.getName()+s.getName());
-				Position p = new Position(this, move);
+				boolean isPromotion = pieces.piece.type == PieceType.PAWN && (s.rank == 1 || s.rank == 8);
+				String move = pieces.getName() + s.getName() + (isPromotion ? "q" : "");
+				move = translateMove(move);
+				Position p = new Position(this, move, null, false, false);
 				if (p.isLegal()) {
 					result.add(p);
 				}
@@ -775,6 +783,10 @@ public class Position {
 			result.append("-");
 		}
 		result.append(to.getName());
+		// Consider promotion
+		if (engineMove.length() == 5) {
+			result.append("=").append(engineMove.substring(4,5).toUpperCase());
+		}
 		return result.toString().trim();
 	}
 	

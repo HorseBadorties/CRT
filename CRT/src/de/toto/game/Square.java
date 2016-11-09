@@ -297,6 +297,26 @@ public class Square {
 			doAdd(squares, getSquare(p, rank-1, file));
 			doAdd(squares, getSquare(p, rank-1, file-1));
 			doAdd(squares, getSquare(p, rank-1, file+1));
+			// castling
+			if (!p.isCheck()) {
+				int rank = p.isWhiteToMove() ? 1 : 8;
+				for (String castlingSquare : p.getPossibleCastlingSquareNames()) {
+					if (castlingSquare != null && castlingSquare.startsWith("g")) {
+						Square f = getSquare(p, rank, 6);
+						Square g = getSquare(p, rank, 7);
+						if (f.piece == null && !f.isAttacked(p) && g.piece == null && !g.isAttacked(p)) {
+							squares.add(g);
+						}
+					} else if (castlingSquare != null && castlingSquare.startsWith("c")) { 
+						Square d = getSquare(p, rank, 4);
+						Square c = getSquare(p, rank, 3);
+						if (d.piece == null && !d.isAttacked(p) && c.piece == null && !c.isAttacked(p)) {
+							squares.add(c);
+						}
+					}
+				}
+			}
+			
 		}
 		
 		private void addPossibleTargetSquaresOfQueen(List<Square> squares, Position p) {
