@@ -2,6 +2,7 @@ package de.toto.game;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -259,6 +260,10 @@ public class Position {
 		return squares;
 	}
 
+	public boolean wasPawnMove() {
+		return  move != null && move.charAt(0) >= 'a' && move.charAt(0) <= 'h';		
+	}
+	
 	public boolean wasCapture() {
 		return move != null && move.contains("x");
 	}
@@ -292,6 +297,10 @@ public class Position {
 	
 	public boolean isCheck() {
 		return move != null && move.endsWith("+");
+	}
+	
+	private boolean checkIfCheck() {		
+		return findKing(!whiteMoved()).isAttacked(this);
 	}
 	
 	public boolean isMate() {
@@ -369,6 +378,7 @@ public class Position {
 	}
 
 	private void createFen() {
+		if (this.fen != null) return;
 		StringBuilder fen = new StringBuilder();
 		for (int rank = 8; rank >= 1; rank--) {
 			int emptySquareCounter = 0;
@@ -410,20 +420,34 @@ public class Position {
 				}
 			}
 		}
+		//was an enemy rook captured?
+		int enemyRank = isWhiteToMove() ? 1 : 8;
+		Piece enemyRook = isWhiteToMove() ? Piece.WHITE_ROOK : Piece.BLACK_ROOK;
+		if (castleField.contains(whiteToMove ? "K" : "k") && getSquare(enemyRank, 8).piece != enemyRook) {
+			castleField = castleField.replaceAll(whiteToMove ? "K" : "k", "");
+		}
+		if (castleField.contains(whiteToMove ? "Q" : "q") && getSquare(enemyRank, 1).piece != enemyRook) {
+			castleField = castleField.replaceAll(whiteToMove ? "Q" : "q", "");
+		}
 		if (castleField.length() == 0) castleField = "-";
 		fen.append(" ").append(castleField);
 		// En passant square field
 		fen.append(" ").append(getEnPassantFenField());
-		// TODO Halfmove clock field
-		fen.append(" 0");
+		// Halfmove clock field
+		int halfmoveClock = previousFenFields != null ? Integer.parseInt(previousFenFields[4]) : 1;
+		if (!wasCapture() && !wasPawnMove()) {
+			halfmoveClock++;			
+		} else {
+			halfmoveClock = 0;
+		}
+		fen.append(" ").append(halfmoveClock);
 		// Fullmove number field		
 		int moveNumber = previousFenFields != null ? Integer.parseInt(previousFenFields[5]) : 1;
 		if (whiteToMove && previous != null) moveNumber++;
 		fen.append(" ").append(moveNumber);
 		this.fen = fen.toString();
 	}
-	
-	// TODO En passant square field
+		
 	private String getEnPassantFenField() {
 		// an en passant move must be something like "d2-d4"
 		String[] m = move.replaceAll("\\+|#", "").split("-");
@@ -485,10 +509,16 @@ public class Position {
 						toSquare.piece = getPromotionPiece();
 					} else {
 						toSquare.piece = piece;
-					}
-					
+					}					
 				}
-			}
+				createFen(); //getPossiblePositions() needs the FEN...
+				// check or mate?  
+				if (!this.move.endsWith("#") && !this.move.endsWith("+")) {
+					if (checkIfCheck()) {
+						this.move += getPossiblePositions().isEmpty() ? "#" : "+";
+					}
+				}
+			}			
 			createFen();
 		}
 	}
@@ -617,6 +647,19 @@ public class Position {
 		return from.getNameWithPieceSuffix() + (isCapture ? "x" : "-") + to.getName() + suffix;
 	}
 	
+	public List<Square> getSquaresWithPiecesByColor(boolean white) {
+		List<Square> matchingSquares = new ArrayList<Square>();
+		for (int rank = 1; rank <= 8; rank++) {
+			for (int file = 1; file <= 8; file++) {
+				Square s = squares[rank - 1][file - 1]; 
+				if (s.piece != null && s.piece.isWhite == white) {
+					matchingSquares.add(squares[rank - 1][file - 1]);
+				}
+			}
+		}
+		return matchingSquares;
+	}
+	
 	private List<Square> getSquaresWithPiece(Piece piece) {
 		List<Square> matchingSquares = new ArrayList<Square>();
 		for (int rank = 1; rank <= 8; rank++) {
@@ -651,6 +694,53 @@ public class Position {
 	
 	public Square findOurKing() {
 		return findKing(whiteMoved());
+	}
+		
+	public boolean isLegal() {
+		// if our king is (still) in check after we moved it's illegal
+		if (findKing(whiteMoved()).isAttacked(this)) return false;
+		
+		// TODO what else?
+		return true;
+	}
+	
+	/**
+	 * 
+	 * @return the positions after all legal moves in this position
+	 */
+	public List<Position> getPossiblePositions() {
+		List<Position> result = new ArrayList<Position>();
+		for (Square pieces : getAllPiecesByColor(isWhiteToMove())) {
+			for (Square s : pieces.getPossibleTargetSquares(this)) {
+				String move = translateMove(pieces.getName()+s.getName());
+				Position p = new Position(this, move);
+				if (p.isLegal()) {
+					result.add(p);
+				}
+				next.remove(p);
+			}
+		}
+		return result;
+	}
+	
+	public boolean isPossibleMove(String lan) {
+		for (Position p : getPossiblePositions()) {
+			if (p.getMove().startsWith(lan)) return true;
+		}
+		return false;
+	}
+	
+	private List<Square> getAllPiecesByColor(boolean white) {
+		List<Square> result = new ArrayList<Square>(); 
+		for (int _rank = 1; _rank <= 8; _rank++) {
+			for (int _file = 1; _file <= 8; _file++) {
+				Square s = squares[_rank - 1][_file - 1];
+				if (s.piece != null && s.piece.isWhite == white) {
+					result.add(s);
+				}
+			}
+		}
+		return result;
 	}
 	
 	public Square findKing(boolean white) {

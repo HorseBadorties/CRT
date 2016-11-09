@@ -104,6 +104,18 @@ public class Square {
 		}
 		
 		/**
+		 * Is the piece on this Square attacked by an enemy piece on another square?
+		 */
+		public boolean isAttacked(Position p) {
+			if (piece == null) return false;			
+			for (Square squareWithEnemyPiece : p.getSquaresWithPiecesByColor(!piece.isWhite)) {
+				if (squareWithEnemyPiece.attacks(this, p, null)) return true;
+			}
+			return false;
+		}
+		
+		
+		/**
 		 * Can the piece on this Square move to the other square?
 		 */
 		public boolean canMoveTo(Square other, Position p, Square ignore) {
@@ -147,31 +159,27 @@ public class Square {
 			int _rank = rank, _file = file;
 			Square s = this;
 			while (s != null) { //go up
-				s = getSquare(p, _rank+1, _file);
+				s = getSquare(p, ++_rank, _file);
 				if (other.equals(s)) return true;
-				if (s != null && s.piece != null && s != ignore) break;
-				_rank++; 
+				if (s != null && s.piece != null && s != ignore) break; 
 			}
 			s = this; _rank = rank; _file = file;
 			while (s != null) { //go right
-				s = getSquare(p, _rank, _file+1);
+				s = getSquare(p, _rank, ++_file);
 				if (other.equals(s)) return true;
 				if (s != null && s.piece != null && s != ignore) break;
-				_file++;
 			}
 			s = this;  _rank = rank; _file = file;
 			while (s != null) { //go down
-				s = getSquare(p, _rank-1, _file);
+				s = getSquare(p, --_rank, _file);
 				if (other.equals(s)) return true;
 				if (s != null && s.piece != null && s != ignore) break;
-				_rank--;
 			}
 			s = this;  _rank = rank; _file = file;
 			while (s != null) { //go left
-				s = getSquare(p, _rank, _file-1);
+				s = getSquare(p, _rank, --_file);
 				if (other.equals(s)) return true;
 				if (s != null && s.piece != null && s != ignore) break;
-				_file--;
 			}
 			return false;
 		}
@@ -180,31 +188,27 @@ public class Square {
 			int _rank = rank, _file = file;
 			Square s = this;
 			while (s != null) { //go up-right
-				s = getSquare(p, _rank+1, _file+1);
+				s = getSquare(p, ++_rank, ++_file);
 				if (other.equals(s)) return true;
 				if (s != null && s.piece != null && s != ignore) break;
-				_rank++; _file++;
 			}
 			s = this; _rank = rank; _file = file;
 			while (s != null) { //go up-left
-				s = getSquare(p, _rank+1, _file-1);
+				s = getSquare(p, ++_rank, --_file);
 				if (other.equals(s)) return true;
 				if (s != null && s.piece != null && s != ignore) break;
-				_rank++; _file--;
 			}
 			s = this;  _rank = rank; _file = file;
 			while (s != null) { //go down-right
-				s = getSquare(p, _rank-1, _file+1);
+				s = getSquare(p, --_rank, ++_file);
 				if (other.equals(s)) return true;
 				if (s != null && s.piece != null && s != ignore) break;
-				_rank--; _file++;
 			}
 			s = this;  _rank = rank; _file = file;
 			while (s != null) { //go down-left
-				s = getSquare(p, _rank-1, _file-1);
+				s = getSquare(p, --_rank, --_file);
 				if (other.equals(s)) return true;
 				if (s != null && s.piece != null && s != ignore) break;
-				_rank--; _file--;
 			}
 			return false;
 		}
@@ -261,6 +265,128 @@ public class Square {
 			if (other.equals(s) && ((s.piece != null && s.piece.isWhite != p.isWhiteToMove()) || s.getName().equals(enPassantField))) return true;	
 			 
 			return false;
+		}
+		
+		
+		public List<Square> getPossibleTargetSquares(Position p) {
+			List<Square> result = new ArrayList<Square>();
+			if (piece == null) return result;			
+			switch (piece.type) {
+				case KING: addPossibleTargetSquaresOfKing(result, p); break;
+				case QUEEN: addPossibleTargetSquaresOfQueen(result, p); break;
+				case ROOK: addPossibleTargetSquaresOfRook(result, p); break;
+				case BISHOP: addPossibleTargetSquaresOfBishop(result, p); break;
+				case KNIGHT: addPossibleTargetSquaresOfKnight(result, p); break;
+				case PAWN: addPossibleTargetSquaresOfPawn(result, p); break;			
+			}
+			return result;
+		}
+		
+		private boolean doAdd(List<Square> squares, Square s) {
+			if (s != null && (s.piece == null || s.piece.isWhite != this.piece.isWhite)) {
+				return squares.add(s);
+			} else return false;
+		}
+		
+		private void addPossibleTargetSquaresOfKing(List<Square> squares, Position p) {
+			doAdd(squares, getSquare(p, rank+1, file));
+			doAdd(squares, getSquare(p, rank+1, file-1));
+			doAdd(squares, getSquare(p, rank+1, file+1));
+			doAdd(squares, getSquare(p, rank, file-1));			
+			doAdd(squares, getSquare(p, rank, file+1));
+			doAdd(squares, getSquare(p, rank-1, file));
+			doAdd(squares, getSquare(p, rank-1, file-1));
+			doAdd(squares, getSquare(p, rank-1, file+1));
+		}
+		
+		private void addPossibleTargetSquaresOfQueen(List<Square> squares, Position p) {
+			addPossibleTargetSquaresOfRook(squares, p);
+			addPossibleTargetSquaresOfBishop(squares, p);
+		}
+		
+		private void addPossibleTargetSquaresOfRook(List<Square> squares, Position p) {			
+			int _rank = rank, _file = file;			
+			for (;;) { //go up
+				Square s = getSquare(p, ++_rank, _file);
+				if (!doAdd(squares, s)) break;
+				if (s.piece != null) break;
+			}
+			_rank = rank; _file = file;
+			for (;;) { //go right
+				Square s = getSquare(p, _rank, ++_file);
+				if (!doAdd(squares, s)) break; 
+				if (s.piece != null) break;
+			}
+			_rank = rank; _file = file;
+			for (;;) { //go down
+				Square s = getSquare(p, --_rank, _file);
+				if (!doAdd(squares,  s)) break;
+				if (s.piece != null) break;
+			}
+			_rank = rank; _file = file;
+			for (;;) { //go left
+				Square s =  getSquare(p, _rank, --_file);
+				if (!doAdd(squares, s)) break;
+				if (s.piece != null) break;
+			}			
+		}
+		
+		private void addPossibleTargetSquaresOfBishop(List<Square> squares, Position p) {
+			int _rank = rank, _file = file;			
+			for (;;) { //go up-right
+				Square s = getSquare(p, ++_rank,++ _file);
+				if (!doAdd(squares, s)) break;
+				if (s.piece != null) break;
+			}
+			_rank = rank; _file = file;
+			for (;;) { //go down-right
+				Square s = getSquare(p, --_rank, ++_file);
+				if (!doAdd(squares, s)) break; 
+				if (s.piece != null) break;
+			}
+			_rank = rank; _file = file;
+			for (;;) { //go up-left
+				Square s = getSquare(p, ++_rank, --_file);
+				if (!doAdd(squares,  s)) break;
+				if (s.piece != null) break;
+			}
+			_rank = rank; _file = file;
+			for (;;) { //go down-left
+				Square s =  getSquare(p, --_rank, --_file);
+				if (!doAdd(squares, s)) break;
+				if (s.piece != null) break;
+			}		
+		}
+		
+		private void addPossibleTargetSquaresOfKnight(List<Square> squares, Position p) {
+			doAdd(squares, getSquare(p, rank+2, file+1));
+			doAdd(squares, getSquare(p, rank+2, file-1));
+			doAdd(squares, getSquare(p, rank+1, file+2));
+			doAdd(squares, getSquare(p, rank+1, file-2));			
+			doAdd(squares, getSquare(p, rank-2, file+1));
+			doAdd(squares, getSquare(p, rank-2, file-1));
+			doAdd(squares, getSquare(p, rank-1, file+2));
+			doAdd(squares, getSquare(p, rank-1, file-2));
+		}
+		
+		private void addPossibleTargetSquaresOfPawn(List<Square> squares, Position p) {
+			int startRank = p.isWhiteToMove() ? 2 : 7;  
+			// move one square
+			Square s = getSquare(p, p.isWhiteToMove() ? rank+1 : rank-1, file);
+			if (s != null && s.piece == null) squares.add(s);			
+			if (rank == startRank && s.piece == null) {
+				// move two squares
+				s = getSquare(p, p.isWhiteToMove() ? rank+2 : rank-2, file);
+				if (s != null && s.piece == null) squares.add(s);
+			}
+			// try captures (with en passant)
+			String fen = p.getFen() != null ? p.getFen() : p.getPrevious().getFen();
+			String enPassantField = fen.split(" ")[3];  
+			s = getSquare(p, p.isWhiteToMove() ? rank+1 : rank-1, file+1);
+			if (s != null && ((s.piece != null && s.piece.isWhite != p.isWhiteToMove()) || s.getName().equals(enPassantField))) squares.add(s);	
+			s = getSquare(p, p.isWhiteToMove() ? rank+1 : rank-1, file-1);
+			if (s != null && ((s.piece != null && s.piece.isWhite != p.isWhiteToMove()) || s.getName().equals(enPassantField))) squares.add(s);	
+			 
 		}
 		
 		private Square getSquare(Position p, int rank, int file) {
@@ -320,52 +446,48 @@ public class Square {
 					Square s = kingsSquare;
 					boolean foundMe = false;
 					for(;;) { //go up-right
-						s = getSquare(p, _rank+1, _file+1);
+						s = getSquare(p, ++_rank, ++_file);
 						if (s == null) break;
 						if (foundMe && (s.piece == enemyQueen || s.piece == enemyBishop)) {						
 							potentialAttackers.add(s); break;
 						} else if (s == this) {
 							foundMe = true;
-						} else if (s.piece != null) break;					
-						_rank++; _file++;
+						} else if (s.piece != null) break;
 					}
 					if (!foundMe) {
 						s = kingsSquare; _rank = kingsSquare.rank; _file = kingsSquare.file;
 						for(;;) { //go up-left
-							s = getSquare(p, _rank+1, _file-1);
+							s = getSquare(p, ++_rank, --_file);
 							if (s == null) break;
 							if (foundMe && (s.piece == enemyQueen || s.piece == enemyBishop)) {						
 								potentialAttackers.add(s); break;
 							} else if (s == this) {
 								foundMe = true;
-							} else if (s.piece != null) break;		
-							_rank++; _file--;
+							} else if (s.piece != null) break;
 						}
 					}
 					if (!foundMe) {
 						s = kingsSquare;  _rank = kingsSquare.rank; _file = kingsSquare.file;
 						for(;;) { //go down-right
-							s = getSquare(p, _rank-1, _file+1);
+							s = getSquare(p, --_rank, ++_file);
 							if (s == null) break;
 							if (foundMe && (s.piece == enemyQueen || s.piece == enemyBishop)) {						
 								potentialAttackers.add(s); break;
 							} else if (s == this) {
 								foundMe = true;
-							} else if (s.piece != null) break;		
-							_rank--; _file++;
+							} else if (s.piece != null) break;
 						}
 					}
 					if (!foundMe) {
 						s = kingsSquare;  _rank = kingsSquare.rank; _file = kingsSquare.file;
 						for(;;) { //go down-left
-							s = getSquare(p, _rank-1, _file-1);
+							s = getSquare(p, --_rank, --_file);
 							if (s == null) break;
 							if (foundMe && (s.piece == enemyQueen || s.piece == enemyBishop)) {						
 								potentialAttackers.add(s); break;
 							} else if (s == this) {
 								foundMe = true;
-							} else if (s.piece != null) break;		
-							_rank--; _file--;
+							} else if (s.piece != null) break;
 						}
 					}
 				}

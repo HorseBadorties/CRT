@@ -816,6 +816,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 
 	@Override
 	public void userMove(String move) {
+		if (!getCurrentGame().getPosition().isPossibleMove(move)) {			
+			return;
+		}		
 		if (gameAgainstTheEngine != null) {
 			try {
 				gameAgainstTheEngine.addMove(move);

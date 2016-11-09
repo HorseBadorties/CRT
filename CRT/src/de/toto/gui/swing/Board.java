@@ -237,8 +237,9 @@ public class Board extends JPanel {
 				} 
 				if (!isDragging)
 					return;
+				boolean correctSideMoved = dragSquare.gameSquare.piece.isWhite == board.getCurrentPosition().isWhiteToMove();
 				Square dropSquare = getSquareAt(e.getPoint());
-				if (dropSquare != null && dropSquare != dragSquare) {
+				if (correctSideMoved && dropSquare != null && dropSquare != dragSquare) {					
 					if (dragSquare.gameSquare.canMoveTo(dropSquare.gameSquare, board.getCurrentPosition(), null)) {
 						String move = dragSquare.gameSquare.piece.pgnChar + dragSquare.getName();
 						boolean isCapture = dropSquare.gameSquare.piece != null;
@@ -257,7 +258,7 @@ public class Board extends JPanel {
 							if ((dragSquare.gameSquare.piece.isWhite && dropSquare.rank == 8) 
 									|| (!dragSquare.gameSquare.piece.isWhite && dropSquare.rank == 1)) 
 							{
-								move += "=Q";
+								move += "=Q"; //TODO underpromotion
 							}
 						}
 						// Castles?
@@ -270,7 +271,6 @@ public class Board extends JPanel {
 								move = "0-0";
 							}
 						}
-						// TODO check, mate
 						board.fireUserMoved(move.trim());
 					}
 				}
