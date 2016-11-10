@@ -17,9 +17,11 @@ public class UCIEngine {
 	private String name;
 	private boolean announcesBestMove = false;
 	private int skillLevel = 8;
+	private boolean gameStarted = false;
+	private volatile boolean isThinking = false;
 	
-	private static int[] movetimes = {50, 100, 150, 200, 300, 400, 500, 800, 1500 };
-	private static int[] depths = {1, 1, 2, 3, 5, 8, 13, 22, 25};
+	private static final int[] MOVETIMES = {50, 100, 150, 200, 400, 800, 1600, 3200, 6400 };
+	private static final int[] DEPTHS = {1, 3, 5, 8, 11, 15, 18, 22, 26};
 	
 	private static Logger log = Logger.getLogger("UCIEngine");
 
@@ -136,6 +138,15 @@ public class UCIEngine {
 			sendCommand("go infinite");
 		}
 	}
+		
+	private int translateSkillLevel() {
+		int result = skillLevel * 20 / 7;
+		return result > 20 ? 20 : result;
+	}
+	
+	public int[] getAllSkillLevel() {
+		return new int[]{1,2,3,4,5,6,7,8,9};
+	}
 	
 	public void startGame(int skillLevel, String startFEN) {
 		this.skillLevel = skillLevel;				
@@ -148,15 +159,7 @@ public class UCIEngine {
 		sendCommand("isready");
 		sendCommand("position fen " + startFEN);
 		announcesBestMove = true;
-	}
-	
-	private int translateSkillLevel() {
-		int result = skillLevel * 20 / 7;
-		return result > 20 ? 20 : result;
-	}
-	
-	public int[] getAllSkillLevel() {
-		return new int[]{1,2,3,4,5,6,7,8};
+		gameStarted = true;
 	}
 			
 	public void endGame() {
@@ -165,18 +168,24 @@ public class UCIEngine {
 			sendCommand("setoption name Skill Level value 20");
 			sendCommand("ucinewgame");
 			sendCommand("isready");
-			this.announcesBestMove = false;
+			announcesBestMove = false;
+			gameStarted = false;
 		}
-	}
+	}	
 	
 	public void move(String startFEN, String moves) {		
+		if (isThinking) return;
 		String positionCommand = String.format("position %s moves %s", 
-				startFEN != null ? startFEN : "startpos", moves);
-		System.out.println("UCI move: " + positionCommand);
+				startFEN != null ? "fen " + startFEN : "startpos", moves);	
 		sendCommand(positionCommand);
-		sendCommand(String.format("go movetime %d depth %d", movetimes[skillLevel-1], depths[skillLevel-1]));		
+		sendCommand(String.format("go depth %d movetime %d", DEPTHS[skillLevel-1], MOVETIMES[skillLevel-1]));
+		isThinking = true;
 	}
-			
+	
+	public boolean isThinking() {
+		return isThinking;
+	}
+				
 	private static class OutputReader implements Runnable {
 		
 		private UCIEngine engine;
@@ -185,7 +194,7 @@ public class UCIEngine {
 		public OutputReader(UCIEngine engine) {
 			super();
 			this.engine = engine;
-			new Thread(this).start();			
+			new Thread(this, engine.getName()).start();			
 		}
 		
 		public void stop() {
@@ -213,6 +222,7 @@ public class UCIEngine {
 						engine.fireNewScore(newScore);
 					} else if (line.startsWith("bestmove")) {
 						if (engine.announcesBestMove) {
+							engine.isThinking = false;
 							engine.fireEngineMoved(line.split(" ")[1]);
 						} 
 					}

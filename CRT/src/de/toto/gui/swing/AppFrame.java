@@ -451,8 +451,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				}
 				updateBoard(false);
 				btnGameAgainstTheEngine.setIcon(loadIcon("Robot"));
-				this.putValue(Action.NAME, "Training Game");				
-				
+				this.putValue(Action.NAME, "Training Game");	
+				setTitle("Chess Repertoire Trainer: " + pgn.getName());				
 			} else {
 				if (pathToGameEngine == null) {				
 					pathToGameEngine = askForPathToEngine();				
@@ -477,7 +477,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					gameEngine.startGame(result, gameAgainstTheEngine.getPosition().getFen());				
 					updateBoard(false);
 					btnGameAgainstTheEngine.setIcon(loadIcon("Robot red"));
-					this.putValue(Action.NAME, "End Game");
+					this.putValue(Action.NAME, "End Game");					
+					setTitle(String.format("Playing against %s on level %d", gameEngine.getName(), result));
 				}
 			}
 		}
@@ -777,10 +778,15 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			}
 		}
 		if (getCurrentGame() == gameAgainstTheEngine) {			
-			if (board.isOrientationWhite() != getCurrentPosition().isWhiteToMove()) {
-				if (!gameAgainstTheEngine.getPosition().hasNext()) {
+			if (gameAgainstTheEngine.getPosition().hasNext()) {
+				lblTryVariation.setText("Browsing game history");
+			} else {
+				if (board.isOrientationWhite() != getCurrentPosition().isWhiteToMove()) {
 					gameEngine.move(gameAgainstTheEngine.getUCIStartFEN(),
 							gameAgainstTheEngine.getUCIEngineMoves());
+					lblTryVariation.setText("Engine is thinking...");
+				} else {
+					lblTryVariation.setText("Your move!");
 				}
 			}
 		}
@@ -1018,11 +1024,17 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	}
 	
 	@Override
-	public void engineMoved(UCIEngine e, String engineMove) {
+	public void engineMoved(UCIEngine e, final String engineMove) {
 		if (e == gameEngine) {
-			if (!"(none)".equals(engineMove)) {				
-				gameAgainstTheEngine.addMove(getCurrentPosition().translateMove(engineMove));
-			}
+			SwingUtilities.invokeLater(new Runnable() {
+				
+				@Override
+				public void run() {	
+					if (!"(none)".equals(engineMove)) {				
+						gameAgainstTheEngine.addMove(getCurrentPosition().translateMove(engineMove));
+					}
+				}
+			});
 		}
 	}
 
