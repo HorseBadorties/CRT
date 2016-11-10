@@ -237,6 +237,26 @@ public class Position {
 		}
 		return result;
 	}
+	
+	/**
+	 * 
+	 * @return the move in UCI engine syntax, i.e. only start square followed by target square and possibly a promotion piece
+	 */
+	public String getMoveAsEngineMove() {
+		if (move == null || "".equals(move) || "--".equals(move)) return null;
+		if (move.startsWith("0-0-0")) {
+			return whiteMoved() ? "e1c1" : "e8c8";
+		} else if (move.startsWith("0-0")) {
+			return whiteMoved() ? "e1g1" : "e8g8";
+		} else {
+			Square from = null;
+			Square to = null;
+			String[] moveParts = move.split(wasCapture() ? "x" : "-");
+			from = getSquare(moveParts[0].substring(moveParts[0].length()-2, moveParts[0].length()));
+			to = getSquare(moveParts[1].substring(0, 2));
+			return from.getName() + to.getName() + (wasPromotion() ? getPromotionPiece().fenChar : "");
+		}	
+	}
 
 	/**
 	 * 
@@ -411,7 +431,7 @@ public class Position {
 			if (wasCastling() || wasKingMove()) {			
 				castleField = castleField.replaceAll(regex, "");			
 			} else if (wasRookMove()) {				
-				int rank = isWhiteToMove() ? 8 : 1;
+				int rank = whiteToMove ? 8 : 1;
 				String kOrQ = null;
 				if (getMoveSquareNames()[0].equals("a"+rank)) {
 					kOrQ = "Q";
@@ -425,8 +445,8 @@ public class Position {
 			}
 		}
 		//was an enemy rook captured?
-		int enemyRank = isWhiteToMove() ? 1 : 8;
-		Piece enemyRook = isWhiteToMove() ? Piece.WHITE_ROOK : Piece.BLACK_ROOK;
+		int enemyRank = whiteToMove ? 1 : 8;
+		Piece enemyRook = whiteToMove ? Piece.WHITE_ROOK : Piece.BLACK_ROOK;
 		if (castleField.contains(whiteToMove ? "K" : "k") && getSquare(enemyRank, 8).piece != enemyRook) {
 			castleField = castleField.replaceAll(whiteToMove ? "K" : "k", "");
 		}

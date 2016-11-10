@@ -137,7 +137,7 @@ public class UCIEngine {
 		}
 	}
 	
-	public void startGame(int skillLevel) {
+	public void startGame(int skillLevel, String startFEN) {
 		this.skillLevel = skillLevel;				
 		if (!isStarted()) {
 			start();
@@ -146,6 +146,8 @@ public class UCIEngine {
 		sendCommand("setoption name Skill Level value " + translateSkillLevel());
 		sendCommand("ucinewgame");
 		sendCommand("isready");
+		sendCommand("position fen " + startFEN);
+		announcesBestMove = true;
 	}
 	
 	private int translateSkillLevel() {
@@ -167,16 +169,14 @@ public class UCIEngine {
 		}
 	}
 	
-	public void setFENandMove(String newFEN) {
-		if (!newFEN.equals(this.fen)) {
-			this.fen = newFEN;
-			this.announcesBestMove = true;
-			sendCommand("position fen " + newFEN);
-			sendCommand("isready");
-			sendCommand(String.format("go movetime %d depth %d", movetimes[skillLevel-1], depths[skillLevel-1]));
-		}
+	public void move(String startFEN, String moves) {		
+		String positionCommand = String.format("position %s moves %s", 
+				startFEN != null ? startFEN : "startpos", moves);
+		System.out.println("UCI move: " + positionCommand);
+		sendCommand(positionCommand);
+		sendCommand(String.format("go movetime %d depth %d", movetimes[skillLevel-1], depths[skillLevel-1]));		
 	}
-		
+			
 	private static class OutputReader implements Runnable {
 		
 		private UCIEngine engine;
@@ -246,7 +246,7 @@ public class UCIEngine {
 
 			});
 			engine.start();
-			engine.setFENandMove("r2qkb1r/pQnbpppp/8/2p5/3n4/2N3P1/PP1PPPBP/R1B1K1NR w KQkq - 1 9");
+//			engine.setFENandMove("r2qkb1r/pQnbpppp/8/2p5/3n4/2N3P1/PP1PPPBP/R1B1K1NR w KQkq - 1 9");
 			try {
 				Thread.sleep(50000);
 			} catch (InterruptedException e) {

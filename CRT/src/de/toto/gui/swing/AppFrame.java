@@ -474,7 +474,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 						"Skill Level", JOptionPane.QUESTION_MESSAGE, null, 
 						levels, levels[2]);
 				if (result != null) {
-					gameEngine.startGame(result);				
+					gameEngine.startGame(result, gameAgainstTheEngine.getPosition().getFen());				
 					updateBoard(false);
 					btnGameAgainstTheEngine.setIcon(loadIcon("Robot red"));
 					this.putValue(Action.NAME, "End Game");
@@ -776,10 +776,11 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				modelVariations.addElement(variation);
 			}
 		}
-		if (getCurrentGame() == gameAgainstTheEngine) {
+		if (getCurrentGame() == gameAgainstTheEngine) {			
 			if (board.isOrientationWhite() != getCurrentPosition().isWhiteToMove()) {
 				if (!gameAgainstTheEngine.getPosition().hasNext()) {
-					gameEngine.setFENandMove(p.getFen());
+					gameEngine.move(gameAgainstTheEngine.getUCIStartFEN(),
+							gameAgainstTheEngine.getUCIEngineMoves());
 				}
 			}
 		}

@@ -87,10 +87,17 @@ public class Game {
 		return currentPosition;
 	}
 	
-	public Position gotoStartPosition() {
-		while (currentPosition.hasPrevious()) {
-			currentPosition = currentPosition.getPrevious();
+	
+	private Position findStartPosition() {
+		Position p = currentPosition;
+		while (p.hasPrevious()) {
+			p = p.getPrevious();
 		}
+		return p;
+	}
+	
+	public Position gotoStartPosition() {
+		currentPosition = findStartPosition();
 		firePositionChangedEvent();
 		return currentPosition;
 	}
@@ -293,6 +300,25 @@ public class Game {
 			if (p.isSamePositionAs(aPosition)) return true;
 		}
 		return false;
+	}
+	
+	public String getUCIEngineMoves() {
+		StringBuilder result = new StringBuilder();
+		Position position = findStartPosition();
+		while (position.hasNext()) {
+			position = position.getNext();
+			result.append(position.getMoveAsEngineMove()).append(" ");			
+		}
+		return result.toString();
+	}
+	
+	public String getUCIStartFEN() {
+		Position startPosition = findStartPosition();
+		if (startPosition.isStartPosition()) {
+			return null;
+		} else {
+			return startPosition.getFen();
+		}
 	}
 		
 	
