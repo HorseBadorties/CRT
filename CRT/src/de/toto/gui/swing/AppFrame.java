@@ -100,7 +100,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	
 	public AppFrame() throws HeadlessException {
 		Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.KEY_EVENT_MASK);
-		setIconImage(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource("/images/icon/White Knight-96.png")));
+		String pathToIcon = "/images/icon/White Knight-96.png"; //"/images/pieces/png/Chess_klt60.png";
+		setIconImage(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource(pathToIcon)));
 		board = new Board();
 		board.addBoardListener(this);		
 		doUI();
