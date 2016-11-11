@@ -503,7 +503,7 @@ public class Position {
 				return;
 			}
 			if (!isLanMove(move)) {
-				move = sanToLan(move);
+				move = sanToLan(move, whiteMoved());
 			}
 			this.move = move.trim();
 			if (move != null) {
@@ -611,7 +611,7 @@ public class Position {
 	}
 		
 	// construct a LAN move out of a SAN for this position 
-	private String sanToLan(String san) {
+	private String sanToLan(String san, boolean whiteMoved) {
 		if (san.startsWith("0-0")) return san;
 		String _san = san;
 		// strip potential '+', '#' and promotion info
@@ -624,8 +624,7 @@ public class Position {
 		// get target square and strip from san
 		Square targetSquare = getSquare(_san.substring(_san.length()-2, _san.length()));
 		_san = _san.substring(0, _san.length()-2);
-		// get Piece to move and strip from san
-		boolean whiteMoved = whiteMoved();
+		// get Piece to move and strip from san		
 		Piece piece = whiteMoved ? Piece.WHITE_PAWN : Piece.BLACK_PAWN;
 		if (_san.length() > 0) {
 			switch (_san.charAt(0)) {
@@ -670,7 +669,7 @@ public class Position {
 	}
 	
 	private String buildLanMove(Square from, Square to, boolean isCapture, String suffix) {
-		return from.getNameWithPieceSuffix() + (isCapture ? "x" : "-") + to.getName() + suffix;
+		return (from.getNameWithPieceSuffix() + (isCapture ? "x" : "-") + to.getName() + suffix).trim();
 	}
 	
 	public List<Square> getSquaresWithPiecesByColor(boolean white) {
@@ -751,7 +750,10 @@ public class Position {
 		return result;
 	}
 	
-	public boolean isPossibleMove(String lan) {
+	public boolean isPossibleMove(String lan) {		
+		if (!isLanMove(lan)) {
+			lan = sanToLan(lan, isWhiteToMove());
+		}		 
 		for (Position p : getPossiblePositions()) {
 			if (p.getMove().startsWith(lan)) return true;
 		}

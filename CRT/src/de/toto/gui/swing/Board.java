@@ -26,7 +26,7 @@ import de.toto.game.Rules.PieceType;
 @SuppressWarnings("serial")
 public class Board extends JPanel {
 	
-	private Position currentPosition = new Position();
+	private Position currentPosition;
 	private BoardCanvas boardCanvas = new BoardCanvas(this);
 	private boolean showBoard = true;
 	private boolean showGraphicsComments = true;
