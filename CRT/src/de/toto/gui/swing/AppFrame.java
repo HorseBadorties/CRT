@@ -100,7 +100,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	
 	public AppFrame() throws HeadlessException {
 		Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.KEY_EVENT_MASK);
-		setIconImage(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource("/images/icon/Knight50.png")));
+		setIconImage(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource("/images/icon/Knight-96.png")));
 		board = new Board();
 		board.addBoardListener(this);		
 		doUI();
@@ -448,6 +448,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				gameAgainstTheEngine = null;
 				if (gameEngine != null) {
 					gameEngine.endGame();
+					gameEngine.stop();
+					gameEngine = null;
 				}
 				updateBoard(false);
 				btnGameAgainstTheEngine.setIcon(loadIcon("Robot"));
