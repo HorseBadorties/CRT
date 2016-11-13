@@ -627,7 +627,7 @@ public class Board extends JPanel {
                     (int)((fromPt.y + toPt.y)/2.0));
 			double rotate = Math.atan2(toPt.y - fromPt.y, toPt.x - fromPt.x);
 			double arrowHeight = squareSize / 10;
-			double arrowheadSide = squareSize / 2;
+			double arrowheadSide = squareSize / 3;
 			double arrowheadLength = arrowheadSide; //TODO
 			
 			Path2D.Double path = new Path2D.Double();
