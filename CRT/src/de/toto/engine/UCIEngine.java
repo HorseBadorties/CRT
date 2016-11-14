@@ -3,6 +3,7 @@ package de.toto.engine;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class UCIEngine {
@@ -138,6 +139,14 @@ public class UCIEngine {
 			sendCommand("go infinite");
 		}
 	}
+	
+	public void setMultiPV(int value) {
+		sendCommand("setoption name MultiPV value " + value);
+	}
+	
+	public void setThreadCount(int value) {
+		sendCommand("setoption name Threads value " + value);
+	}
 		
 	private int translateSkillLevel() {
 		int result = skillLevel * 20 / 7;
@@ -217,6 +226,7 @@ public class UCIEngine {
 			try {
 				String line = null;
 				while (isAlive && (line = engine.reader.readLine()) != null) {
+					//log.info(line);
 					Score newScore = Score.parse(line);
 					if (newScore != null) {
 						engine.fireNewScore(newScore);

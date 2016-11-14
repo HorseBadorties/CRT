@@ -72,6 +72,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private JSplitPane splitEast;
 	private String pathToEngine;
 	private UCIEngine engine;
+	private EnginePanel enginePanel;
 	private String pathToGameEngine;
 	private UCIEngine gameEngine;
 	private String enginesBestMove;
@@ -200,7 +201,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		g.gotoStartPosition();
 	}
 	
-	private Position getCurrentPosition() {	
+	public Position getCurrentPosition() {	
 		return getCurrentGame().getPosition();
 	}
 	
@@ -379,7 +380,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			try {
 				if (engine == null) {				
 					engine = new UCIEngine(pathToEngine);
-					engine.addEngineListener(AppFrame.this);
+					engine.addEngineListener(AppFrame.this);					
 				}				
 				if (engine.isStarted()) {
 					engine.stop();
@@ -388,8 +389,19 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					btnEngine.setToolTipText("Start Engine");
 					txtStatus.setText("Engine stopped");
 					enginesBestMove = null;
+					
 				} else {
-					engine.start();					
+					engine.start();
+					if (enginePanel == null) {
+						enginePanel = new EnginePanel(AppFrame.this, engine);
+						engine.addEngineListener(enginePanel);
+						JDialog d = new JDialog(AppFrame.this, "Engine", false);
+						d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+						d.add(enginePanel);
+						d.pack();
+						d.setLocationRelativeTo(AppFrame.this);
+						d.setVisible(true);
+					}					
 					engine.setFEN(getCurrentPosition().getFen());	
 					this.putValue(Action.NAME, "Stop Engine");
 					btnEngine.setToolTipText(engine.getName());
@@ -662,8 +674,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		if (splitEastPosition > 0) {
 			splitEast.setDividerLocation(splitEastPosition);
 		}
-		pnlEast.add(splitEast);
-		
+		pnlEast.add(splitEast);		
 
 		pnlToolBar.add(Box.createHorizontalStrut(10));
 		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true, false));
@@ -1004,6 +1015,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 							
 				@Override
 				public void run() {	
+					if (s.multiPV > 1) return;
 					Position currentPosition = getCurrentPosition();
 				
 					boolean whiteToMove = currentPosition.isWhiteToMove();
