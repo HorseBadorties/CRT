@@ -337,7 +337,7 @@ public class Board extends JPanel {
 				//maple.jpg wood-1024.jpg metal-1024.jpg
 				//boardImage = ImageIO.read(Board.class.getResource("/images/board/maple.jpg"));
 				SVGUniverse svgUniverse = new SVGUniverse();
-				String folder = "merida"; //"cburnett", "merida", "pirouetti";
+				String folder = "cburnett"; //"cburnett", "merida", "pirouetti";
 				wK = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wK.svg"));
 				wQ = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wQ.svg"));
 				wR = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wR.svg"));
@@ -627,7 +627,7 @@ public class Board extends JPanel {
                     (int)((fromPt.y + toPt.y)/2.0));
 			double rotate = Math.atan2(toPt.y - fromPt.y, toPt.x - fromPt.x);
 			double arrowHeight = squareSize / 10;
-			double arrowheadSide = squareSize / 2;
+			double arrowheadSide = squareSize / 3;
 			double arrowheadLength = arrowheadSide; //TODO
 			
 			Path2D.Double path = new Path2D.Double();
