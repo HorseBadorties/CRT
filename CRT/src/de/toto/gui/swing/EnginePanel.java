@@ -1,6 +1,8 @@
 package de.toto.gui.swing;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -9,7 +11,6 @@ import javax.swing.event.ChangeListener;
 import de.toto.engine.EngineListener;
 import de.toto.engine.Score;
 import de.toto.engine.UCIEngine;
-import de.toto.game.Game;
 
 public class EnginePanel extends JPanel implements EngineListener, ChangeListener {
 	
@@ -24,12 +25,13 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 		this.parent = parent;
 		this.engine = engine;
 		multiPV = new JSpinner(new SpinnerNumberModel(1, 1, 4, 1));
-		multiPV.addChangeListener(this);
+		multiPV.addChangeListener(this);			
 		threads = new JSpinner(new SpinnerNumberModel(1, 1, 2, 1));
 		threads.addChangeListener(this);
+		threads.setFocusable(false);
 		bestlines = new DefaultListModel<String>();
-		bestlines.setSize(1);
-		listBestlines = new JList<String>(bestlines);		
+		bestlines.setSize(engine.getMultiPV());
+		listBestlines = new JList<String>(bestlines);
 		setLayout(new BorderLayout());
 		JPanel pnlNorth = new JPanel();
 		pnlNorth.add(new JLabel("<html><b>" + engine.getName() + "      </b></html>"));
@@ -39,6 +41,17 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 		pnlNorth.add(threads);
 		add(pnlNorth, BorderLayout.PAGE_START);
 		add(new JScrollPane(listBestlines), BorderLayout.CENTER);
+		setNonFocusable(this);
+	}
+	
+	private static void setNonFocusable(Container c) {
+		c.setFocusable(false);
+		for (Component child : c.getComponents()) {
+			child.setFocusable(false);
+			if (child instanceof Container) {
+				setNonFocusable((Container)child);
+			}
+		}
 	}
 
 	@Override
@@ -54,21 +67,32 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 
 	@Override
 	public void engineMoved(UCIEngine e, String engineMove) {}
+	
+	@Override
+	public void engineStopped(UCIEngine e) {
+		bestlines.set(0, "<engine stopped>");
+		for (int i = 1; i < bestlines.size(); i++) {
+			bestlines.set(i, "");
+		}
+		
+	}
 
 	// a spinner changed
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() == multiPV) {
 			int newMultiPV = ((SpinnerNumberModel)multiPV.getModel()).getNumber().intValue();
-			engine.setMultiPV(newMultiPV);
 			if (newMultiPV != bestlines.size()) {
+				engine.setMultiPV(newMultiPV);			
 				bestlines.setSize(newMultiPV);
 			}
 		} else if (e.getSource() == threads) {			
 			engine.setThreadCount(((SpinnerNumberModel)threads.getModel()).getNumber().intValue());
 			
-		}
+		}		
 	}
+
+	
 	
 	
 }

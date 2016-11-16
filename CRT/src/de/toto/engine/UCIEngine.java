@@ -18,6 +18,8 @@ public class UCIEngine {
 	private String name;
 	private boolean announcesBestMove = false;
 	private int skillLevel = 8;
+	private int multiPV = 1;
+	private int threadCount = 1;
 	private boolean gameStarted = false;
 	private volatile boolean isThinking = false;
 	
@@ -52,6 +54,12 @@ public class UCIEngine {
 		}
 	}
 	
+	private void fireEngineStopped() {
+		for (EngineListener l : listener) {
+			l.engineStopped(this);
+		}
+	}
+	
 	public void start() {
 		if (isStarted()) return;
 		try {
@@ -78,6 +86,8 @@ public class UCIEngine {
 				throw new RuntimeException("process did not send 'uciok'");
 			}
 			sendCommand("isready");
+			setMultiPV(multiPV);
+			setThreadCount(threadCount);
 			outputListener = new OutputReader(this);
 		} catch (Exception e) {
 			log.severe(e.getLocalizedMessage());
@@ -126,8 +136,8 @@ public class UCIEngine {
 			e.printStackTrace();
 		} finally {
 			process = null;
-		}
-		
+			fireEngineStopped();
+		}		
 	}
 	
 	public void setFEN(String newFEN) {
@@ -141,11 +151,33 @@ public class UCIEngine {
 	}
 	
 	public void setMultiPV(int value) {
-		sendCommand("setoption name MultiPV value " + value);
+		if (value != multiPV) {
+			multiPV = value;
+			sendCommand("setoption name MultiPV value " + value);
+			if (isStarted() && fen != null) {
+				String _fen = fen;
+				fen = null;
+				setFEN(_fen);
+			}
+		}
+	}
+	
+	public int getMultiPV() {
+		return multiPV;
 	}
 	
 	public void setThreadCount(int value) {
+		threadCount = value;
 		sendCommand("setoption name Threads value " + value);
+		if (isStarted() && fen != null) {
+			String _fen = fen;
+			fen = null;
+			setFEN(_fen);
+		}
+	}
+	
+	public int getThreadCount() {
+		return threadCount;
 	}
 		
 	private int translateSkillLevel() {
@@ -166,6 +198,8 @@ public class UCIEngine {
 		sendCommand("setoption name Skill Level value " + translateSkillLevel());
 		sendCommand("ucinewgame");
 		sendCommand("isready");
+		setMultiPV(multiPV);
+		setThreadCount(threadCount);
 		sendCommand("position fen " + startFEN);
 		announcesBestMove = true;
 		gameStarted = true;
@@ -244,36 +278,4 @@ public class UCIEngine {
 		
 	}
 	
-	// C:\Program Files\Stockfish\\stockfish 7 x64.exe
-	// C:\\Scid vs PC-4.12\\bin\\engines\\toga\\TogaII.exe	
-	// C:\\Scid vs PC-4.12\\bin\\engines\\komodo-8_2d3f23\\Windows\\komodo-8-64bit.exe
-	public static void main(String[] args) {
-		UCIEngine engine = new UCIEngine("C:\\Program Files\\Stockfish\\stockfish 7 x64.exe");		
-		try {
-			engine.addEngineListener(new EngineListener() {
-
-				@Override
-				public void newEngineScore(UCIEngine e, Score s) {
-					System.out.println("*** Score: *** " + s.toString());					
-				}
-
-				@Override
-				public void engineMoved(UCIEngine e, String engineMove) {
-					System.out.println("Engine moved: " + engineMove);		
-					
-				}
-				
-
-			});
-			engine.start();
-//			engine.setFENandMove("r2qkb1r/pQnbpppp/8/2p5/3n4/2N3P1/PP1PPPBP/R1B1K1NR w KQkq - 1 9");
-			try {
-				Thread.sleep(50000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		} finally {
-			if (engine != null) engine.stop();
-		}
-	}
 }

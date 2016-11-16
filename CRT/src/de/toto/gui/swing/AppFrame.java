@@ -70,6 +70,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	
 	private JSplitPane splitCenter;
 	private JSplitPane splitEast;
+	private JSplitPane splitMovesAndEngine;
 	private String pathToEngine;
 	private UCIEngine engine;
 	private EnginePanel enginePanel;
@@ -394,14 +395,11 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					engine.start();
 					if (enginePanel == null) {
 						enginePanel = new EnginePanel(AppFrame.this, engine);
-						engine.addEngineListener(enginePanel);
-						JDialog d = new JDialog(AppFrame.this, "Engine", false);
-						d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-						d.add(enginePanel);
-						d.pack();
-						d.setLocationRelativeTo(AppFrame.this);
-						d.setVisible(true);
+						engine.addEngineListener(enginePanel);						
 					}					
+					splitMovesAndEngine.setTopComponent(pnlMoves);
+					splitMovesAndEngine.setBottomComponent(enginePanel);
+					splitEast.setBottomComponent(splitMovesAndEngine);
 					engine.setFEN(getCurrentPosition().getFen());	
 					this.putValue(Action.NAME, "Stop Engine");
 					btnEngine.setToolTipText(engine.getName());
@@ -668,6 +666,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlDrillHistory.add(lblDrillHistory);
 		pnlDrillHistory.add(Box.createRigidArea(new Dimension(0,10)));
 		pnlDrillHistory.add(btnBackToCurrentDrillPosition);
+		
+		splitMovesAndEngine  = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		
 		splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlVariationsAndDrillStatus, pnlMoves);
 		splitEast.setBorder(null);
 		int splitEastPosition = prefs.getInt(PREFS_SPLITTER_EAST_POSITION, 0);
@@ -1050,6 +1051,13 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					}
 				}
 			});
+		}
+	}
+	
+	@Override
+	public void engineStopped(UCIEngine e) {
+		if (e == engine && enginePanel != null && enginePanel.isVisible()) {
+			splitEast.setBottomComponent(pnlMoves);
 		}
 	}
 
