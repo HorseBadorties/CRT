@@ -91,8 +91,6 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 			
 		}		
 	}
-
-	
 	
 	
 }
