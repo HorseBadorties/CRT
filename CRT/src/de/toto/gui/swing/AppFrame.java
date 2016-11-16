@@ -389,13 +389,12 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					btnEngine.setIcon(loadIcon("Superman"));
 					btnEngine.setToolTipText("Start Engine");
 					txtStatus.setText("Engine stopped");
-					enginesBestMove = null;
+					enginesBestMove = null;					
 					
 				} else {
 					engine.start();
 					if (enginePanel == null) {
-						enginePanel = new EnginePanel(AppFrame.this, engine);
-						engine.addEngineListener(enginePanel);						
+						enginePanel = new EnginePanel(AppFrame.this, engine);											
 					}					
 					splitMovesAndEngine.setTopComponent(pnlMoves);
 					splitMovesAndEngine.setBottomComponent(enginePanel);

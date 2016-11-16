@@ -16,6 +16,7 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 	
 	private AppFrame parent;
 	private UCIEngine engine;
+	private JLabel lblEngineName;
 	private JSpinner multiPV;
 	private JSpinner threads;
 	private JList<String> listBestlines;
@@ -23,7 +24,7 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 	
 	public EnginePanel(AppFrame parent, UCIEngine engine) {
 		this.parent = parent;
-		this.engine = engine;
+		
 		multiPV = new JSpinner(new SpinnerNumberModel(1, 1, 4, 1));
 		multiPV.addChangeListener(this);			
 		threads = new JSpinner(new SpinnerNumberModel(1, 1, 2, 1));
@@ -34,7 +35,8 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 		listBestlines = new JList<String>(bestlines);
 		setLayout(new BorderLayout());
 		JPanel pnlNorth = new JPanel();
-		pnlNorth.add(new JLabel("<html><b>" + engine.getName() + "      </b></html>"));
+		lblEngineName = new JLabel();
+		pnlNorth.add(lblEngineName);
 		pnlNorth.add(new JLabel("Lines: "));
 		pnlNorth.add(multiPV);
 		pnlNorth.add(new JLabel("Threads: "));
@@ -42,6 +44,19 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 		add(pnlNorth, BorderLayout.PAGE_START);
 		add(new JScrollPane(listBestlines), BorderLayout.CENTER);
 		setNonFocusable(this);
+		setEngine(engine);
+	}
+	
+	public void setEngine(UCIEngine engine) {
+		if (this.engine != null) {
+			this.engine.removeEngineListener(this);
+		}
+		this.engine = engine;
+		if (engine != null) {
+			this.engine.addEngineListener(this);
+			lblEngineName.setText("<html><b>" + engine.getName() + "      </b></html>");
+		}
+		
 	}
 	
 	private static void setNonFocusable(Container c) {
