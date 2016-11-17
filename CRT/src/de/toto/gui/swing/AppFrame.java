@@ -91,6 +91,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private static final String PREFS_WHITE_PERSPECTIVE = "WHITE_PERSPECTIVE";
 	private static final String PREFS_SPLITTER_CENTER_POSITION = "SPLITTER_CENTER_POSITION";
 	private static final String PREFS_SPLITTER_EAST_POSITION = "SPLITTER_EAST_POSITION";
+	private static final String PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION = "PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION";
 	private static final String PREFS_FONT_SIZE = "FONT_SIZE";
 	private static final String PREFS_FONT_NAME = "FONT_NAME";
 	private static final String PREFS_ONLY_MAINLINE = "ONLY_MAINLINE";
@@ -145,6 +146,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		prefs.putBoolean(PREFS_WHITE_PERSPECTIVE, board.isOrientationWhite());
 		prefs.putInt(PREFS_SPLITTER_CENTER_POSITION, splitCenter.getDividerLocation());
 		prefs.putInt(PREFS_SPLITTER_EAST_POSITION, splitEast.getDividerLocation());
+		prefs.putInt(PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION, splitMovesAndEngine.getDividerLocation());
 		prefs.putInt(PREFS_FONT_SIZE, lstVariations.getFont().getSize());
 		prefs.put(PREFS_FONT_NAME, lstVariations.getFont().getName());
 		prefs.putBoolean(PREFS_ONLY_MAINLINE, cbOnlyMainline.isSelected());
@@ -370,6 +372,31 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		
 	}
 	
+	private Action actionChangeEngine = new AbstractAction("Start Engine") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			String pathToNewEngine = askForPathToEngine();
+			if (pathToNewEngine == null || pathToNewEngine.equals(pathToEngine)) return;
+			
+			pathToEngine = pathToNewEngine;
+			if (engine != null) {
+				engine.removeEngineListener(AppFrame.this);
+				engine.stop();
+			}			
+			engine = new UCIEngine(pathToEngine);
+			engine.addEngineListener(AppFrame.this);
+			engine.start();
+			enginePanel.setEngine(engine);			
+			engine.setFEN(getCurrentPosition().getFen());	
+			btnEngine.setToolTipText(engine.getName());
+			updateBoard(false);	
+		}
+	};
+	
+	public void changeEngine() {
+		actionChangeEngine.actionPerformed(null);
+	}
+	
 	private Action actionEngine = new AbstractAction("Start Engine") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
@@ -396,9 +423,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					if (enginePanel == null) {
 						enginePanel = new EnginePanel(AppFrame.this, engine);											
 					}					
-					splitMovesAndEngine.setTopComponent(pnlMoves);
-					splitMovesAndEngine.setBottomComponent(enginePanel);
-					splitEast.setBottomComponent(splitMovesAndEngine);
+					setVerticalSplitPaneComponents(splitMovesAndEngine, pnlMoves, enginePanel);
+					setVerticalSplitPaneComponents(splitEast, null, splitMovesAndEngine);
 					engine.setFEN(getCurrentPosition().getFen());	
 					this.putValue(Action.NAME, "Stop Engine");
 					btnEngine.setToolTipText(engine.getName());
@@ -667,12 +693,16 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlDrillHistory.add(btnBackToCurrentDrillPosition);
 		
 		splitMovesAndEngine  = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		int splitPosition = prefs.getInt(PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION, 0);
+		if (splitPosition > 0) {
+			splitMovesAndEngine.setDividerLocation(splitPosition);
+		}
 		
 		splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlVariationsAndDrillStatus, pnlMoves);
 		splitEast.setBorder(null);
-		int splitEastPosition = prefs.getInt(PREFS_SPLITTER_EAST_POSITION, 0);
-		if (splitEastPosition > 0) {
-			splitEast.setDividerLocation(splitEastPosition);
+		splitPosition = prefs.getInt(PREFS_SPLITTER_EAST_POSITION, 0);
+		if (splitPosition > 0) {
+			splitEast.setDividerLocation(splitPosition);
 		}
 		pnlEast.add(splitEast);		
 
@@ -1014,16 +1044,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			SwingUtilities.invokeLater(new Runnable() {
 							
 				@Override
-				public void run() {	
-					if (s.multiPV > 1) return;
-					Position currentPosition = getCurrentPosition();
-				
-					boolean whiteToMove = currentPosition.isWhiteToMove();
-					boolean positiveScore = (whiteToMove && s.score >= 0) || (!whiteToMove && s.score < 0);	
-					String scoreText = String.format("%d [%s%.2f] %s", 
-							s.depth, positiveScore ? "+" : "-", Math.abs(s.score), s.bestLine);
-					txtStatus.setText(scoreText);
-					
+				public void run() {					
 					//draw move arrow
 					if (!s.bestLine.isEmpty()) {
 						if (!s.bestLine.get(0).equals(enginesBestMove)) {
@@ -1055,13 +1076,24 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	
 	@Override
 	public void engineStopped(UCIEngine e) {
-		if (e == engine && enginePanel != null && enginePanel.isVisible()) {
-			splitEast.setBottomComponent(pnlMoves);
+		if (e == engine && enginePanel != null && enginePanel.isVisible()) {			
+			setVerticalSplitPaneComponents(splitEast, null, pnlMoves);
 		}
 	}
 
 	private static boolean isUltraHighResolution() {
 		return Toolkit.getDefaultToolkit().getScreenSize().width >= 1600;
+	}
+	
+	private static void setVerticalSplitPaneComponents(JSplitPane splitter, Component top, Component bottom) {
+		int dividerLocation = splitter.getDividerLocation();
+		if (top != null) {
+			splitter.setTopComponent(top);
+		} 
+		if (bottom != null) {
+			splitter.setBottomComponent(bottom);
+		}
+		splitter.setDividerLocation(dividerLocation);
 	}
 	
 	@Override

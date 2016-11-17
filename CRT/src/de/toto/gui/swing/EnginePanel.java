@@ -3,6 +3,8 @@ package de.toto.gui.swing;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -12,7 +14,7 @@ import de.toto.engine.EngineListener;
 import de.toto.engine.Score;
 import de.toto.engine.UCIEngine;
 
-public class EnginePanel extends JPanel implements EngineListener, ChangeListener {
+public class EnginePanel extends JPanel implements EngineListener, ChangeListener, ActionListener {
 	
 	private AppFrame parent;
 	private UCIEngine engine;
@@ -21,6 +23,7 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 	private JSpinner threads;
 	private JList<String> listBestlines;
 	private DefaultListModel<String> bestlines;
+	private JButton btnChangeEngine;
 	
 	public EnginePanel(AppFrame parent, UCIEngine engine) {
 		this.parent = parent;
@@ -31,11 +34,14 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 		threads.addChangeListener(this);
 		threads.setFocusable(false);
 		bestlines = new DefaultListModel<String>();
-		bestlines.setSize(engine.getMultiPV());
+		bestlines.setSize(4);
 		listBestlines = new JList<String>(bestlines);
+		btnChangeEngine = new JButton("...");
+		btnChangeEngine.addActionListener(this);
 		setLayout(new BorderLayout());
 		JPanel pnlNorth = new JPanel();
 		lblEngineName = new JLabel();
+		pnlNorth.add(btnChangeEngine);
 		pnlNorth.add(lblEngineName);
 		pnlNorth.add(new JLabel("Lines: "));
 		pnlNorth.add(multiPV);
@@ -44,7 +50,7 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 		add(pnlNorth, BorderLayout.PAGE_START);
 		add(new JScrollPane(listBestlines), BorderLayout.CENTER);
 		setNonFocusable(this);
-		setEngine(engine);
+		setEngine(engine);		
 	}
 	
 	public void setEngine(UCIEngine engine) {
@@ -99,12 +105,19 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 			int newMultiPV = ((SpinnerNumberModel)multiPV.getModel()).getNumber().intValue();
 			if (newMultiPV != bestlines.size()) {
 				engine.setMultiPV(newMultiPV);			
-				bestlines.setSize(newMultiPV);
+				for (int i = newMultiPV; i < bestlines.size(); i++) {
+					bestlines.set(i, "");
+				}
 			}
 		} else if (e.getSource() == threads) {			
 			engine.setThreadCount(((SpinnerNumberModel)threads.getModel()).getNumber().intValue());
 			
 		}		
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		parent.changeEngine();
 	}
 	
 	
