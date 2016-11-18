@@ -1126,10 +1126,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 						keysTyped = keysTyped + String.valueOf(c);
 					} else {
 						keysTyped = "";
-					}
-					if (getCurrentGame() == drill) {
-						pnlDrillStatus.setLast(keysTyped);
-					}
+					}					
 					if (keysTyped.length() >= 2 && Character.isDigit(keysTyped.charAt(keysTyped.length()-1))) {
 						userTypedSquare(keysTyped.substring(keysTyped.length()-2, keysTyped.length()));
 						keysTyped = "";

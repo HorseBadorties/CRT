@@ -61,6 +61,8 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 		if (engine != null) {
 			this.engine.addEngineListener(this);
 			lblEngineName.setText("<html><b>" + engine.getName() + "      </b></html>");
+			multiPV.setValue(1);
+			threads.setValue(1);
 		}
 		
 	}
@@ -95,12 +97,15 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 		for (int i = 1; i < bestlines.size(); i++) {
 			bestlines.set(i, "");
 		}
+		multiPV.setValue(1);
+		threads.setValue(1);
 		
 	}
 
 	// a spinner changed
 	@Override
 	public void stateChanged(ChangeEvent e) {
+		if (!engine.isStarted()) return;
 		if (e.getSource() == multiPV) {
 			int newMultiPV = ((SpinnerNumberModel)multiPV.getModel()).getNumber().intValue();
 			if (newMultiPV != bestlines.size()) {
