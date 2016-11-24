@@ -13,6 +13,7 @@ import javax.swing.event.ChangeListener;
 import de.toto.engine.EngineListener;
 import de.toto.engine.Score;
 import de.toto.engine.UCIEngine;
+import de.toto.game.Position;
 
 public class EnginePanel extends JPanel implements EngineListener, ChangeListener, ActionListener {
 	
@@ -80,7 +81,9 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 	@Override
 	public void newEngineScore(UCIEngine e, Score s) {	
 		if (bestlines.size() >= s.multiPV) {
-			boolean whiteToMove = parent.getCurrentPosition().isWhiteToMove();
+			Position p = parent.getCurrentPosition();
+			if (!s.fen.equals(p.getFen())) return;
+			boolean whiteToMove = p.isWhiteToMove();
 			boolean positiveScore = (whiteToMove && s.score >= 0) || (!whiteToMove && s.score < 0);	
 			String scoreText = String.format("%d [%s%.2f] %s", 
 					s.depth, positiveScore ? "+" : "-", Math.abs(s.score), s.bestLine);			
@@ -89,7 +92,7 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 	}
 
 	@Override
-	public void engineMoved(UCIEngine e, String engineMove) {}
+	public void engineMoved(UCIEngine e, String fen, String engineMove) {}
 	
 	@Override
 	public void engineStopped(UCIEngine e) {

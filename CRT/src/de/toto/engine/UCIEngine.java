@@ -48,9 +48,9 @@ public class UCIEngine {
 		}
 	}
 	
-	private void fireEngineMoved(String engineMove) {
+	private void fireEngineMoved(String fen, String engineMove) {
 		for (EngineListener l : listener) {
-			l.engineMoved(this, engineMove);
+			l.engineMoved(this, fen, engineMove);
 		}
 	}
 	
@@ -140,7 +140,7 @@ public class UCIEngine {
 		}		
 	}
 	
-	public void setFEN(String newFEN) {
+	public synchronized void setFEN(String newFEN) {
 		if (!newFEN.equals(this.fen)) {
 			this.announcesBestMove = false;
 			this.fen = newFEN;
@@ -148,6 +148,10 @@ public class UCIEngine {
 			sendCommand("position fen " + newFEN);
 			sendCommand("go infinite");
 		}
+	}
+	
+	public synchronized String getFEN() {
+		return fen;
 	}
 	
 	public void setMultiPV(int value) {
@@ -216,8 +220,9 @@ public class UCIEngine {
 		}
 	}	
 	
-	public void move(String startFEN, String moves) {		
+	public void move(String startFEN, String moves, String fen) {		
 		if (isThinking) return;
+		this.fen = fen;
 		String positionCommand = String.format("position %s moves %s", 
 				startFEN != null ? "fen " + startFEN : "startpos", moves);	
 		sendCommand(positionCommand);
@@ -261,13 +266,13 @@ public class UCIEngine {
 				String line = null;
 				while (isAlive && (line = engine.reader.readLine()) != null) {
 					//log.info(line);
-					Score newScore = Score.parse(line);
+					Score newScore = Score.parse(engine.getFEN(), line);
 					if (newScore != null) {
 						engine.fireNewScore(newScore);
 					} else if (line.startsWith("bestmove")) {
 						if (engine.announcesBestMove) {
 							engine.isThinking = false;
-							engine.fireEngineMoved(line.split(" ")[1]);
+							engine.fireEngineMoved(engine.getFEN(), line.split(" ")[1]);
 						} 
 					}
 				}

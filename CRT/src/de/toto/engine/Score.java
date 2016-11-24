@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Score {
 	
+	public String fen;
 	public int multiPV;
 	public int depth;	
 	public float score;	
@@ -16,10 +17,11 @@ public class Score {
 	private static final String TOKEN_DEPTH = "depth";
 	private static final String TOKEN_MULTIPV = "multipv";
 	
-	public static Score parse(String outputLine) {
+	public static Score parse(String fen, String outputLine) {
 		Score result = null;
 		if (outputLine != null && outputLine.startsWith(TOKEN_INFO) && outputLine.indexOf(TOKEN_SCORE_CP) > 0) {
 			result = new Score();
+			result.fen = fen;
 			result.multiPV = readTokenValue(outputLine, TOKEN_MULTIPV, 1);
 			result.score = (float)readTokenValue(outputLine, TOKEN_SCORE_CP, 0) / 100;
 			result.depth = readTokenValue(outputLine, TOKEN_DEPTH, 0);

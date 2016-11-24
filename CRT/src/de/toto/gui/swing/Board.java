@@ -235,7 +235,7 @@ public class Board extends JPanel {
 					showPopup(e);
 					return;
 				} 
-				if (!isDragging)
+				if (!isDragging || dragSquare.gameSquare.piece == null)
 					return;
 				boolean correctSideMoved = dragSquare.gameSquare.piece.isWhite == board.getCurrentPosition().isWhiteToMove();
 				Square dropSquare = getSquareAt(e.getPoint());

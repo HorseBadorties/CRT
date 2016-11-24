@@ -827,7 +827,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			} else {
 				if (board.isOrientationWhite() != getCurrentPosition().isWhiteToMove()) {
 					gameEngine.move(gameAgainstTheEngine.getUCIStartFEN(),
-							gameAgainstTheEngine.getUCIEngineMoves());
+							gameAgainstTheEngine.getUCIEngineMoves(),
+							gameAgainstTheEngine.getPosition().getFen());
 					lblTryVariation.setText("Engine is thinking...");
 				} else {
 					lblTryVariation.setText("Your move!");
@@ -1060,13 +1061,13 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	}
 	
 	@Override
-	public void engineMoved(UCIEngine e, final String engineMove) {
+	public void engineMoved(UCIEngine e, final String fen, final String engineMove) {
 		if (e == gameEngine) {
 			SwingUtilities.invokeLater(new Runnable() {
 				
 				@Override
 				public void run() {	
-					if (!"(none)".equals(engineMove)) {				
+					if (!"(none)".equals(engineMove) && getCurrentPosition().getFen().equals(fen)) {				
 						gameAgainstTheEngine.addMove(getCurrentPosition().translateMove(engineMove));
 					}
 				}
