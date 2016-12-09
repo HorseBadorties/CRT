@@ -337,7 +337,7 @@ public class Board extends JPanel {
 				//maple.jpg wood-1024.jpg metal-1024.jpg
 				//boardImage = ImageIO.read(Board.class.getResource("/images/board/maple.jpg"));
 				SVGUniverse svgUniverse = new SVGUniverse();
-				String folder = "cburnett"; //"cburnett", "merida", "pirouetti";
+				String folder = "merida"; //"cburnett", "merida", "pirouetti";
 				wK = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wK.svg"));
 				wQ = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wQ.svg"));
 				wR = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wR.svg"));

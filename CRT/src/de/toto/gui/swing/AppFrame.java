@@ -859,7 +859,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		
 		// Engine move
 		board.clearAdditionalGraphicsComment();	
-		if (enginesBestMove != null) {
+		if (enginesBestMove != null) {			
 			Square from = p.getSquare(enginesBestMove.substring(0, 2));
 			Square to = p.getSquare(enginesBestMove.substring(2, 4));								
 			board.addAdditionalGraphicsComment(new GraphicsComment(from, to, Color.BLACK));
@@ -1047,8 +1047,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				@Override
 				public void run() {					
 					//draw move arrow
-					if (!s.bestLine.isEmpty()) {
-						if (!s.bestLine.get(0).equals(enginesBestMove)) {
+					if (engine.isStarted() && !s.bestLine.isEmpty()) {
+						if (!s.bestLine.get(0).equals(enginesBestMove)) {							
 							enginesBestMove = s.bestLine.get(0);
 							updateBoard(false);
 						}

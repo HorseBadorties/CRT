@@ -60,7 +60,7 @@ public class UCIEngine {
 		}
 	}
 	
-	public void start() {
+	public synchronized void start() {
 		if (isStarted()) return;
 		try {
 			process = new ProcessBuilder(pathToEngine).start();
@@ -106,7 +106,7 @@ public class UCIEngine {
 		return name;
 	}
 	
-	public boolean isStarted() {
+	public synchronized boolean isStarted() {
 		return process != null;
 	}
 
@@ -124,7 +124,7 @@ public class UCIEngine {
 		}
 	}
 
-	public void stop() {
+	public synchronized void stop() {
 		if (!isStarted()) return;
 		try {
 			sendCommand("stop");
