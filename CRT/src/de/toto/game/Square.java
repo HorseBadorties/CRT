@@ -400,7 +400,7 @@ public class Square {
 		//TODO isPinned
 		public boolean isPinned(Position p, Square moveSquare) {			
 			if (piece.type == PieceType.KING) return false;
-			Square kingsSquare = p.findOurKing();
+			Square kingsSquare = p.findKing(this.piece.isWhite);
 			Piece originalPieceOnMoveSquare = moveSquare.piece; 
 			try {
 				if (moveSquare != null) {
