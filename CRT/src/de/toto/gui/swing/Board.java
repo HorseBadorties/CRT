@@ -25,15 +25,15 @@ import de.toto.game.Rules.PieceType;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel {
-	
+
 	private Position currentPosition;
 	private BoardCanvas boardCanvas = new BoardCanvas(this);
 	private boolean showBoard = true;
 	private boolean showGraphicsComments = true;
 	private boolean showPieces = true;
 	private boolean showCoordinates = true;
-	private java.util.List<GraphicsComment> additionalGraphicsComment = new ArrayList<GraphicsComment>();  
-	
+	private java.util.List<GraphicsComment> additionalGraphicsComment = new ArrayList<GraphicsComment>();
+
 	public Position getCurrentPosition() {
 		return currentPosition;
 	}
@@ -41,37 +41,37 @@ public class Board extends JPanel {
 	public void setCurrentPosition(Position currentPosition) {
 		this.currentPosition = currentPosition;
 		boardCanvas.positionChanged();
-		repaint();		
+		repaint();
 	}
-	
+
 	public void setShowGraphicsComments(boolean value) {
-		showGraphicsComments = value;	
+		showGraphicsComments = value;
 	}
-	
+
 	public void setShowPieces(boolean value) {
-		showPieces = value;	
+		showPieces = value;
 	}
-	
+
 	public void setShowBoard(boolean value) {
-		showBoard = value;	
+		showBoard = value;
 	}
-	
+
 	public void setShowCoordinates(boolean value) {
-		showCoordinates = value;	
+		showCoordinates = value;
 	}
-	
+
 	public void clearAdditionalGraphicsComment() {
 		additionalGraphicsComment.clear();
 	}
-	
+
 	public void addAdditionalGraphicsComment(GraphicsComment gc) {
 		additionalGraphicsComment.add(gc);
 	}
-	
+
 	public void flip() {
 		boardCanvas.flip();
 	}
-	
+
 	public boolean isOrientationWhite() {
 		return boardCanvas.isOrientationWhite();
 	}
@@ -91,45 +91,47 @@ public class Board extends JPanel {
 			public void componentShown(ComponentEvent e) {
 				resizeBoardCanvas();
 			}
-			
+
 		});
 	}
-	
+
 	private void resizeBoardCanvas() {
 		Dimension pref = getSize();
 		int canvasSize = Math.min(pref.height, pref.width);
-		canvasSize = canvasSize / 8 * 8; 
+		canvasSize = canvasSize / 8 * 8;
 		boardCanvas.setPreferredSize(new Dimension(canvasSize, canvasSize));
 		revalidate();
 	}
-	
+
 	public void addBoardListener(BoardListener boardListener) {
 		listenerList.add(BoardListener.class, boardListener);
 	}
-	
+
 	public void removeBoardListener(BoardListener boardListener) {
 		listenerList.remove(BoardListener.class, boardListener);
 	}
-	
+
 	protected void fireUserMoved(String move) {
 		for (BoardListener l : listenerList.getListeners(BoardListener.class)) {
 			l.userMove(move);
 		}
 	}
-	
+
 	protected void fireUserClickedSquare(String squarename) {
 		for (BoardListener l : listenerList.getListeners(BoardListener.class)) {
 			l.userClickedSquare(squarename);
 		}
 	}
-	
+
 	public static class BoardCanvas extends JComponent {
 
-		private static class Square {	
+		private static class Square {
 			de.toto.game.Square gameSquare;
 			int rank;
 			int file;
-			boolean isWhite; //cache value rather than use de.toto.game.Square.isWhite() over and over again during paint()
+			boolean isWhite; // cache value rather than use
+								// de.toto.game.Square.isWhite() over and over
+								// again during paint()
 			Point topLeftOnBoard;
 			boolean isDragSource = false;
 			boolean isDragTarget = false;
@@ -137,21 +139,21 @@ public class Board extends JPanel {
 			public Square(int rank, int file) {
 				this.rank = rank;
 				this.file = file;
-				isWhite = (file % 2 == 0 && rank % 2 != 0) || (file % 2 != 0 && rank % 2 == 0);				
+				isWhite = (file % 2 == 0 && rank % 2 != 0) || (file % 2 != 0 && rank % 2 == 0);
 			}
 
 			// e.g. "a1"
 			String getName() {
-				Character cFile = Character.valueOf((char)(file+96));
+				Character cFile = Character.valueOf((char) (file + 96));
 				return cFile.toString() + rank;
 			}
 		}
 
 		private Image boardImage, boardImageScaled;
-		private SVGIcon wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP; 
+		private SVGIcon wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP;
 		private int scaleSize;
-		
-		private static final Color squareSelectionColor = new Color(.3f, .4f, .5f, .6f); 
+
+		private static final Color squareSelectionColor = new Color(.3f, .4f, .5f, .6f);
 		private static final Color highlightColorGreen = new Color(0f, 1f, 0f, .4f);
 		private static final Color highlightColorRed = new Color(1f, 0f, 0f, .4f);
 		private static final Color highlightColorYellow = new Color(1f, 1f, 0f, .4f);
@@ -163,24 +165,22 @@ public class Board extends JPanel {
 		private static final Color arrowColorRed20Percent = new Color(1f, 0f, 0f, .2f);
 		private static final Color arrowColorYellow20Percent = new Color(1f, 1f, 0f, .2f);
 		private static final Color arrowColorBlack20Percent = new Color(0f, 0f, 0f, .2f);
-		
-		
+
 		private static final Color lightBlue = new Color(243, 243, 243);
 		private static final Color darkBlue = new Color(115, 137, 182);
 		private static final Color lightGreen = new Color(208, 217, 168);
 		private static final Color darkGreen = new Color(81, 160, 104);
 		private static final Color lightGray = new Color(223, 223, 223);
-		private static final Color darkGray = new Color(128, 128, 128);		
+		private static final Color darkGray = new Color(128, 128, 128);
 		private static final Color lighBrown = new Color(208, 192, 160);
-		private static final Color darkBrown = new Color(160, 128, 80);		
-		
-		private static final Color squareColorWhite = lighBrown; 
-		private static final Color squareColorBlack = darkBrown;
-		
-		private Font fontPositionEval = new Font("Frutiger Standard", Font.PLAIN, 200); 
-		private static final Color colorPositionEval = new Color(1f, .0f, .0f, .6f); ;
+		private static final Color darkBrown = new Color(160, 128, 80);
 
-		
+		private static final Color squareColorWhite = lighBrown;
+		private static final Color squareColorBlack = darkBrown;
+
+		private Font fontPositionEval = new Font("Frutiger Standard", Font.PLAIN, 200);
+		private static final Color colorPositionEval = new Color(1f, .0f, .0f, .6f);;
+
 		private boolean isDragging = false;
 		private Point cursorLocation;
 		private Square dragSquare = null;
@@ -189,11 +189,11 @@ public class Board extends JPanel {
 		private Board board;
 		private Square[][] squares = new Square[8][8];
 		private boolean isOrientationWhite = true;
-		
+
 		private void positionChanged() {
 			for (int rank = 1; rank <= 8; rank++) {
 				for (int file = 1; file <= 8; file++) {
-					squares[rank-1][file-1].gameSquare = board.currentPosition.getSquare(rank, file);
+					squares[rank - 1][file - 1].gameSquare = board.currentPosition.getSquare(rank, file);
 				}
 			}
 		}
@@ -203,8 +203,9 @@ public class Board extends JPanel {
 			@Override
 			public void mouseDragged(MouseEvent e) {
 				if (!isDragging) {
-					dragSquare = getSquareAt(e.getPoint());					
-					if (dragSquare.gameSquare.piece == null) return;
+					dragSquare = getSquareAt(e.getPoint());
+					if (dragSquare.gameSquare.piece == null)
+						return;
 					dragSquare.isDragSource = true;
 				}
 				isDragging = true;
@@ -221,7 +222,7 @@ public class Board extends JPanel {
 				}
 				repaint();
 			}
-			
+
 			@Override
 			public void mousePressed(MouseEvent e) {
 				if (e.isPopupTrigger()) {
@@ -234,58 +235,62 @@ public class Board extends JPanel {
 				if (e.isPopupTrigger()) {
 					showPopup(e);
 					return;
-				} 
-				if (!isDragging || dragSquare.gameSquare.piece == null)
-					return;
-				boolean correctSideMoved = dragSquare.gameSquare.piece.isWhite == board.getCurrentPosition().isWhiteToMove();
-				Square dropSquare = getSquareAt(e.getPoint());
-				if (correctSideMoved && dropSquare != null && dropSquare != dragSquare) {					
-					if (dragSquare.gameSquare.canMoveTo(dropSquare.gameSquare, board.getCurrentPosition(), null)) {
-						String move = dragSquare.gameSquare.piece.pgnChar + dragSquare.getName();
-						boolean isCapture = dropSquare.gameSquare.piece != null;
-						// consider En Passant for pawn moves...
-						if (dragSquare.gameSquare.piece.type == PieceType.PAWN) {
-							isCapture = dragSquare.file != dropSquare.file;
-						}
-						if (isCapture) {
-							move += "x";
-						} else {
-							move += "-";
-						}
-						move += dropSquare.getName();
-						// Promotion?
-						if (dragSquare.gameSquare.piece.type == PieceType.PAWN) {
-							if ((dragSquare.gameSquare.piece.isWhite && dropSquare.rank == 8) 
-									|| (!dragSquare.gameSquare.piece.isWhite && dropSquare.rank == 1)) 
-							{
-								move += "=Q"; //TODO underpromotion
-							}
-						}
-						// Castles?
-						if (dragSquare.gameSquare.piece.type == de.toto.game.Rules.PieceType.KING
-								&& dragSquare.file == 5) 
-						{
-							if (dropSquare.file == 3) {
-								move = "0-0-0";
-							} else if (dropSquare.file == 7) {
-								move = "0-0";
-							}
-						}
-						board.fireUserMoved(move.trim());
+				}
+				try {
+					if (!isDragging || dragSquare.gameSquare.piece == null) {
+						return;
 					}
+					boolean correctSideMoved = dragSquare.gameSquare.piece.isWhite == board.getCurrentPosition()
+							.isWhiteToMove();
+					Square dropSquare = getSquareAt(e.getPoint());
+					if (correctSideMoved && dropSquare != null && dropSquare != dragSquare) {
+						if (dragSquare.gameSquare.canMoveTo(dropSquare.gameSquare, board.getCurrentPosition(), null)) {
+							String move = dragSquare.gameSquare.piece.pgnChar + dragSquare.getName();
+							boolean isCapture = dropSquare.gameSquare.piece != null;
+							// consider En Passant for pawn moves...
+							if (dragSquare.gameSquare.piece.type == PieceType.PAWN) {
+								isCapture = dragSquare.file != dropSquare.file;
+							}
+							if (isCapture) {
+								move += "x";
+							} else {
+								move += "-";
+							}
+							move += dropSquare.getName();
+							// Promotion?
+							if (dragSquare.gameSquare.piece.type == PieceType.PAWN) {
+								if ((dragSquare.gameSquare.piece.isWhite && dropSquare.rank == 8)
+										|| (!dragSquare.gameSquare.piece.isWhite && dropSquare.rank == 1)) {
+									move += "=Q"; // TODO underpromotion
+								}
+							}
+							// Castles?
+							if (dragSquare.gameSquare.piece.type == de.toto.game.Rules.PieceType.KING
+									&& dragSquare.file == 5) {
+								if (dropSquare.file == 3) {
+									move = "0-0-0";
+								} else if (dropSquare.file == 7) {
+									move = "0-0";
+								}
+							}
+							board.fireUserMoved(move.trim());
+						}
+					}
+				} finally {
+					isDragging = false;
+					cursorLocation = null;
+					if (dragSquare != null) {
+						dragSquare.isDragSource = false;
+						dragSquare = null;
+					}
+					if (dragTarget != null) {
+						dragTarget.isDragTarget = false;
+						dragTarget = null;
+					}
+					repaint();
 				}
-				isDragging = false;
-				cursorLocation = null;
-				dragSquare.isDragSource = false;
-				dragSquare = null;
-				if (dragTarget != null) {
-					dragTarget.isDragTarget = false;
-				}
-				dragTarget = null;
-				repaint();
 			}
-			
-			
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
@@ -297,22 +302,22 @@ public class Board extends JPanel {
 			}
 
 		};
-		
+
 		private void showPopup(MouseEvent e) {
 			JPopupMenu popup = getComponentPopupMenu();
 			if (popup != null) {
 				popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		}
-		
+
 		public void flip() {
 			setOrientationWhite(!isOrientationWhite);
 		}
-		
+
 		public boolean isOrientationWhite() {
 			return isOrientationWhite;
 		}
-		
+
 		public void setOrientationWhite(boolean value) {
 			if (value != isOrientationWhite) {
 				isOrientationWhite = value;
@@ -320,7 +325,7 @@ public class Board extends JPanel {
 					rescaleAll();
 					repaint();
 				}
-			} 
+			}
 		}
 
 		public BoardCanvas(Board board) {
@@ -334,10 +339,11 @@ public class Board extends JPanel {
 
 		private void loadImages() {
 			try {
-				//maple.jpg wood-1024.jpg metal-1024.jpg
-				//boardImage = ImageIO.read(Board.class.getResource("/images/board/maple.jpg"));
+				// maple.jpg wood-1024.jpg metal-1024.jpg
+				// boardImage =
+				// ImageIO.read(Board.class.getResource("/images/board/maple.jpg"));
 				SVGUniverse svgUniverse = new SVGUniverse();
-				String folder = "merida"; //"cburnett", "merida", "pirouetti";
+				String folder = "merida"; // "cburnett", "merida", "pirouetti";
 				wK = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wK.svg"));
 				wQ = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wQ.svg"));
 				wR = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wR.svg"));
@@ -350,12 +356,12 @@ public class Board extends JPanel {
 				bB = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bB.svg"));
 				bN = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bN.svg"));
 				bP = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bP.svg"));
-				
+
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 		}
-		
+
 		private SVGIcon loadIcon(SVGUniverse svgUniverse, URL url) {
 			SVGIcon result = new SVGIcon();
 			result.setSvgURI(svgUniverse.loadSVG(url));
@@ -367,13 +373,13 @@ public class Board extends JPanel {
 		private Square getSquareAt(Point p) {
 			Square result = null;
 			int squareSize = getSquareSize();
-			int rank = 0;			
+			int rank = 0;
 			int file = 0;
 			if (isOrientationWhite) {
-				rank = 8 - p.y / squareSize;			
+				rank = 8 - p.y / squareSize;
 				file = p.x >= 0 ? p.x / squareSize + 1 : 0;
 			} else {
-				rank = p.y / squareSize + 1;			
+				rank = p.y / squareSize + 1;
 				file = p.x >= 0 ? 8 - p.x / squareSize : 0;
 			}
 			if (rank > 0 && rank <= 8 && file > 0 && file <= 8) {
@@ -382,8 +388,8 @@ public class Board extends JPanel {
 			return result;
 		}
 
-		private void initSquares() {			
-			for (int rank = 1; rank <= 8; rank++) {				
+		private void initSquares() {
+			for (int rank = 1; rank <= 8; rank++) {
 				for (int file = 1; file <= 8; file++) {
 					squares[rank - 1][file - 1] = new Square(rank, file);
 				}
@@ -402,13 +408,10 @@ public class Board extends JPanel {
 		}
 
 		private Image scaleImage(Image source, int size) {
-			BufferedImage result = new BufferedImage(size, size,
-					BufferedImage.TYPE_INT_ARGB);
+			BufferedImage result = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = result.createGraphics();
-			g.setRenderingHint(RenderingHints.KEY_RENDERING,
-					RenderingHints.VALUE_RENDER_QUALITY);
-			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-					RenderingHints.VALUE_ANTIALIAS_ON);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g.drawImage(source, 0, 0, size, size, null);
 			g.dispose();
 			return result;
@@ -425,7 +428,7 @@ public class Board extends JPanel {
 						y = getSize().height - ((rank - 1) * squareSize) - squareSize;
 					} else {
 						x = getSize().height - ((file - 1) * squareSize) - squareSize;
-						y = (rank - 1) * squareSize;								
+						y = (rank - 1) * squareSize;
 					}
 					square.topLeftOnBoard = new Point(x, y);
 				}
@@ -444,9 +447,9 @@ public class Board extends JPanel {
 			bR.setPreferredSize(new Dimension(squareSize, squareSize));
 			bB.setPreferredSize(new Dimension(squareSize, squareSize));
 			bN.setPreferredSize(new Dimension(squareSize, squareSize));
-			bP.setPreferredSize(new Dimension(squareSize, squareSize)); 
+			bP.setPreferredSize(new Dimension(squareSize, squareSize));
 			scaleSize = squareSize;
-			fontPositionEval = new Font("Frutiger Standard", Font.PLAIN, squareSize*4); 
+			fontPositionEval = new Font("Frutiger Standard", Font.PLAIN, squareSize * 4);
 		}
 
 		private SVGIcon getIconFor(Piece p) {
@@ -486,8 +489,9 @@ public class Board extends JPanel {
 
 		@Override
 		public void paint(Graphics g) {
-			if (!board.showBoard) return;			
-			
+			if (!board.showBoard)
+				return;
+
 			if (scaleSize != getSquareSize()) {
 				rescaleAll();
 			}
@@ -497,13 +501,13 @@ public class Board extends JPanel {
 				g2.drawImage(boardImageScaled, 0, 0, null);
 			}
 
-			int squareSize = getSquareSize();			
+			int squareSize = getSquareSize();
 			Position position = board.getCurrentPosition();
-			
+
 			// draw square background if no boardImage is loaded
 			if (boardImageScaled == null) {
 				Font font = new Font("Dialog", Font.PLAIN, squareSize / 7);
-				float fontHeight = g2.getFontMetrics().getAscent();	
+				float fontHeight = g2.getFontMetrics().getAscent();
 				g2.setFont(font);
 				int span = squareSize / 25;
 				for (int rank = 1; rank <= 8; rank++) {
@@ -513,50 +517,54 @@ public class Board extends JPanel {
 						if (boardImageScaled == null) {
 							g2.setColor(square.isWhite ? squareColorWhite : squareColorBlack);
 							g2.fillRect(square.topLeftOnBoard.x, square.topLeftOnBoard.y, squareSize, squareSize);
-							// draw square coordinates?	
-							if (board.showCoordinates && ((isOrientationWhite && (square.rank == 1 || square.file == 1)) || (!isOrientationWhite && (square.rank == 8 || square.file == 8)))) {
-								g2.setColor(square.isWhite ? squareColorBlack : squareColorWhite);//															
-								g2.drawString(square.getName(), square.topLeftOnBoard.x + span, square.topLeftOnBoard.y + fontHeight + span);
+							// draw square coordinates?
+							if (board.showCoordinates && ((isOrientationWhite && (square.rank == 1 || square.file == 1))
+									|| (!isOrientationWhite && (square.rank == 8 || square.file == 8)))) {
+								g2.setColor(square.isWhite ? squareColorBlack : squareColorWhite);//
+								g2.drawString(square.getName(), square.topLeftOnBoard.x + span,
+										square.topLeftOnBoard.y + fontHeight + span);
 							}
-						}	
+						}
 					}
 				}
 			}
-			
+
 			// draw last move highlight
 			String[] squareNames = position.getMoveSquareNames();
-			if (squareNames != null) {				
+			if (squareNames != null) {
 				colorSquare(g2, getSquare(squareNames[0]), squareSelectionColor, squareSize);
-				colorSquare(g2, getSquare(squareNames[1]), squareSelectionColor, squareSize);				
+				colorSquare(g2, getSquare(squareNames[1]), squareSelectionColor, squareSize);
 			}
-			
+
 			java.util.List<Position.GraphicsComment> graphicsComments = position.getGraphicsComments();
-			//draw square highlights
-			if (!isDragging && board.showGraphicsComments) {				
+			// draw square highlights
+			if (!isDragging && board.showGraphicsComments) {
 				for (Position.GraphicsComment gc : graphicsComments) {
 					if (gc.secondSquare == null) {
 						Color c = highlightColorGreen;
-						if (gc.color == Color.RED) c = highlightColorRed; 
-						else if  (gc.color == Color.YELLOW) c = highlightColorYellow;  
+						if (gc.color == Color.RED)
+							c = highlightColorRed;
+						else if (gc.color == Color.YELLOW)
+							c = highlightColorYellow;
 						colorSquare(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file), c, squareSize);
 					}
 				}
 			}
-						
-			//draw pieces
+
+			// draw pieces
 			if (board.showPieces) {
 				for (int rank = 1; rank <= 8; rank++) {
 					for (int file = 1; file <= 8; file++) {
 						Square square = getSquare(rank, file);
 						if (square.gameSquare.piece != null && !square.isDragSource) {
-							getIconFor(square.gameSquare.piece).paintIcon(this, g2, 
-									square.topLeftOnBoard.x, square.topLeftOnBoard.y);
-							
-						}	
+							getIconFor(square.gameSquare.piece).paintIcon(this, g2, square.topLeftOnBoard.x,
+									square.topLeftOnBoard.y);
+
+						}
 					}
 				}
 			}
-			
+
 			// Drag&Drop decoration
 			if (isDragging) {
 				for (int rank = 1; rank <= 8; rank++) {
@@ -568,43 +576,44 @@ public class Board extends JPanel {
 					}
 				}
 				if (board.showPieces && dragSquare.gameSquare.piece != null) {
-					getIconFor(dragSquare.gameSquare.piece).paintIcon(this, g2, 
-							cursorLocation.x - squareSize / 2, cursorLocation.y - squareSize / 2);
+					getIconFor(dragSquare.gameSquare.piece).paintIcon(this, g2, cursorLocation.x - squareSize / 2,
+							cursorLocation.y - squareSize / 2);
 				}
-			} 
-			
-			//draw arrows
-			if (!isDragging && board.showGraphicsComments) {				
+			}
+
+			// draw arrows
+			if (!isDragging && board.showGraphicsComments) {
 				for (Position.GraphicsComment gc : graphicsComments) {
-					if (gc.secondSquare != null) {						
+					if (gc.secondSquare != null) {
 						drawArrow(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file),
 								getSquare(gc.secondSquare.rank, gc.secondSquare.file), gc.color, squareSize);
 					}
 				}
 			}
-			
-			//draw additionalGraphicsComment
-			if (board.showGraphicsComments) {				
+
+			// draw additionalGraphicsComment
+			if (board.showGraphicsComments) {
 				for (Position.GraphicsComment gc : board.additionalGraphicsComment) {
-					if (gc.secondSquare != null) {						
+					if (gc.secondSquare != null) {
 						drawArrow(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file),
 								getSquare(gc.secondSquare.rank, gc.secondSquare.file), gc.color, squareSize);
 					}
 				}
 			}
 		}
-		
-		private void colorSquare(Graphics2D g2, Square s, Color color, int squareSize) {			
+
+		private void colorSquare(Graphics2D g2, Square s, Color color, int squareSize) {
 			g2.setColor(color);
 			g2.fillRect(s.topLeftOnBoard.x, s.topLeftOnBoard.y, squareSize, squareSize);
 		}
-		
-		private void drawArrow(Graphics2D g2, Square from, Square to, Color color, int squareSize) {			
-			int x1 = from.topLeftOnBoard.x + squareSize/2;
-			int y1 = from.topLeftOnBoard.y + squareSize/2;;
-			int x2 = to.topLeftOnBoard.x + squareSize/2;
-			int y2 = to.topLeftOnBoard.y + squareSize/2;
-			
+
+		private void drawArrow(Graphics2D g2, Square from, Square to, Color color, int squareSize) {
+			int x1 = from.topLeftOnBoard.x + squareSize / 2;
+			int y1 = from.topLeftOnBoard.y + squareSize / 2;
+			;
+			int x2 = to.topLeftOnBoard.x + squareSize / 2;
+			int y2 = to.topLeftOnBoard.y + squareSize / 2;
+
 			Color gradientFrom = arrowColorBlack20Percent;
 			Color gradientTo = arrowColorBlack50Percent;
 			if (color.equals(Color.GREEN)) {
@@ -617,35 +626,33 @@ public class Board extends JPanel {
 				gradientFrom = arrowColorRed20Percent;
 				gradientTo = arrowColorRed50Percent;
 			}
-			g2.setPaint(new GradientPaint(x1, y1 ,gradientFrom,x2, y2, gradientTo));
-			g2.fill(createArrowShape(new Point(x1,y1), new Point(x2,y2), squareSize));
+			g2.setPaint(new GradientPaint(x1, y1, gradientFrom, x2, y2, gradientTo));
+			g2.fill(createArrowShape(new Point(x1, y1), new Point(x2, y2), squareSize));
 		}
-		
+
 		public static Shape createArrowShape(Point fromPt, Point toPt, double squareSize) {
 			double ptDistance = fromPt.distance(toPt);
-			Point midPoint = new Point((int)((fromPt.x + toPt.x)/2.0), 
-                    (int)((fromPt.y + toPt.y)/2.0));
+			Point midPoint = new Point((int) ((fromPt.x + toPt.x) / 2.0), (int) ((fromPt.y + toPt.y) / 2.0));
 			double rotate = Math.atan2(toPt.y - fromPt.y, toPt.x - fromPt.x);
 			double arrowHeight = squareSize / 10;
 			double arrowheadSide = squareSize / 3;
-			double arrowheadLength = arrowheadSide; //TODO
-			
+			double arrowheadLength = arrowheadSide; // TODO
+
 			Path2D.Double path = new Path2D.Double();
-			path.moveTo(-ptDistance/2, arrowHeight / 2);
-			path.lineTo(ptDistance/2 - arrowheadLength, arrowHeight / 2);
-			path.lineTo(ptDistance/2 - arrowheadLength, arrowheadSide / 2);
-			path.lineTo(ptDistance/2, 0);
-			path.lineTo(ptDistance/2 - arrowheadLength, -(arrowheadSide / 2));
-			path.lineTo(ptDistance/2 - arrowheadLength, -(arrowHeight / 2));
-			path.lineTo(-ptDistance/2, -(arrowHeight / 2));
+			path.moveTo(-ptDistance / 2, arrowHeight / 2);
+			path.lineTo(ptDistance / 2 - arrowheadLength, arrowHeight / 2);
+			path.lineTo(ptDistance / 2 - arrowheadLength, arrowheadSide / 2);
+			path.lineTo(ptDistance / 2, 0);
+			path.lineTo(ptDistance / 2 - arrowheadLength, -(arrowheadSide / 2));
+			path.lineTo(ptDistance / 2 - arrowheadLength, -(arrowHeight / 2));
+			path.lineTo(-ptDistance / 2, -(arrowHeight / 2));
 
-		    AffineTransform transform = new AffineTransform();
-		    transform.translate(midPoint.x, midPoint.y);
-		    transform.rotate(rotate);
+			AffineTransform transform = new AffineTransform();
+			transform.translate(midPoint.x, midPoint.y);
+			transform.rotate(rotate);
 
-		    return transform.createTransformedShape(path);
+			return transform.createTransformedShape(path);
 		}
 
-		
 	}
 }
