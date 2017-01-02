@@ -37,9 +37,11 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private Game tryVariation;
 	private Game gameAgainstTheEngine;
 	private Board board;
-	private JLabel txtComment;
+	private JTextArea txtComment;
 	private JLabel txtStatus;
 	private JPanel pnlMoves;
+	private JPanel pnlComments;
+	private JPanel pnlMovesAndComments;
 	private JTable tblMoves;
 	private PositionTableModel modelMoves;
 	private JList<Position> lstVariations;
@@ -423,7 +425,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					if (enginePanel == null) {
 						enginePanel = new EnginePanel(AppFrame.this, engine);											
 					}					
-					setVerticalSplitPaneComponents(splitMovesAndEngine, pnlMoves, enginePanel);
+					setVerticalSplitPaneComponents(splitMovesAndEngine, pnlMovesAndComments, enginePanel);
 					setVerticalSplitPaneComponents(splitEast, null, splitMovesAndEngine);
 					engine.setFEN(getCurrentPosition().getFen());	
 					this.putValue(Action.NAME, "Stop Engine");
@@ -602,16 +604,13 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 5));
 		pnlBoard.add(board, BorderLayout.CENTER);
 		JPanel pnlCenterSouth = new JPanel(new BorderLayout());
-		JPanel pnlMoveComments = new JPanel();
-		pnlMoveComments.setLayout(new BoxLayout(pnlMoveComments, BoxLayout.LINE_AXIS));
-		txtComment = new JLabel();
-//		pnlMoveComments.add(txtComment);
-//		pnlMoveComments.add(Box.createHorizontalGlue());
-		pnlMoveComments.add(cbShowBoard);
-		pnlMoveComments.add(cbShowPieces);
-		pnlMoveComments.add(cbShowCoordinates);
-		pnlMoveComments.add(cbShowComments);
-		pnlCenterSouth.add(pnlMoveComments, BorderLayout.PAGE_START);
+		JPanel pnlOptions = new JPanel();
+		pnlOptions.setLayout(new BoxLayout(pnlOptions, BoxLayout.LINE_AXIS));		
+		pnlOptions.add(cbShowBoard);
+		pnlOptions.add(cbShowPieces);
+		pnlOptions.add(cbShowCoordinates);
+		pnlOptions.add(cbShowComments);
+		pnlCenterSouth.add(pnlOptions, BorderLayout.PAGE_START);
 		JPanel pnlBoardControls = new JPanel();
 		pnlBoardControls.setLayout(new BoxLayout(pnlBoardControls, BoxLayout.LINE_AXIS));
 		pnlBoardControls.add(Box.createHorizontalGlue());
@@ -625,7 +624,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlCenter.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 0));
 		
 		JPopupMenu popUpChooseFont = new JPopupMenu();
-		popUpChooseFont.add(actionChooseFont);
+		popUpChooseFont.add(actionChooseFont);				
+		pnlMovesAndComments = new JPanel(new BorderLayout());
 		pnlMoves = new JPanel(new BorderLayout());
 		pnlMoves.setBorder(BorderFactory.createTitledBorder("Move List"));
 		modelMoves = new PositionTableModel();
@@ -653,7 +653,15 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			}			
 		});
 		pnlMoves.add(new JScrollPane(tblMoves));
-//		pnlMoves.setPreferredSize(new Dimension(150, 500));
+		pnlMovesAndComments.add(pnlMoves, BorderLayout.CENTER);
+		pnlComments = new JPanel(new BorderLayout());
+		pnlComments.setBorder(BorderFactory.createTitledBorder("Move Comments"));
+		txtComment = new JTextArea(2, 2);
+		txtComment.setEditable(false);
+		txtComment.setFocusable(false);
+		txtComment.setOpaque(false);
+		pnlComments.add(new JScrollPane(txtComment));
+		pnlMovesAndComments.add(pnlComments, BorderLayout.PAGE_END);
 		
 		pnlTryVariation = new JPanel(new BorderLayout());
 		lblTryVariation = new JLabel("Trying Variation");
@@ -698,7 +706,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			splitMovesAndEngine.setDividerLocation(splitPosition);
 		}
 		
-		splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlVariationsAndDrillStatus, pnlMoves);
+		splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlVariationsAndDrillStatus, pnlMovesAndComments);
 		splitEast.setBorder(null);
 		splitPosition = prefs.getInt(PREFS_SPLITTER_EAST_POSITION, 0);
 		if (splitPosition > 0) {
@@ -800,9 +808,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		Position p = getCurrentPosition();
 		board.setCurrentPosition(p);
 		String comment = p != null ? p.getCommentText() : null;
-		if (comment != null && comment.trim().length() > 0) {
-			comment = "<html>Move comment: <b>" + comment + "</b></html>";
-		} else {
+		if (comment == null) {
 			comment = " ";
 		}
 		txtComment.setText(comment);
@@ -997,6 +1003,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		tblMoves.setFont(f);	
 		((javax.swing.border.TitledBorder)pnlVariations.getBorder()).setTitleFont(f);
 		((javax.swing.border.TitledBorder)pnlMoves.getBorder()).setTitleFont(f);
+		((javax.swing.border.TitledBorder)pnlComments.getBorder()).setTitleFont(f);
 		for (Component c : pnlToolBar.getComponents()) {
 			c.setFont(f);
 		}
@@ -1078,7 +1085,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	@Override
 	public void engineStopped(UCIEngine e) {
 		if (e == engine && enginePanel != null && enginePanel.isVisible()) {			
-			setVerticalSplitPaneComponents(splitEast, null, pnlMoves);
+			setVerticalSplitPaneComponents(splitEast, null, pnlMovesAndComments);
 		}
 	}
 
