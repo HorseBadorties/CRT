@@ -1053,8 +1053,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 							
 				@Override
 				public void run() {					
-					//draw move arrow
-					if (engine.isStarted() && !s.bestLine.isEmpty()) {
+					//draw engine suggestion arrow
+					if (engine.isStarted() && s.multiPV == 1 && !s.bestLine.isEmpty()) {
 						if (!s.bestLine.get(0).equals(enginesBestMove)) {							
 							enginesBestMove = s.bestLine.get(0);
 							updateBoard(false);
