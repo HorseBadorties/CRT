@@ -25,6 +25,7 @@ import de.toto.game.GameEvent;
 import de.toto.game.GameListener;
 import de.toto.game.Position;
 import de.toto.pgn.PGNReader;
+import de.toto.tts.TextToSpeech;
 
 @SuppressWarnings("serial")
 public class AppFrame extends JFrame 
@@ -81,6 +82,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private String enginesBestMove;
 	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
 	private String keysTyped = "";
+	private TextToSpeech tts;
 	
 	private static Logger log = Logger.getLogger("AppFrame");
 
@@ -133,6 +135,11 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			}
 			
 		});
+		try {
+			 tts = new TextToSpeech();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 	
 	private void savePrefs() {
@@ -961,6 +968,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	@Override
 	public void positionChanged(GameEvent e) {
 		updateBoard(true);
+		announceMove();
 	}
 
 	@Override
@@ -981,6 +989,18 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 						drillStats.drilledPositions,
 						drillStats.getFormattedDuration()), 
 				"Drill ended");
+	}
+	
+	private void announceMove() {
+		if (tts == null) return;
+		try {
+			Position currentPosition = getCurrentPosition();
+			if (!currentPosition.isStartPosition()) {				
+				tts.sayChessMove(getCurrentPosition().getMove());
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 	
 	private void showMessageDialog(String text, String title) {
