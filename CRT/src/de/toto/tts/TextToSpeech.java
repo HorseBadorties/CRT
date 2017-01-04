@@ -13,7 +13,6 @@ import org.apache.log4j.PatternLayout;
 import marytts.LocalMaryInterface;
 import marytts.MaryInterface;
 import marytts.exceptions.*;
-import marytts.util.data.audio.AudioPlayer;
 
 public class TextToSpeech {
 	
@@ -29,22 +28,21 @@ public class TextToSpeech {
 	}
 
 	private MaryInterface marytts;
-    private AudioPlayer ap;
 	
     public TextToSpeech() throws MaryConfigurationException {
-        marytts = new LocalMaryInterface();        
-        Set<String> voices = marytts.getAvailableVoices();
-        if (!voices.isEmpty()) {
-        	marytts.setVoice(marytts.getAvailableVoices().iterator().next());
+        marytts = new LocalMaryInterface();
+        try {
+        	setVoice("dfki-prudence-hsmm");
+        } catch (Exception ex) {
+        	ex.printStackTrace();
         }
-        ap = new AudioPlayer();   
-        
     }
     
     public void setVoice(String voiceName) {
     	marytts.setVoice(voiceName);
     }
     
+    //"dfki-poppy-hsmm", "dfki-prudence-hsmm", "cmu-slt-hsmm"
     public Set<String> getAvailableVoices() {
     	return marytts.getAvailableVoices();
     }
@@ -54,9 +52,7 @@ public class TextToSpeech {
     	Clip clip = AudioSystem.getClip();
     	clip.open(audio);
     	clip.start();
-    	clip.drain();
-//    	ap.setAudio(audio);
-//    	ap.start();       
+    	clip.drain();     
     	System.out.println("I said: '" + input + "'");
     }
     
