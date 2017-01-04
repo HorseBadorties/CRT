@@ -60,6 +60,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private JCheckBox cbShowPieces;
 	private JCheckBox cbShowBoard;
 	private JCheckBox cbShowCoordinates;
+	private JCheckBox cbAnnounceMoves;
 	private JCheckBox cbRandomDrill;
 	private AbstractButton btnLoadPGN;
 	private AbstractButton btnDrill;
@@ -103,6 +104,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private static final String PREFS_SHOW_PIECES = "SHOW_PIECES";
 	private static final String PREFS_SHOW_BOARD = "SHOW_BOARD";
 	private static final String PREFS_SHOW_COORDINATES = "SHOW_COORDINATES";
+	private static final String PREFS_ANNOUNCE_MOVES = "ANNOUNCE_MOVES";	
 	private static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
 	
 	public AppFrame() throws HeadlessException {
@@ -164,6 +166,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		prefs.putBoolean(PREFS_SHOW_PIECES, cbShowPieces.isSelected());
 		prefs.putBoolean(PREFS_SHOW_BOARD, cbShowBoard.isSelected());
 		prefs.putBoolean(PREFS_SHOW_COORDINATES, cbShowCoordinates.isSelected());
+		prefs.putBoolean(PREFS_ANNOUNCE_MOVES, cbAnnounceMoves.isSelected());
 		if (engine != null) {
 			prefs.put(PREFS_PATH_TO_ENGINE, pathToEngine);
 		}
@@ -598,6 +601,10 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		cbShowCoordinates.setFocusable(false);
 		cbShowCoordinates.setSelected(prefs.getBoolean(PREFS_SHOW_COORDINATES, false));
 		actionShowCoordinates.actionPerformed(null);		
+		
+		cbAnnounceMoves = new JCheckBox("Announce moves?");
+		cbAnnounceMoves.setFocusable(false);
+		cbAnnounceMoves.setSelected(prefs.getBoolean(PREFS_ANNOUNCE_MOVES, false));
 						
 		cbOnlyMainline = new JCheckBox("Accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
@@ -617,6 +624,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlOptions.add(cbShowPieces);
 		pnlOptions.add(cbShowCoordinates);
 		pnlOptions.add(cbShowComments);
+		pnlOptions.add(cbAnnounceMoves);
 		pnlCenterSouth.add(pnlOptions, BorderLayout.PAGE_START);
 		JPanel pnlBoardControls = new JPanel();
 		pnlBoardControls.setLayout(new BoxLayout(pnlBoardControls, BoxLayout.LINE_AXIS));
@@ -968,7 +976,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	@Override
 	public void positionChanged(GameEvent e) {
 		updateBoard(true);
-		announceMove();
+		if (cbAnnounceMoves.isSelected()) {
+			announceMove();
+		}
 	}
 
 	@Override
