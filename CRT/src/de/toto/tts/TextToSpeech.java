@@ -1,6 +1,5 @@
 package de.toto.tts;
 
-import java.util.Locale;
 import java.util.Set;
 
 import javax.sound.sampled.*;
@@ -42,7 +41,7 @@ public class TextToSpeech {
     	marytts.setVoice(voiceName);
     }
     
-    //"dfki-poppy-hsmm", "dfki-prudence-hsmm", "cmu-slt-hsmm"
+    //"dfki-prudence-hsmm", "cmu-slt-hsmm"
     public Set<String> getAvailableVoices() {
     	return marytts.getAvailableVoices();
     }
