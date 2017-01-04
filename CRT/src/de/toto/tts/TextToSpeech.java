@@ -1,8 +1,14 @@
 package de.toto.tts;
 
+import java.util.Locale;
 import java.util.Set;
 
 import javax.sound.sampled.*;
+
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 import marytts.LocalMaryInterface;
 import marytts.MaryInterface;
@@ -10,12 +16,23 @@ import marytts.exceptions.*;
 import marytts.util.data.audio.AudioPlayer;
 
 public class TextToSpeech {
+	
+	static {
+		Logger.getRootLogger().getLoggerRepository().resetConfiguration();
+		ConsoleAppender console = new ConsoleAppender(); //create appender
+		//configure the appender
+		String PATTERN = "%d [%p|%c|%C{1}] %m%n";
+		console.setLayout(new PatternLayout(PATTERN)); 
+		console.setThreshold(Level.WARN);
+		console.activateOptions();
+		Logger.getRootLogger().addAppender(console);
+	}
 
 	private MaryInterface marytts;
     private AudioPlayer ap;
 	
     public TextToSpeech() throws MaryConfigurationException {
-        marytts = new LocalMaryInterface();
+        marytts = new LocalMaryInterface();        
         Set<String> voices = marytts.getAvailableVoices();
         if (!voices.isEmpty()) {
         	marytts.setVoice(marytts.getAvailableVoices().iterator().next());
