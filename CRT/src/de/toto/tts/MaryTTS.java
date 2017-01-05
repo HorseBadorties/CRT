@@ -171,7 +171,7 @@ public class MaryTTS implements TextToSpeach {
     		Character promotionPiece = move.charAt(move.indexOf("=") + 1);
     		input.append(" promotes to ").append(translatePiece(promotionPiece));
     	}
-    	input.append(".");
+    	input.append("!");
     }
     
     private String translatePiece(Character pieceCharacter) {
