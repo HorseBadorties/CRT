@@ -15,6 +15,7 @@ import de.toto.game.Square;
 import marytts.LocalMaryInterface;
 import marytts.MaryInterface;
 import marytts.exceptions.*;
+import marytts.util.data.audio.AudioPlayer;
 
 public class MaryTTS implements TextToSpeach {
 	
@@ -62,11 +63,10 @@ public class MaryTTS implements TextToSpeach {
 	 */
     @Override
 	public void say(String input) throws Exception {    	
-    	AudioInputStream audio = marytts.generateAudio(input);    	
-    	Clip clip = AudioSystem.getClip();
-    	clip.open(audio);
-    	clip.start();
-    	clip.drain();     
+    	AudioInputStream audio = marytts.generateAudio(input); 
+    	AudioPlayer ap = new AudioPlayer();
+    	ap.setAudio(audio);
+    	ap.start();
     	System.out.println("I said: '" + input + "'");
     }
     
