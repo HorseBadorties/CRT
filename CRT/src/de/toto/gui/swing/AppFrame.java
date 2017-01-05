@@ -620,8 +620,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		
 		cbShowBoard = new JCheckBox(actionShowBoard);
 		cbShowBoard.setFocusable(false);
-//		cbShowBoard.setSelected(prefs.getBoolean(PREFS_SHOW_BOARD, false));
-		cbShowBoard.setSelected(false);
+//		cbShowBoard.setSelected(prefs.getBoolean(PREFS_SHOW_BOARD, true));
+		cbShowBoard.setSelected(true);
 		actionShowBoard.actionPerformed(null);		
 		
 		cbShowCoordinates = new JCheckBox(actionShowCoordinates);
@@ -1035,7 +1035,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		try {
 			Position currentPosition = getCurrentPosition();
 			if (!currentPosition.isStartPosition()) {				
-				tts.announceChessMove(getCurrentPosition().getMove());
+				tts.announceChessMove(getCurrentPosition().getMoveAsSan());
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

@@ -72,8 +72,7 @@ public class MaryTTS implements TextToSpeach {
     
     /* (non-Javadoc)
 	 * @see de.toto.tts.TextToSpeach#announceChessMove(java.lang.String)
-	 */
-    
+	 */    
     @Override
 	public void announceChessMove(String move) {
     	try {
@@ -83,16 +82,20 @@ public class MaryTTS implements TextToSpeach {
 	    	} else if (move.startsWith("0-0")) {
 	    		input.append("short castles");	    		
 	    	} else {
-	    		String splitCharacter = move.contains("-") ? "-" : "x";
-	    		String[] moveParts = move.split(splitCharacter);
-	    		String from = moveParts[0];
-	    		String to = moveParts[1];
-	    		String piece = translatePiece(from.charAt(0));
-	    		from = from.charAt(from.length()-2) + " " + from.charAt(from.length()-1);
-	    		String toOrTakes = splitCharacter.equals("-") ? "to" : "takes";
-	    		to = to.charAt(0) + " " + to.charAt(1);
-	    		input.append(piece).append(" ").append(from).append(" ").append(toOrTakes).append(" ").append(to);
-	    		
+	    		for (int i = 0; i < move.length(); i++) {
+	    			char c = move.charAt(i);
+	    			if (i == 0) {
+	    				if (c >= 'A' && c <= 'Z') {	    			
+	    					input.append(translatePiece(c)).append(" ");
+	    				} else {
+	    					input.append(c).append(" ");
+	    				}
+	    			} else if ((c >= 'a' && c <= 'h') ||  (c >= '1' && c <= '8')) {	    				
+	    				input.append(c).append(" ");	    					    				
+	    			} else if (c == 'x') {
+    					input.append("takes ");
+    				} 
+	    		}	    		
 	    	}	    	
 	    	promotion(move, input);
 	    	checkOrMate(move, input);
@@ -166,7 +169,7 @@ public class MaryTTS implements TextToSpeach {
     private void promotion(String move, StringBuilder input) {
     	if (move.contains("=")) {
     		Character promotionPiece = move.charAt(move.indexOf("=") + 1);
-    		input.append(" and promotes to ").append(translatePiece(promotionPiece));
+    		input.append(" promotes to ").append(translatePiece(promotionPiece));
     	}
     	input.append(".");
     }
@@ -198,12 +201,13 @@ public class MaryTTS implements TextToSpeach {
 			TextToSpeach tts = new MaryTTS();
 			System.out.println(tts.getAvailableVoices());
 			tts.setVoice(tts.getAvailableVoices().iterator().next());
-			tts.announceChessMove("0-0-0");
-			tts.announceChessMove("0-0-0#");
-			tts.announceChessMove("0-0+");
-			tts.announceChessMove("Ng1xf3+");
-			tts.announceChessMove("g7xh8=R+");
-			tts.announceChessMove("g7-g8=Q#");
+//			tts.announceChessMove("0-0-0");
+//			tts.announceChessMove("0-0-0#");
+//			tts.announceChessMove("0-0+");
+			tts.announceChessMove("Nf3");
+			tts.announceChessMove("Nxf3+");
+			tts.announceChessMove("gxh8=R+");
+			tts.announceChessMove("g8=Q#");
         } catch (Exception ex) {
             ex.printStackTrace();
         }

@@ -32,9 +32,12 @@ public class Square {
 		/**
 		 * e.g. "f3"
 		 */	
-		public String getName() {
-			Character cFile = Character.valueOf((char)(file+96));
-			return cFile.toString() + rank;
+		public String getName() {			
+			return getFileName() + rank;
+		}
+		
+		public String getFileName() {
+			return Character.valueOf((char)(file+96)).toString();
 		}
 		
 		/**

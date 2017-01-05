@@ -19,7 +19,7 @@ public interface TextToSpeach {
 	void announceChessMove(String move);
 
 	/**
-	 * Announces a single Long Algebraic Notation chess move
+	 * Announces a single Short Algebraic Notation chess move
 	 */
 
 	void announcePosition(Position p);

@@ -2,7 +2,10 @@ package de.toto.game;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -222,8 +225,84 @@ public class Position {
 		return fen;
 	}
 
+	/**
+	 * 
+	 * @return the move that led to this Position as LAN
+	 */
 	public String getMove() {
 		return move;
+	}
+	
+	/**
+	 * 
+	 * @return the move that led to this Position as SAN
+	 */
+	public String getMoveAsSan() {
+		if (move == null || "".equals(move) || "--".equals(move)) return "";
+		if (move.startsWith("0-0")) return move;		
+		StringBuilder result = new StringBuilder();
+		String[] moveParts = move.split(wasCapture() ? "x" : "-");
+		Position previous = getPrevious();
+		Square from = previous.getSquare(moveParts[0].substring(moveParts[0].length()-2, moveParts[0].length()));
+		Square to = previous.getSquare(moveParts[1].substring(0, 2));
+		Piece piece = from.piece;
+		
+		if (piece != null && piece.type != PieceType.PAWN) {
+			result.append(piece.pgnChar);
+		}
+		if (wasCapture() && piece.type == PieceType.PAWN) {
+			result.append(from.getFileName());	
+		}
+		if (piece.type != PieceType.PAWN && piece.type != PieceType.KING) {
+			List<Square> squares = previous.getAllPiecesByColor(whiteMoved(), piece.type);
+			if (squares.size() > 1) {
+				//check if more than one Piece of this PieceType could have moved to "to"
+				List<Square> possible = new ArrayList<Square>();
+				for (Square s : squares) {
+					if (s.attacks(to, previous, null)) {
+						possible.add(s);
+					}
+				}
+				if (possible.size() > 1) {
+					Map<Integer, Integer> _ranks = new HashMap<Integer, Integer>();
+					Map<Integer, Integer> _files = new HashMap<Integer, Integer>();					
+					for (Square s : possible) {
+						Integer _rank = new Integer(s.rank);
+						if (_ranks.containsKey(_rank)) {
+							_ranks.put(_rank, _ranks.get((int)s.rank).intValue()+1);
+						} else {
+							_ranks.put(_rank, 1);
+						}
+						Integer _file = new Integer(s.file);
+						if (_files.containsKey(_file)) {
+							_files.put(_file, _files.get((int)s.file).intValue()+1);
+						} else {
+							_files.put(_file, 1);
+						}
+					}
+					boolean distinctRanks = true;
+					for (int rankCount : _ranks.values()) {
+						distinctRanks &= rankCount == 1;
+					}
+					boolean distinctFiles = true;
+					for (int fileCount : _files.values()) {
+						distinctFiles &= fileCount == 1;
+					}
+					if (distinctFiles) {
+						result.append(from.getFileName());
+					} else if (distinctRanks) {
+						result.append(from.rank);
+					} else {
+						result.append(from.getName());
+					}					
+				}
+			}			
+		}
+		if (wasCapture()) {
+			result.append("x");
+		}
+		result.append(moveParts[1]);
+		return result.toString();
 	}
 	
 	/**
@@ -231,7 +310,7 @@ public class Position {
 	 * @return the move including possible NAGs
 	 */
 	public String getMoveNotation(boolean leadingMoveNumber) {
-		String result = move + getNagsAsString();
+		String result = getMoveAsSan() + getNagsAsString();
 		if (leadingMoveNumber) {
 			result = getMoveNumber() + (whiteMoved() ? "." : "...") + result;
 		}
@@ -761,11 +840,16 @@ public class Position {
 	}
 	
 	private List<Square> getAllPiecesByColor(boolean white) {
+		return getAllPiecesByColor(white, (Rules.PieceType[])null);
+	}
+	
+	private List<Square> getAllPiecesByColor(boolean white, PieceType... types) {
 		List<Square> result = new ArrayList<Square>(); 
+		List<PieceType> _types = types != null ? Arrays.asList(types) : Arrays.asList(PieceType.values());
 		for (int _rank = 1; _rank <= 8; _rank++) {
 			for (int _file = 1; _file <= 8; _file++) {
 				Square s = squares[_rank - 1][_file - 1];
-				if (s.piece != null && s.piece.isWhite == white) {
+				if (s.piece != null && s.piece.isWhite == white && _types.contains(s.piece.type)) {
 					result.add(s);
 				}
 			}
@@ -774,15 +858,7 @@ public class Position {
 	}
 	
 	public Square findKing(boolean white) {
-		Piece ourKing = white ? Piece.WHITE_KING : Piece.BLACK_KING;
-		for (int _rank = 1; _rank <= 8; _rank++) {
-			for (int _file = 1; _file <= 8; _file++) {
-				if (squares[_rank - 1][_file - 1].piece == ourKing) {
-					return squares[_rank - 1][_file - 1];
-				}
-			}
-		}
-		return null;	
+		return getAllPiecesByColor(white, PieceType.KING).get(0);			
 	}
 	
 	// translates an engine move like "g1f3" into a LAN move like "Ng1xf3"
