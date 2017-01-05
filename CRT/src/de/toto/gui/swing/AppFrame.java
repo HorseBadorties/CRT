@@ -25,7 +25,8 @@ import de.toto.game.GameEvent;
 import de.toto.game.GameListener;
 import de.toto.game.Position;
 import de.toto.pgn.PGNReader;
-import de.toto.tts.TextToSpeech;
+import de.toto.tts.MaryTTS;
+import de.toto.tts.TextToSpeach;
 
 @SuppressWarnings("serial")
 public class AppFrame extends JFrame 
@@ -83,7 +84,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private String enginesBestMove;
 	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
 	private String keysTyped = "";
-	private TextToSpeech tts;
+	private TextToSpeach tts;
 	
 	private static Logger log = Logger.getLogger("AppFrame");
 
@@ -136,12 +137,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				}
 			}
 			
-		});
-		try {
-			 tts = new TextToSpeech();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
+		});		
 	}
 	
 	private void savePrefs() {
@@ -166,7 +162,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		prefs.putBoolean(PREFS_SHOW_PIECES, cbShowPieces.isSelected());
 		prefs.putBoolean(PREFS_SHOW_BOARD, cbShowBoard.isSelected());
 		prefs.putBoolean(PREFS_SHOW_COORDINATES, cbShowCoordinates.isSelected());
-		prefs.putBoolean(PREFS_ANNOUNCE_MOVES, cbAnnounceMoves.isSelected());
+		//prefs.putBoolean(PREFS_ANNOUNCE_MOVES, cbAnnounceMoves.isSelected());
 		if (engine != null) {
 			prefs.put(PREFS_PATH_TO_ENGINE, pathToEngine);
 		}
@@ -356,6 +352,19 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			}
 			board.setShowCoordinates(cbShowCoordinates.isSelected());
 			if (getCurrentGame() != null) updateBoard(false);
+		}
+	};
+	
+	private Action actionAnnounceMoves = new AbstractAction("Announce moves?") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			if (cbAnnounceMoves.isSelected() && tts == null) {
+				try {
+					tts = new MaryTTS();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
 		}
 	};
 	
@@ -560,6 +569,22 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
+	private Action actionAnnouncePosition = new AbstractAction("Announce Position") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (tts == null) {
+				try {
+					tts = new MaryTTS();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+			if (tts != null) {
+				tts.announcePosition(getCurrentPosition());
+			}
+		}
+	};
+	
 	private void doUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -589,12 +614,14 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		
 		cbShowPieces = new JCheckBox(actionShowPieces);
 		cbShowPieces.setFocusable(false);
-		cbShowPieces.setSelected(prefs.getBoolean(PREFS_SHOW_PIECES, true));
+//		cbShowPieces.setSelected(prefs.getBoolean(PREFS_SHOW_PIECES, true));
+		cbShowPieces.setSelected(true);
 		actionShowPieces.actionPerformed(null);		
 		
 		cbShowBoard = new JCheckBox(actionShowBoard);
 		cbShowBoard.setFocusable(false);
-		cbShowBoard.setSelected(prefs.getBoolean(PREFS_SHOW_BOARD, false));
+//		cbShowBoard.setSelected(prefs.getBoolean(PREFS_SHOW_BOARD, false));
+		cbShowBoard.setSelected(false);
 		actionShowBoard.actionPerformed(null);		
 		
 		cbShowCoordinates = new JCheckBox(actionShowCoordinates);
@@ -602,9 +629,10 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		cbShowCoordinates.setSelected(prefs.getBoolean(PREFS_SHOW_COORDINATES, false));
 		actionShowCoordinates.actionPerformed(null);		
 		
-		cbAnnounceMoves = new JCheckBox("Announce moves?");
+		cbAnnounceMoves = new JCheckBox(actionAnnounceMoves);
 		cbAnnounceMoves.setFocusable(false);
-		cbAnnounceMoves.setSelected(prefs.getBoolean(PREFS_ANNOUNCE_MOVES, false));
+//		cbAnnounceMoves.setSelected(prefs.getBoolean(PREFS_ANNOUNCE_MOVES, false));
+		cbAnnounceMoves.setSelected(false);
 						
 		cbOnlyMainline = new JCheckBox("Accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
@@ -731,7 +759,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 
 		pnlToolBar.add(Box.createHorizontalStrut(10));
 		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true, false));
-		pnlToolBar.add(createButton(actionShowNovelties, "Open in Popup", true, false));
+//		pnlToolBar.add(createButton(actionShowNovelties, "Open in Popup", true, false));
+//		pnlToolBar.add(createButton(actionAnnouncePosition, "Open in Popup", true, false));
 //		pnlToolBar.add(cbShowComments);
 		pnlToolBar.add(Box.createHorizontalGlue());
 		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true, true));		
@@ -1006,7 +1035,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		try {
 			Position currentPosition = getCurrentPosition();
 			if (!currentPosition.isStartPosition()) {				
-				tts.sayChessMove(getCurrentPosition().getMove());
+				tts.announceChessMove(getCurrentPosition().getMove());
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
