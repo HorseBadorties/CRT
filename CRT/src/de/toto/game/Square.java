@@ -50,7 +50,7 @@ public class Square {
 				name.trim();
 			}
 			name += getName();
-			return name;
+			return name.trim();
 		}
 
 		@Override

@@ -7,23 +7,29 @@ public class Score {
 	
 	public String fen;
 	public int multiPV;
-	public int depth;	
+	public int depth;
+	public int mate;
 	public float score;	
 	public List<String> bestLine = new ArrayList<String>();
 	
 	private static final String TOKEN_INFO = "info";
 	private static final String TOKEN_SCORE_CP = "score cp";
+	private static final String TOKEN_SCORE_MATE = "score mate";
 	private static final String TOKEN_PV = "pv";
 	private static final String TOKEN_DEPTH = "depth";
 	private static final String TOKEN_MULTIPV = "multipv";
 	
 	public static Score parse(String fen, String outputLine) {
 		Score result = null;
-		if (outputLine != null && outputLine.startsWith(TOKEN_INFO) && outputLine.indexOf(TOKEN_SCORE_CP) > 0) {
+		if (outputLine != null && outputLine.startsWith(TOKEN_INFO) 
+				&& (outputLine.indexOf(TOKEN_SCORE_CP) > 0 || outputLine.indexOf(TOKEN_SCORE_MATE) > 0)) {
 			result = new Score();
 			result.fen = fen;
 			result.multiPV = readTokenValue(outputLine, TOKEN_MULTIPV, 1);
-			result.score = (float)readTokenValue(outputLine, TOKEN_SCORE_CP, 0) / 100;
+			result.mate = readTokenValue(outputLine, TOKEN_SCORE_MATE, 0);
+			if (result.mate == 0) {
+				result.score = (float)readTokenValue(outputLine, TOKEN_SCORE_CP, 0) / 100;
+			}
 			result.depth = readTokenValue(outputLine, TOKEN_DEPTH, 0);
 			boolean bestLineFound = false; 
 			for (String aToken : outputLine.split(" ")) {
@@ -49,7 +55,11 @@ public class Score {
 	
 	@Override
 	public String toString() {
-		return String.format("%d: %d [%.2f] %s", multiPV, depth, score, bestLine); 
+		if (mate > 0) {
+			return String.format("%d: %d [M%d] %s", multiPV, depth, mate, bestLine);			
+		} else {
+			return String.format("%d: %d [%.2f] %s", multiPV, depth, score, bestLine);
+		}
 	}
 	
 	

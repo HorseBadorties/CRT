@@ -753,8 +753,8 @@ public class Position {
 	
 	public List<Square> getSquaresWithPiecesByColor(boolean white) {
 		List<Square> matchingSquares = new ArrayList<Square>();
-		for (int rank = 1; rank <= 8; rank++) {
-			for (int file = 1; file <= 8; file++) {
+		for (int file = 1; file <= 8; file++) {
+			for (int rank = 1; rank <= 8; rank++) {			
 				Square s = squares[rank - 1][file - 1]; 
 				if (s.piece != null && s.piece.isWhite == white) {
 					matchingSquares.add(squares[rank - 1][file - 1]);
@@ -766,8 +766,8 @@ public class Position {
 	
 	private List<Square> getSquaresWithPiece(Piece piece) {
 		List<Square> matchingSquares = new ArrayList<Square>();
-		for (int rank = 1; rank <= 8; rank++) {
-			for (int file = 1; file <= 8; file++) {
+		for (int file = 1; file <= 8; file++) {
+			for (int rank = 1; rank <= 8; rank++) {			
 				if (squares[rank - 1][file - 1].piece == piece) {
 					matchingSquares.add(squares[rank - 1][file - 1]);
 				}
@@ -887,6 +887,97 @@ public class Position {
 		}
 		return result.toString().trim();
 	}
+	
+	/**
+	 * Describes this Position as a human would do it.
+	 */
+	public String describe() {
+		StringBuilder result = new StringBuilder();
+	    	
+    	// White
+		result.append("White:\n");
+		// White pawns 
+		if (describe(getSquaresWithPiecesByColor(true, PieceType.PAWN), result)) {
+			result.append("\n");
+		};		
+		// White pieces 
+		if (describe(getSquaresWithPiecesByColor(true, PieceType.KING), result)) {
+			result.append(", ");
+		};
+		if (describe(getSquaresWithPiecesByColor(true, PieceType.QUEEN), result)) {
+			result.append(", ");
+		};
+		if (describe(getSquaresWithPiecesByColor(true, PieceType.ROOK), result)) {
+			result.append(", ");
+		};
+		if (describe(getSquaresWithPiecesByColor(true, PieceType.BISHOP), result)) {
+			result.append(", ");
+		};
+		if (describe(getSquaresWithPiecesByColor(true, PieceType.KNIGHT), result)) {
+			result.append(", ");
+		};
+		if (result.charAt(result.length()-2) == ',') {
+			result.setLength(result.length()-2);
+    	}
+		result.append("\n");		
+		
+    	// Black
+		result.append("\n");
+		result.append("Black:\n");
+		// Black pawns 
+		if (describe(getSquaresWithPiecesByColor(false, PieceType.PAWN), result)) {
+			result.append("\n");
+		};		
+		// Black pieces 
+		if (describe(getSquaresWithPiecesByColor(false, PieceType.KING), result)) {
+			result.append(", ");
+		};
+		if (describe(getSquaresWithPiecesByColor(false, PieceType.QUEEN), result)) {
+			result.append(", ");
+		};
+		if (describe(getSquaresWithPiecesByColor(false, PieceType.ROOK), result)) {
+			result.append(", ");
+		};
+		if (describe(getSquaresWithPiecesByColor(false, PieceType.BISHOP), result)) {
+			result.append(", ");
+		};
+		if (describe(getSquaresWithPiecesByColor(false, PieceType.KNIGHT), result)) {
+			result.append(", ");
+		};
+		if (result.charAt(result.length()-2) == ',') {
+			result.setLength(result.length()-2);
+    	}
+		result.append("\n");
+
+		// TODO Castle rights...
+    	
+    	// Who's to move?
+		result.append("\n");
+    	result.append(isWhiteToMove() ? "White" : "Black").append(" to move!\n\n");
+    	
+    	return result.toString();
+	
+	}
+	
+	private boolean describe(List<Square> pieces, StringBuilder string) {
+		boolean result = false;
+		for (Square s : pieces) {
+			result = true; 
+    		string.append(s.getNameWithPieceSuffix()).append(", ");
+    	}
+    	if (result) {
+    		string.setLength(string.length()-2);
+    	}
+    	return result;
+	}
+	    
+    private List<Square> getSquaresWithPiecesByColor(boolean white, PieceType... pieceTypes) {
+    	List<Square> result = new ArrayList<Square>();
+    	for (Square s : getSquaresWithPiecesByColor(white)) {
+    		if (Arrays.asList(pieceTypes).contains(s.piece.type)) result.add(s);
+    	}
+    	return result;
+    }
 	
 	public static class GraphicsComment {
 		public Square firstSquare;

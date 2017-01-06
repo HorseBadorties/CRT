@@ -264,7 +264,7 @@ public class UCIEngine {
 			try {
 				String line = null;
 				while (isAlive && (line = engine.reader.readLine()) != null) {
-					//log.info(line);
+					log.info(line);
 					Score newScore = Score.parse(engine.getFEN(), line);
 					if (newScore != null) {
 						engine.fireNewScore(newScore);
