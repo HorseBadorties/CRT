@@ -112,59 +112,13 @@ public class MaryTTS implements TextToSpeach {
     @Override
 	public void announcePosition(Position p) {
     	try {
-	    	StringBuilder input = new StringBuilder();
-	    	// Who's to move?
-	    	input.append(p.isWhiteToMove() ? "White" : "Black").append(" to move.\n");
-	    	// Pawn and piece count
-	    	input.append(String.format("White has %d pawns and %d pieces.\n",	    			
-	    			countPawns(p, true), countPieces(p, true)));
-	    	input.append(String.format("Black has %d pawns and %d pieces.\n",	    			
-	    			countPawns(p, false), countPieces(p, false)));
-	    	// White's Pawns
-	    	input.append("White pawns on ");	    
-	    	for (Square s : getSquaresWithPiecesByColor(p, true, PieceType.PAWN)) {
-	    		input.append(s.getName() + ", ");	
-	    	}
-	    	input.replace(input.length()-2, input.length()-1, ".\n");
-	    	// White's Pieces
-	    	for (Square s : getSquaresWithPiecesByColor(p, true, 
-	    			new PieceType[] {PieceType.KING, PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT})) {
-	    		input.append("White " + translatePiece(s.piece.pgnChar) + " on " + s.getName() + ".\n");	
-	    	}
-	    	input.append("\n");
-	    	// Black's Pawns
-	    	input.append("Black pawns on ");	    
-	    	for (Square s : getSquaresWithPiecesByColor(p, false, PieceType.PAWN)) {
-	    		input.append(s.getName() + ", ");	
-	    	}
-	    	input.replace(input.length()-2, input.length()-1, ".\n");
-	    	// Black's Pieces
-	    	for (Square s : getSquaresWithPiecesByColor(p, false, 
-	    			new PieceType[] {PieceType.KING, PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT})) {
-	    		input.append("White " + translatePiece(s.piece.pgnChar) + " on " + s.getName() + ".\n");	
-	    	}
-	    	say(input.toString());
-    	} catch (Exception ex) {
-    		ex.printStackTrace();
-    	}
+			say(p.describe());
+		} catch (Exception e) {			
+			e.printStackTrace();
+		}
     }
     
-    private int countPawns(Position p, boolean white) {
-    	return getSquaresWithPiecesByColor(p, white, new PieceType[] {PieceType.PAWN}).size();
-    }
     
-    private int countPieces(Position p, boolean white) {
-    	return getSquaresWithPiecesByColor(p, white, 
-    			new PieceType[] {PieceType.KING, PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT}).size();
-    }
-    
-    private List<Square> getSquaresWithPiecesByColor(Position p, boolean white, PieceType... pieceTypes) {
-    	List<Square> result = new ArrayList<Square>();
-    	for (Square s : p.getSquaresWithPiecesByColor(white)) {
-    		if (Arrays.asList(pieceTypes).contains(s.piece.type)) result.add(s);
-    	}
-    	return result;
-    }
     
     private void promotion(String move, StringBuilder input) {
     	if (move.contains("=")) {

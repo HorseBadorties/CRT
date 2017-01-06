@@ -1,6 +1,7 @@
 package de.toto.gui.swing;
 
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.event.*;
 import java.io.File;
 import java.util.List;
@@ -367,7 +368,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			}
 		}
 	};
-	
+		
 	private Action actionChooseFont = new AbstractAction("Choose Font") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -571,17 +572,31 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	
 	private Action actionAnnouncePosition = new AbstractAction("Announce Position") {
 		@Override
-		public void actionPerformed(ActionEvent e) {
-			if (tts == null) {
-				try {
-					tts = new MaryTTS();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
+		public void actionPerformed(ActionEvent e) {			
 			if (tts != null) {
 				tts.announcePosition(getCurrentPosition());
 			}
+			JOptionPane.showMessageDialog(AppFrame.this, getCurrentPosition().describe());
+		}
+	};
+	
+	private Action actionPasteFEN = new AbstractAction("Paste FEN") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			String fen = "";
+			try {
+				fen = Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor).toString();			
+				if (tryVariation == null) {
+					actionTryVariation.actionPerformed(null);
+				} 
+				Position p = tryVariation.addMove("--", fen);
+				tryVariation.gotoPosition(p);
+				JOptionPane.showMessageDialog(AppFrame.this, p.describe());		
+				System.out.println(p.describe());
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(AppFrame.this, "Invalid FEN: \"" + fen + "\"", 
+						"Invalid FEN", JOptionPane.ERROR_MESSAGE);				
+			}			
 		}
 	};
 	
@@ -760,7 +775,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlToolBar.add(Box.createHorizontalStrut(10));
 		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true, false));
 //		pnlToolBar.add(createButton(actionShowNovelties, "Open in Popup", true, false));
-//		pnlToolBar.add(createButton(actionAnnouncePosition, "Open in Popup", true, false));
+		pnlToolBar.add(createButton(actionAnnouncePosition, "Open in Popup", true, false));
 //		pnlToolBar.add(cbShowComments);
 		pnlToolBar.add(Box.createHorizontalGlue());
 		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true, true));		
@@ -792,6 +807,10 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		KeyStroke keyControlF = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK);
 		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlF, "flip");
 		pnlAll.getActionMap().put("flip",actionFlip);
+		KeyStroke keyControlP = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK);
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlP, "pasteFEN");
+		pnlAll.getActionMap().put("pasteFEN",actionPasteFEN);
+		
 		
 		
 		Dimension prefSize = new Dimension(prefs.getInt(PREFS_FRAME_WIDTH, defaultFrameSize.width), 

@@ -83,10 +83,16 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 		if (bestlines.size() >= s.multiPV) {
 			Position p = parent.getCurrentPosition();
 			if (!s.fen.equals(p.getFen())) return;
-			boolean whiteToMove = p.isWhiteToMove();
-			boolean positiveScore = (whiteToMove && s.score >= 0) || (!whiteToMove && s.score < 0);	
-			String scoreText = String.format("%d [%s%.2f] %s", 
-					s.depth, positiveScore ? "+" : "-", Math.abs(s.score), s.bestLine);			
+			String scoreText = null;
+			if (s.mate > 0) {
+				scoreText = String.format("%d [M%d] %s", 
+						s.depth, s.mate, s.bestLine);	
+			} else {
+				boolean whiteToMove = p.isWhiteToMove();
+				boolean positiveScore = (whiteToMove && s.score >= 0) || (!whiteToMove && s.score < 0);	
+				scoreText = String.format("%d [%s%.2f] %s", 
+						s.depth, positiveScore ? "+" : "-", Math.abs(s.score), s.bestLine);	
+			}					
 			bestlines.set(s.multiPV - 1, scoreText);
 		}
 	}
