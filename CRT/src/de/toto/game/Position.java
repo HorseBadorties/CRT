@@ -893,9 +893,25 @@ public class Position {
 	 */
 	public String describe() {
 		StringBuilder result = new StringBuilder();
+		
+		String castleFenField = getFen().split(" ")[2];
+		boolean castleLong = false, castleShort = false;
 	    	
     	// White
-		result.append("White:\n");
+		result.append("White");
+		castleLong = castleFenField.contains("Q");
+		castleShort = castleFenField.contains("K");		
+		if (castleLong || castleShort) {
+			result.append(" [");
+			if (castleShort) {
+				result.append("0-0").append(castleLong ? ", " : "");
+			}
+			if (castleLong) {
+				result.append("0-0-0");
+			}
+			result.append("] ");
+		}
+		result.append("\n");
 		// White pawns 
 		if (describe(getSquaresWithPiecesByColor(true, PieceType.PAWN), result)) {
 			result.append("\n");
@@ -923,7 +939,20 @@ public class Position {
 		
     	// Black
 		result.append("\n");
-		result.append("Black:\n");
+		result.append("Black");
+		castleLong = castleFenField.contains("q");
+		castleShort = castleFenField.contains("k");		
+		if (castleLong || castleShort) {
+			result.append(" [");
+			if (castleShort) {
+				result.append("0-0").append(castleLong ? ", " : "");
+			}
+			if (castleLong) {
+				result.append("0-0-0");
+			}
+			result.append("] ");
+		}
+		result.append("\n");
 		// Black pawns 
 		if (describe(getSquaresWithPiecesByColor(false, PieceType.PAWN), result)) {
 			result.append("\n");
