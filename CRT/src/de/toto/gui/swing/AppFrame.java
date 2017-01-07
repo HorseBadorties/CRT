@@ -585,7 +585,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		public void actionPerformed(ActionEvent e) {			
 			String fen = "";
 			try {
-				fen = Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor).toString();			
+				fen = Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor).toString().trim();			
 				if (tryVariation == null) {
 					actionTryVariation.actionPerformed(null);
 				} 
@@ -594,6 +594,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				JOptionPane.showMessageDialog(AppFrame.this, p.describe());		
 				System.out.println(p.describe());
 			} catch (Exception ex) {
+				ex.printStackTrace();
 				JOptionPane.showMessageDialog(AppFrame.this, "Invalid FEN: \"" + fen + "\"", 
 						"Invalid FEN", JOptionPane.ERROR_MESSAGE);				
 			}			

@@ -199,6 +199,9 @@ public class UCIEngine {
 		}
 		sendCommand("stop");
 		sendCommand("setoption name Skill Level value " + translateSkillLevel());
+		sendCommand("setoption name PersonalityFile value C:\\Program Files\\engines\\Rodent_II\\rodent.txt");
+		sendCommand("setoption name GuideBookFile value C:\\Program Files\\engines\\Rodent_II\\books\\guide\\solid.bin");
+		sendCommand("setoption name MainBookFile value C:\\Program Files\\engines\\Rodent_II\\books\\rodent.bin");
 		sendCommand("ucinewgame");
 		sendCommand("isready");
 		setMultiPV(multiPV);
