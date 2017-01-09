@@ -773,15 +773,19 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 		pnlEast.add(splitEast);		
 
+		JPanel pnlToolBarChckboxes = new JPanel();
+		pnlToolBarChckboxes.setLayout(new BoxLayout(pnlToolBarChckboxes, BoxLayout.PAGE_AXIS));
+		pnlToolBarChckboxes.add(cbRandomDrill);
+		pnlToolBarChckboxes.add(cbOnlyMainline);
+		
 		pnlToolBar.add(Box.createHorizontalStrut(10));
 		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true, false));
 //		pnlToolBar.add(createButton(actionShowNovelties, "Open in Popup", true, false));
-		pnlToolBar.add(createButton(actionAnnouncePosition, "Open in Popup", true, false));
-//		pnlToolBar.add(cbShowComments);
 		pnlToolBar.add(Box.createHorizontalGlue());
-		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true, true));		
-		//pnlToolBar.add(cbOnlyMainline);
-		pnlToolBar.add(cbRandomDrill);
+		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true, true));
+		
+		pnlToolBar.add(pnlToolBarChckboxes);
+//		pnlToolBar.add(cbRandomDrill);
 		pnlToolBar.add(Box.createHorizontalGlue());
 		pnlToolBar.add(btnEngine = createButton(actionEngine, "Superman", true, true)); //"Robot-64.png
 		pnlToolBar.add(btnTryVariation = createButton(actionTryVariation, "Microscope", true, true));

@@ -94,7 +94,7 @@ public class Square {
 		 */
 		public boolean attacks(Square other, Position p, Square ignore) {
 			if (piece == null) return false;
-			if (ignore == null && isPinned(p, other)) return false;
+			if (ignore == null && isPinned(p, other) && other.piece != (isWhite() ? Piece.BLACK_KING : Piece.WHITE_KING)) return false;
 			switch (piece.type) {
 				case KING: return kingAttacks(other, p);
 				case QUEEN: return queenAttacks(other, p, ignore);
