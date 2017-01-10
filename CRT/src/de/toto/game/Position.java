@@ -989,6 +989,39 @@ public class Position {
 	
 	}
 	
+	public List<Piece> getMaterialImbalance() {
+		List<Piece> result = new ArrayList<Piece>();		
+		int imbalance = getMaterialImbalanceFor(PieceType.PAWN);
+		for (int i = 0; i < Math.abs(imbalance); i++) {
+			result.add(imbalance > 0 ? Piece.WHITE_PAWN : Piece.BLACK_PAWN);
+		}
+		imbalance = getMaterialImbalanceFor(PieceType.KNIGHT);
+		for (int i = 0; i < Math.abs(imbalance); i++) {
+			result.add(imbalance > 0 ? Piece.WHITE_KNIGHT : Piece.BLACK_KNIGHT);
+		}
+		imbalance = getMaterialImbalanceFor(PieceType.BISHOP);
+		for (int i = 0; i < Math.abs(imbalance); i++) {
+			result.add(imbalance > 0 ? Piece.WHITE_BISHOP : Piece.BLACK_BISHOP);
+		}
+		imbalance = getMaterialImbalanceFor(PieceType.ROOK);
+		for (int i = 0; i < Math.abs(imbalance); i++) {
+			result.add(imbalance > 0 ? Piece.WHITE_ROOK : Piece.BLACK_ROOK);
+		}
+		imbalance = getMaterialImbalanceFor(PieceType.QUEEN);
+		for (int i = 0; i < Math.abs(imbalance); i++) {
+			result.add(imbalance > 0 ? Piece.WHITE_QUEEN : Piece.BLACK_QUEEN);
+		}
+		return result; 
+	}
+	
+	// positive = white has a plus, negative = black has a plus;
+	private int getMaterialImbalanceFor(PieceType pieceType) {
+		List<Square> white, black;
+		white = getAllPiecesByColor(true, pieceType);
+		black = getAllPiecesByColor(false, pieceType);
+		return white.size() - black.size();
+	}
+	
 	private boolean describe(List<Square> pieces, StringBuilder string) {
 		boolean result = false;
 		for (Square s : pieces) {

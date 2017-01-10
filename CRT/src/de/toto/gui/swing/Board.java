@@ -11,6 +11,7 @@ import java.awt.image.*;
 import java.net.URL;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -32,6 +33,7 @@ public class Board extends JPanel {
 	private boolean showGraphicsComments = true;
 	private boolean showPieces = true;
 	private boolean showCoordinates = true;
+	private boolean showMaterialImbalance = true;
 	private java.util.List<GraphicsComment> additionalGraphicsComment = new ArrayList<GraphicsComment>();
 
 	public Position getCurrentPosition() {
@@ -58,6 +60,11 @@ public class Board extends JPanel {
 
 	public void setShowCoordinates(boolean value) {
 		showCoordinates = value;
+	}
+	
+	public void setShowMaterialImbalance(boolean value) {
+		showMaterialImbalance = value;
+		boardCanvas.rescale();
 	}
 
 	public void clearAdditionalGraphicsComment() {
@@ -151,6 +158,7 @@ public class Board extends JPanel {
 
 		private Image boardImage, boardImageScaled;
 		private SVGIcon wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP;
+		private SVGIcon wQs, wRs, wBs, wNs, wPs, bQs, bRs, bBs, bNs, bPs;
 		private int scaleSize;
 
 		private static final Color squareSelectionColor = new Color(.3f, .4f, .5f, .6f);
@@ -177,10 +185,7 @@ public class Board extends JPanel {
 
 		private static final Color squareColorWhite = lighBrown;
 		private static final Color squareColorBlack = darkBrown;
-
-		private Font fontPositionEval = new Font("Frutiger Standard", Font.PLAIN, 200);
-		private static final Color colorPositionEval = new Color(1f, .0f, .0f, .6f);;
-
+		
 		private boolean isDragging = false;
 		private Point cursorLocation;
 		private Square dragSquare = null;
@@ -204,14 +209,14 @@ public class Board extends JPanel {
 			public void mouseDragged(MouseEvent e) {
 				if (!isDragging) {
 					dragSquare = getSquareAt(e.getPoint());
-					if (dragSquare.gameSquare.piece == null)
+					if (dragSquare == null || dragSquare.gameSquare.piece == null)
 						return;
 					dragSquare.isDragSource = true;
 				}
 				isDragging = true;
 				cursorLocation = e.getPoint();
 				Square newDragTarget = getSquareAt(e.getPoint());
-				if (dragTarget != newDragTarget) {
+				if (newDragTarget != null && dragTarget != newDragTarget) {
 					if (dragTarget != null) {
 						dragTarget.isDragTarget = false;
 					}
@@ -322,10 +327,14 @@ public class Board extends JPanel {
 			if (value != isOrientationWhite) {
 				isOrientationWhite = value;
 				if (getSize().height > 0) {
-					rescaleAll();
-					repaint();
+					rescale();
 				}
 			}
+		}
+		
+		public void rescale() {
+			rescaleAll();
+			repaint();
 		}
 
 		public BoardCanvas(Board board) {
@@ -340,8 +349,7 @@ public class Board extends JPanel {
 		private void loadImages() {
 			try {
 				// maple.jpg wood-1024.jpg metal-1024.jpg
-				// boardImage =
-				// ImageIO.read(Board.class.getResource("/images/board/maple.jpg"));
+//				boardImage = ImageIO.read(Board.class.getResource("/images/board/maple.jpg"));
 				SVGUniverse svgUniverse = new SVGUniverse();
 				String folder = "merida"; // "cburnett", "merida", "pirouetti";
 				wK = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wK.svg"));
@@ -356,6 +364,17 @@ public class Board extends JPanel {
 				bB = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bB.svg"));
 				bN = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bN.svg"));
 				bP = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bP.svg"));
+								
+				wQs = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wQ.svg"));
+				wRs = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wR.svg"));
+				wBs = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wB.svg"));
+				wNs = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wN.svg"));
+				wPs = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wP.svg"));
+				bQs = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bQ.svg"));
+				bRs = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bR.svg"));
+				bBs = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bB.svg"));
+				bNs = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bN.svg"));
+				bPs = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/bP.svg"));
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -371,16 +390,19 @@ public class Board extends JPanel {
 		}
 
 		private Square getSquareAt(Point p) {
-			Square result = null;
+			Square result = null;			
 			int squareSize = getSquareSize();
+			int borderSize = getBorderSize();
+			if (p.x < borderSize || p.x > getSize().height-borderSize) return null;
+			if (p.y < borderSize || p.y > getSize().height-borderSize) return null;
 			int rank = 0;
 			int file = 0;
 			if (isOrientationWhite) {
-				rank = 8 - p.y / squareSize;
-				file = p.x >= 0 ? p.x / squareSize + 1 : 0;
+				rank = 8 - (p.y - borderSize) / squareSize; 
+				file = p.x >= 0 ? (p.x - borderSize) / squareSize + 1 : 0;
 			} else {
-				rank = p.y / squareSize + 1;
-				file = p.x >= 0 ? 8 - p.x / squareSize : 0;
+				rank = (p.y - borderSize) / squareSize + 1;
+				file = p.x >= 0 ? 8 - (p.x - borderSize) / squareSize : 0;
 			}
 			if (rank > 0 && rank <= 8 && file > 0 && file <= 8) {
 				result = getSquare(rank, file);
@@ -417,24 +439,26 @@ public class Board extends JPanel {
 			return result;
 		}
 
-		private void rescaleAll() {
-			int squareSize = getSquareSize();
+		private void rescaleAll() {			
+			int borderSize = getBorderSize();
+			int squareSize = getSquareSize();			
+			int boardSize = getSize().height - borderSize*2;
 			for (int rank = 1; rank <= 8; rank++) {
 				for (int file = 1; file <= 8; file++) {
 					Square square = getSquare(rank, file);
 					int x = 0, y = 0;
 					if (isOrientationWhite) {
-						x = (file - 1) * squareSize;
-						y = getSize().height - ((rank - 1) * squareSize) - squareSize;
+						x = (file - 1) * squareSize + borderSize;
+						y = boardSize - ((rank - 1) * squareSize) - squareSize + borderSize;
 					} else {
-						x = getSize().height - ((file - 1) * squareSize) - squareSize;
-						y = (rank - 1) * squareSize;
+						x = boardSize - ((file - 1) * squareSize) - squareSize + borderSize;
+						y = (rank - 1) * squareSize + borderSize;
 					}
 					square.topLeftOnBoard = new Point(x, y);
 				}
 			}
 			if (boardImage != null) {
-				boardImageScaled = scaleImage(boardImage, getSize().height);
+				boardImageScaled = scaleImage(boardImage, squareSize * 8);
 			}
 			wK.setPreferredSize(new Dimension(squareSize, squareSize));
 			wQ.setPreferredSize(new Dimension(squareSize, squareSize));
@@ -448,8 +472,19 @@ public class Board extends JPanel {
 			bB.setPreferredSize(new Dimension(squareSize, squareSize));
 			bN.setPreferredSize(new Dimension(squareSize, squareSize));
 			bP.setPreferredSize(new Dimension(squareSize, squareSize));
+			
+			wQs.setPreferredSize(new Dimension(borderSize, borderSize));
+			wRs.setPreferredSize(new Dimension(borderSize, borderSize));
+			wBs.setPreferredSize(new Dimension(borderSize, borderSize));
+			wNs.setPreferredSize(new Dimension(borderSize, borderSize));
+			wPs.setPreferredSize(new Dimension(borderSize, borderSize));
+			bQs.setPreferredSize(new Dimension(borderSize, borderSize));
+			bRs.setPreferredSize(new Dimension(borderSize, borderSize));
+			bBs.setPreferredSize(new Dimension(borderSize, borderSize));
+			bNs.setPreferredSize(new Dimension(borderSize, borderSize));
+			bPs.setPreferredSize(new Dimension(borderSize, borderSize));
+			
 			scaleSize = squareSize;
-			fontPositionEval = new Font("Frutiger Standard", Font.PLAIN, squareSize * 4);
 		}
 
 		private SVGIcon getIconFor(Piece p) {
@@ -482,9 +517,43 @@ public class Board extends JPanel {
 			}
 			return result;
 		}
+		
+		private SVGIcon getSmallIconFor(Piece p) {
+			SVGIcon result = null;
+			switch (p) {
+			case WHITE_KING:
+				return wK;
+			case WHITE_QUEEN:
+				return wQs;
+			case WHITE_ROOK:
+				return wRs;
+			case WHITE_BISHOP:
+				return wBs;
+			case WHITE_KNIGHT:
+				return wNs;
+			case WHITE_PAWN:
+				return wPs;
+			case BLACK_KING:
+				return bK;
+			case BLACK_QUEEN:
+				return bQs;
+			case BLACK_ROOK:
+				return bRs;
+			case BLACK_BISHOP:
+				return bBs;
+			case BLACK_KNIGHT:
+				return bNs;
+			case BLACK_PAWN:
+				return bPs;
+			}
+			return result;
+		}
 
+		private int getBorderSize() {			
+			return board.showMaterialImbalance ? getSize().height / 24 : 0;
+		}
 		private int getSquareSize() {
-			return getSize().height / 8;
+			return (getSize().height - getBorderSize()*2) / 8;
 		}
 
 		@Override
@@ -495,13 +564,17 @@ public class Board extends JPanel {
 			if (scaleSize != getSquareSize()) {
 				rescaleAll();
 			}
+			int squareSize = getSquareSize();
 
 			Graphics2D g2 = (Graphics2D) g;
+			
+//			g2.setColor(Color.YELLOW);
+//			g2.fillRect(0, 0, getSize().width, getSize().height);
+			
 			if (boardImageScaled != null) {
-				g2.drawImage(boardImageScaled, 0, 0, null);
+				g2.drawImage(boardImageScaled, getBorderSize(), getBorderSize(), null);			
 			}
-
-			int squareSize = getSquareSize();
+			
 			Position position = board.getCurrentPosition();
 
 			// draw square background if no boardImage is loaded
@@ -600,6 +673,17 @@ public class Board extends JPanel {
 					}
 				}
 			}
+			
+			// draw material imbalance
+			if (board.showMaterialImbalance) {
+				java.util.List<Piece> imbalancePieces = position.getMaterialImbalance(); 
+				int count = imbalancePieces.size();
+				for (int i = 0; i < count; i++) {
+					getSmallIconFor(imbalancePieces.get(i)).paintIcon(this, g2, 
+							getSize().width - getBorderSize(), getSize().height / 2 - getBorderSize() * i);
+				}				
+			}
+			
 		}
 
 		private void colorSquare(Graphics2D g2, Square s, Color color, int squareSize) {
