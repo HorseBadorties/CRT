@@ -866,6 +866,7 @@ public class Position {
 		Square from = getSquare(engineMove.substring(0,2));
 		Square to = getSquare(engineMove.substring(2,4));
 		StringBuilder result = new StringBuilder();
+		if (from.piece == null) return null; 
 		// Consider castling 
 		if (from.piece.type == PieceType.KING && (to.file == from.file + 2 || to.file == from.file - 2)) {
 			if (to.file == 7) return "0-0";

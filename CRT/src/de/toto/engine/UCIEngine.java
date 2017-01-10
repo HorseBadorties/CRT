@@ -267,14 +267,15 @@ public class UCIEngine {
 			try {
 				String line = null;
 				while (isAlive && (line = engine.reader.readLine()) != null) {
+					String fen = engine.getFEN();
 					//log.info(line);
-					Score newScore = Score.parse(engine.getFEN(), line);
+					Score newScore = Score.parse(fen, line);
 					if (newScore != null) {
 						engine.fireNewScore(newScore);
 					} else if (line.startsWith("bestmove")) {
 						if (engine.announcesBestMove) {
 							engine.isThinking = false;
-							engine.fireEngineMoved(engine.getFEN(), line.split(" ")[1]);
+							engine.fireEngineMoved(fen, line.split(" ")[1]);
 						} 
 					}
 				}

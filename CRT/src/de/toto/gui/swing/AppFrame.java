@@ -1131,14 +1131,15 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	@Override
 	public void newEngineScore(final UCIEngine e, final Score s) {
 		if (e == engine) {
+			
 			SwingUtilities.invokeLater(new Runnable() {
 							
 				@Override
 				public void run() {					
 					//draw engine suggestion arrow
 					if (engine.isStarted() && s.multiPV == 1 && !s.bestLine.isEmpty()) {
-						if (!s.bestLine.get(0).equals(enginesBestMove)) {							
-							enginesBestMove = s.bestLine.get(0);
+						if (!s.bestMove.equals(enginesBestMove)) {							
+							enginesBestMove = s.bestMove;
 							updateBoard(false);
 						}
 					}

@@ -3,6 +3,9 @@ package de.toto.engine;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.toto.game.Game;
+import de.toto.game.Position;
+
 public class Score {
 	
 	public String fen;
@@ -10,7 +13,8 @@ public class Score {
 	public int depth;
 	public int mate;
 	public float score;	
-	public List<String> bestLine = new ArrayList<String>();
+	public String bestLine;
+	public String bestMove;
 	
 	private static final String TOKEN_INFO = "info";
 	private static final String TOKEN_SCORE_CP = "score cp";
@@ -31,16 +35,34 @@ public class Score {
 				result.score = (float)readTokenValue(outputLine, TOKEN_SCORE_CP, 0) / 100;
 			}
 			result.depth = readTokenValue(outputLine, TOKEN_DEPTH, 0);
-			boolean bestLineFound = false; 
+			List<String> bestLineToken = null;
 			for (String aToken : outputLine.split(" ")) {
 				if (TOKEN_PV.equals(aToken)) {
-					bestLineFound = true;
+					bestLineToken = new ArrayList<String>(); 
 					continue;
 				}
 				//Assumes that TOKEN_PV is the last token...!?
-				if (bestLineFound) {
-					result.bestLine.add(aToken);
+				if (bestLineToken != null) {					
+					bestLineToken.add(aToken);
 				}
+			}
+			if (bestLineToken != null && !bestLineToken.isEmpty()) {
+				Game g = new Game(new Position(null, "--", fen));				
+				StringBuilder bestLineBuilder = new StringBuilder();
+				int count = 0;				
+				for (String move : bestLineToken) {
+					count++;
+					String lanMove = g.getPosition().translateMove(move);
+					if (lanMove == null) {
+						// current engine FEN has already changed
+						break;
+					}
+					Position p = g.addMove(g.getPosition().translateMove(move));
+					if (count == 1) result.bestMove = move;
+					bestLineBuilder.append(p.getMoveNotation(count == 1 || p.whiteMoved())).append(" ");
+					//if (count >= 10) break;
+				};
+				result.bestLine = bestLineBuilder.toString();				
 			}
 		}
 		return result;
