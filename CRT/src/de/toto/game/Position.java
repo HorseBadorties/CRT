@@ -3,6 +3,7 @@ package de.toto.game;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -989,29 +990,46 @@ public class Position {
 	
 	}
 	
-	public List<Piece> getMaterialImbalance() {
+	public List<Piece> getMaterialImbalance(boolean whiteFirst) {
 		List<Piece> result = new ArrayList<Piece>();		
 		int imbalance = getMaterialImbalanceFor(PieceType.PAWN);
 		for (int i = 0; i < Math.abs(imbalance); i++) {
-			result.add(imbalance > 0 ? Piece.WHITE_PAWN : Piece.BLACK_PAWN);
+			result.add(imbalance > 0 ? Piece.BLACK_PAWN : Piece.WHITE_PAWN);
 		}
 		imbalance = getMaterialImbalanceFor(PieceType.KNIGHT);
 		for (int i = 0; i < Math.abs(imbalance); i++) {
-			result.add(imbalance > 0 ? Piece.WHITE_KNIGHT : Piece.BLACK_KNIGHT);
+			result.add(imbalance > 0 ? Piece.BLACK_KNIGHT : Piece.WHITE_KNIGHT);
 		}
 		imbalance = getMaterialImbalanceFor(PieceType.BISHOP);
 		for (int i = 0; i < Math.abs(imbalance); i++) {
-			result.add(imbalance > 0 ? Piece.WHITE_BISHOP : Piece.BLACK_BISHOP);
+			result.add(imbalance > 0 ? Piece.BLACK_BISHOP : Piece.WHITE_BISHOP);
 		}
 		imbalance = getMaterialImbalanceFor(PieceType.ROOK);
 		for (int i = 0; i < Math.abs(imbalance); i++) {
-			result.add(imbalance > 0 ? Piece.WHITE_ROOK : Piece.BLACK_ROOK);
+			result.add(imbalance > 0 ? Piece.BLACK_ROOK : Piece.WHITE_ROOK);
 		}
 		imbalance = getMaterialImbalanceFor(PieceType.QUEEN);
 		for (int i = 0; i < Math.abs(imbalance); i++) {
-			result.add(imbalance > 0 ? Piece.WHITE_QUEEN : Piece.BLACK_QUEEN);
+			result.add(imbalance > 0 ? Piece.BLACK_QUEEN : Piece.WHITE_QUEEN);
 		}
+		result.sort(new MaterialImbalancePieceComparator(whiteFirst));
 		return result; 
+	}
+	
+	private static class MaterialImbalancePieceComparator implements Comparator<Piece> {
+
+		private boolean whiteFirst;
+		
+		public MaterialImbalancePieceComparator(boolean whiteFirst) {
+			this.whiteFirst = whiteFirst;
+		}
+		
+		@Override
+		public int compare(Piece p1, Piece p2) {
+			if (p1.isWhite != p2.isWhite) return p1.isWhite && whiteFirst ? 1 : -1;
+			return p1.type.compareTo(p2.type);
+		}
+		
 	}
 	
 	// positive = white has a plus, negative = black has a plus;

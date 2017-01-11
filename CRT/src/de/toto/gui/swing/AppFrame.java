@@ -58,12 +58,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private JLabel lblTryVariation;
 	private JPanel pnlToolBar;
 	private JCheckBox cbOnlyMainline;
-	private JCheckBox cbShowComments;
-	private JCheckBox cbShowPieces;
-	private JCheckBox cbShowBoard;
-	private JCheckBox cbShowCoordinates;
-	private JCheckBox cbShowMetarialImbalance;
-	private JCheckBox cbAnnounceMoves;
+	
 	private JCheckBox cbRandomDrill;
 	private AbstractButton btnLoadPGN;
 	private AbstractButton btnDrill;
@@ -103,12 +98,12 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private static final String PREFS_FONT_SIZE = "FONT_SIZE";
 	private static final String PREFS_FONT_NAME = "FONT_NAME";
 	private static final String PREFS_ONLY_MAINLINE = "ONLY_MAINLINE";
-	private static final String PREFS_SHOW_COMMENTS = "SHOW_COMMENTS";
-	private static final String PREFS_SHOW_PIECES = "SHOW_PIECES";
-	private static final String PREFS_SHOW_BOARD = "SHOW_BOARD";
-	private static final String PREFS_SHOW_COORDINATES = "SHOW_COORDINATES";
-	private static final String PREFS_SHOW_MATERIAL_IMBALANCE = "SHOW_MATERIAL_IMBALANCE";
-	private static final String PREFS_ANNOUNCE_MOVES = "ANNOUNCE_MOVES";	
+	public static final String PREFS_SHOW_ARROWS = "SHOW_ARROWS";
+	public static final String PREFS_SHOW_PIECES = "SHOW_PIECES";
+	public static final String PREFS_SHOW_BOARD = "SHOW_BOARD";
+	public static final String PREFS_SHOW_COORDINATES = "SHOW_COORDINATES";
+	public static final String PREFS_SHOW_MATERIAL_IMBALANCE = "SHOW_MATERIAL_IMBALANCE";
+	public static final String PREFS_ANNOUNCE_MOVES = "ANNOUNCE_MOVES";	
 	private static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
 	
 	public AppFrame() throws HeadlessException {
@@ -161,12 +156,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		prefs.put(PREFS_FONT_NAME, lstVariations.getFont().getName());
 		prefs.putBoolean(PREFS_ONLY_MAINLINE, cbOnlyMainline.isSelected());
 		prefs.putBoolean(PREFS_RANDOM_DRILL, cbRandomDrill.isSelected());
-		prefs.putBoolean(PREFS_SHOW_COMMENTS, cbShowComments.isSelected());
-		prefs.putBoolean(PREFS_SHOW_PIECES, cbShowPieces.isSelected());
-		prefs.putBoolean(PREFS_SHOW_BOARD, cbShowBoard.isSelected());
-		prefs.putBoolean(PREFS_SHOW_COORDINATES, cbShowCoordinates.isSelected());
-		prefs.putBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, cbShowMetarialImbalance.isSelected());
-		//prefs.putBoolean(PREFS_ANNOUNCE_MOVES, cbAnnounceMoves.isSelected());
+		
 		if (engine != null) {
 			prefs.put(PREFS_PATH_TO_ENGINE, pathToEngine);
 		}
@@ -315,65 +305,68 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
-	private Action actionShowComments = new AbstractAction("Show arrows/colored squares?") {
+	protected Action actionShowArrows = new AbstractAction("Show arrows/colored squares?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (e != null && e.getSource() != cbShowComments) {
-				cbShowComments.setSelected(!cbShowComments.isSelected());
+			if (e != null) {
+				prefs.putBoolean(PREFS_SHOW_ARROWS, !prefs.getBoolean(PREFS_SHOW_ARROWS, false));				
 			}
-			board.setShowGraphicsComments(cbShowComments.isSelected());
+			board.setShowGraphicsComments(prefs.getBoolean(PREFS_SHOW_ARROWS, true));
 			if (getCurrentGame() != null) updateBoard(false);
 		}
 	};
 	
-	private Action actionShowPieces = new AbstractAction("Show pieces?") {
+	protected Action actionShowPieces = new AbstractAction("Show pieces?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (e != null && e.getSource() != cbShowPieces) {
-				cbShowPieces.setSelected(!cbShowPieces.isSelected());
+			if (e != null) {
+				prefs.putBoolean(PREFS_SHOW_PIECES, !prefs.getBoolean(PREFS_SHOW_PIECES, false));				
 			}
-			board.setShowPieces(cbShowPieces.isSelected());
+			board.setShowPieces(prefs.getBoolean(PREFS_SHOW_PIECES, true));
 			if (getCurrentGame() != null) updateBoard(false);
 		}
 	};
 	
-	private Action actionShowBoard = new AbstractAction("Show board?") {
+	protected Action actionShowBoard = new AbstractAction("Show board?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (e != null && e.getSource() != cbShowBoard) {
-				cbShowBoard.setSelected(!cbShowBoard.isSelected());
+			if (e != null) {
+				prefs.putBoolean(PREFS_SHOW_BOARD, !prefs.getBoolean(PREFS_SHOW_BOARD, false));				
 			}
-			board.setShowBoard(cbShowBoard.isSelected());
+			board.setShowBoard(prefs.getBoolean(PREFS_SHOW_BOARD, true));
 			if (getCurrentGame() != null) updateBoard(false);
 		}
 	};
 	
-	private Action actionShowCoordinates = new AbstractAction("Show coordinates?") {
+	protected Action actionShowCoordinates = new AbstractAction("Show coordinates?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (e != null && e.getSource() != cbShowCoordinates) {
-				cbShowCoordinates.setSelected(!cbShowCoordinates.isSelected());
+			if (e != null) {
+				prefs.putBoolean(PREFS_SHOW_COORDINATES, !prefs.getBoolean(PREFS_SHOW_COORDINATES, false));				
 			}
-			board.setShowCoordinates(cbShowCoordinates.isSelected());
+			board.setShowCoordinates(prefs.getBoolean(PREFS_SHOW_COORDINATES, false));
 			if (getCurrentGame() != null) updateBoard(false);
 		}
 	};
 	
-	private Action actionShowMaterialImbalance = new AbstractAction("Show material imbalance?") {
+	protected Action actionShowMaterialImbalance = new AbstractAction("Show material imbalance?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (e != null && e.getSource() != cbShowMetarialImbalance) {
-				cbShowMetarialImbalance.setSelected(!cbShowMetarialImbalance.isSelected());
+			if (e != null) {
+				prefs.putBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, !prefs.getBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, true));				
 			}
-			board.setShowMaterialImbalance(cbShowMetarialImbalance.isSelected());
+			board.setShowMaterialImbalance(prefs.getBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, false));
 			if (getCurrentGame() != null) updateBoard(false);
 		}
 	};
 	
-	private Action actionAnnounceMoves = new AbstractAction("Announce moves?") {
+	protected Action actionAnnounceMoves = new AbstractAction("Announce moves?") {
 		@Override
-		public void actionPerformed(ActionEvent e) {			
-			if (cbAnnounceMoves.isSelected() && tts == null) {
+		public void actionPerformed(ActionEvent e) {
+			if (e != null) {
+				prefs.putBoolean(PREFS_ANNOUNCE_MOVES, !prefs.getBoolean(PREFS_ANNOUNCE_MOVES, true));				
+			}
+			if (prefs.getBoolean(PREFS_ANNOUNCE_MOVES, false) && tts == null) {
 				try {
 					tts = new MaryTTS();
 				} catch (Exception ex) {
@@ -570,6 +563,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private Action actionShowNovelties = new AbstractAction("Show Novelties") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			
+			JOptionPane.showMessageDialog(AppFrame.this, new SettingsPanel(AppFrame.this), "Options", JOptionPane.OK_OPTION);
+			
 			File lastDir = pgn != null ? pgn.getParentFile() : null;
 			JFileChooser fc = new JFileChooser(lastDir);
 			fc.setDialogTitle("Please choose a PGN file that contains your games!");
@@ -583,6 +579,17 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			}		
 		}
 	};
+	
+	private Action actionSettings = new AbstractAction("Settings") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			JOptionPane.showMessageDialog(AppFrame.this, 
+					new SettingsPanel(AppFrame.this), "Settings", JOptionPane.PLAIN_MESSAGE);					
+					
+		}
+	};
+	
 	
 	private Action actionAnnouncePosition = new AbstractAction("Announce Position") {
 		@Override
@@ -634,41 +641,14 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlAll.add(splitCenter, BorderLayout.CENTER);		
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
-		
-		
-		
-		cbShowComments = new JCheckBox(actionShowComments);
-		cbShowComments.setFocusable(false);
-		cbShowComments.setSelected(prefs.getBoolean(PREFS_SHOW_COMMENTS, false));
-		actionShowComments.actionPerformed(null);		
-		
-		cbShowPieces = new JCheckBox(actionShowPieces);
-		cbShowPieces.setFocusable(false);
-//		cbShowPieces.setSelected(prefs.getBoolean(PREFS_SHOW_PIECES, true));
-		cbShowPieces.setSelected(true);
+			
+		actionShowArrows.actionPerformed(null);
 		actionShowPieces.actionPerformed(null);		
-		
-		cbShowBoard = new JCheckBox(actionShowBoard);
-		cbShowBoard.setFocusable(false);
-//		cbShowBoard.setSelected(prefs.getBoolean(PREFS_SHOW_BOARD, true));
-		cbShowBoard.setSelected(true);
 		actionShowBoard.actionPerformed(null);		
-		
-		cbShowCoordinates = new JCheckBox(actionShowCoordinates);
-		cbShowCoordinates.setFocusable(false);
-		cbShowCoordinates.setSelected(prefs.getBoolean(PREFS_SHOW_COORDINATES, false));
 		actionShowCoordinates.actionPerformed(null);		
-		
-		cbShowMetarialImbalance = new JCheckBox(actionShowMaterialImbalance);
-		cbShowMetarialImbalance.setFocusable(false);
-		cbShowMetarialImbalance.setSelected(prefs.getBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, false));
 		actionShowMaterialImbalance.actionPerformed(null);		
-		
-		cbAnnounceMoves = new JCheckBox(actionAnnounceMoves);
-		cbAnnounceMoves.setFocusable(false);
-//		cbAnnounceMoves.setSelected(prefs.getBoolean(PREFS_ANNOUNCE_MOVES, false));
-		cbAnnounceMoves.setSelected(false);
-						
+		actionAnnounceMoves.actionPerformed(null);
+								
 		cbOnlyMainline = new JCheckBox("Accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
 		cbOnlyMainline.setFocusable(false);
@@ -681,15 +661,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 5));
 		pnlBoard.add(board, BorderLayout.CENTER);
 		JPanel pnlCenterSouth = new JPanel(new BorderLayout());
-		JPanel pnlOptions = new JPanel();
-		pnlOptions.setLayout(new BoxLayout(pnlOptions, BoxLayout.LINE_AXIS));		
-		pnlOptions.add(cbShowBoard);
-		pnlOptions.add(cbShowPieces);
-		pnlOptions.add(cbShowCoordinates);
-		pnlOptions.add(cbShowMetarialImbalance);
-		pnlOptions.add(cbShowComments);
-		pnlOptions.add(cbAnnounceMoves);
-		pnlCenterSouth.add(pnlOptions, BorderLayout.PAGE_START);
+
 		JPanel pnlBoardControls = new JPanel();
 		pnlBoardControls.setLayout(new BoxLayout(pnlBoardControls, BoxLayout.LINE_AXIS));
 		pnlBoardControls.add(Box.createHorizontalGlue());
@@ -800,7 +772,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		
 		pnlToolBar.add(Box.createHorizontalStrut(10));
 		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true, false));
-//		pnlToolBar.add(createButton(actionShowNovelties, "Open in Popup", true, false));
+		pnlToolBar.add(createButton(actionSettings, "Settings", true, false));
 		pnlToolBar.add(Box.createHorizontalGlue());
 		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true, true));
 		
@@ -1048,7 +1020,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	@Override
 	public void positionChanged(GameEvent e) {
 		updateBoard(true);
-		if (cbAnnounceMoves.isSelected()) {
+		if (prefs.getBoolean(PREFS_ANNOUNCE_MOVES, false)) {
 			announceMove();
 		}
 	}

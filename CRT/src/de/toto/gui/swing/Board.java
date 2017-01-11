@@ -676,11 +676,11 @@ public class Board extends JPanel {
 			
 			// draw material imbalance
 			if (board.showMaterialImbalance) {
-				java.util.List<Piece> imbalancePieces = position.getMaterialImbalance(); 
+				java.util.List<Piece> imbalancePieces = position.getMaterialImbalance(!isOrientationWhite); 
 				int count = imbalancePieces.size();
-				for (int i = 0; i < count; i++) {
-					getSmallIconFor(imbalancePieces.get(i)).paintIcon(this, g2, 
-							getSize().width - getBorderSize(), getSize().height / 2 - getBorderSize() * i);
+				for (int i = 0, x = getSize().width - getBorderSize(), y = getSize().height / 2 - getBorderSize() * count / 2;
+						i < count; i++, y += getBorderSize()) {
+					getSmallIconFor(imbalancePieces.get(i)).paintIcon(this, g2, x,  y);
 				}				
 			}
 			
