@@ -12,6 +12,12 @@ public class PositionTableModel extends AbstractTableModel {
 	
 	private List<Position> white = new ArrayList<Position>();
 	private List<Position> black = new ArrayList<Position>();
+	private boolean blindfoldMode = false;
+	
+	public void setBlindfoldMode(boolean value) {
+		blindfoldMode = value;
+		fireTableDataChanged();
+	}
 
 	@Override
 	public int getRowCount() {
@@ -45,7 +51,11 @@ public class PositionTableModel extends AbstractTableModel {
 			if (columnIndex == 0) {
 				return p.getMoveNumber() + ".";
 			} else {
-				return p.getMoveNotation(false);
+				if (blindfoldMode) {
+					return p.hasNext() ? "..." : p.getMoveNotation(false);
+				} else {
+					return p.getMoveNotation(false);
+				}
 			}
 		} else {
 			if (columnIndex == 0) {

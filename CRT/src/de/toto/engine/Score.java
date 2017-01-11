@@ -47,22 +47,27 @@ public class Score {
 				}
 			}
 			if (bestLineToken != null && !bestLineToken.isEmpty()) {
-				Game g = new Game(new Position(null, "--", fen));				
-				StringBuilder bestLineBuilder = new StringBuilder();
-				int count = 0;				
-				for (String move : bestLineToken) {
-					count++;
-					String lanMove = g.getPosition().translateMove(move);
-					if (lanMove == null) {
-						// current engine FEN has already changed
-						break;
-					}
-					Position p = g.addMove(g.getPosition().translateMove(move));
-					if (count == 1) result.bestMove = move;
-					bestLineBuilder.append(p.getMoveNotation(count == 1 || p.whiteMoved())).append(" ");
-					//if (count >= 10) break;
-				};
-				result.bestLine = bestLineBuilder.toString();				
+				try {
+					Game g = new Game(new Position(null, "--", fen));				
+					StringBuilder bestLineBuilder = new StringBuilder();
+					int count = 0;				
+					for (String move : bestLineToken) {
+						count++;
+						String lanMove = g.getPosition().translateMove(move);
+						if (lanMove == null) {
+							// current engine FEN has already changed
+							break;
+						}
+						Position p = g.addMove(g.getPosition().translateMove(move));
+						if (count == 1) result.bestMove = move;
+						bestLineBuilder.append(p.getMoveNotation(count == 1 || p.whiteMoved())).append(" ");
+						//if (count >= 10) break;
+					};
+					result.bestLine = bestLineBuilder.toString();
+				} catch (Exception ex) {
+					// can happen if the current position does no longer match the engine position
+					result.bestLine = "";
+				}
 			}
 		}
 		return result;

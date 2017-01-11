@@ -334,7 +334,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			if (e != null) {
 				prefs.putBoolean(PREFS_SHOW_BOARD, !prefs.getBoolean(PREFS_SHOW_BOARD, false));				
 			}
-			board.setShowBoard(prefs.getBoolean(PREFS_SHOW_BOARD, true));
+			boolean showBoard = prefs.getBoolean(PREFS_SHOW_BOARD, true); 
+			board.setShowBoard(showBoard);
+			modelMoves.setBlindfoldMode(!showBoard && getCurrentGame() == gameAgainstTheEngine);
 			if (getCurrentGame() != null) updateBoard(false);
 		}
 	};
@@ -652,13 +654,6 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
 			
-		actionShowArrows.actionPerformed(null);
-		actionShowPieces.actionPerformed(null);		
-		actionShowBoard.actionPerformed(null);		
-		actionShowCoordinates.actionPerformed(null);		
-		actionShowMaterialImbalance.actionPerformed(null);		
-		actionAnnounceMoves.actionPerformed(null);
-								
 		cbOnlyMainline = new JCheckBox("Accept main line only?");
 		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
 		cbOnlyMainline.setFocusable(false);
@@ -851,6 +846,14 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		
 		pathToEngine = prefs.get(PREFS_PATH_TO_ENGINE, null);
 		pathToGameEngine = prefs.get(PREFS_PATH_TO_GAME_ENGINE, null);
+		
+		actionShowArrows.actionPerformed(null);
+		actionShowPieces.actionPerformed(null);		
+		actionShowBoard.actionPerformed(null);		
+		actionShowCoordinates.actionPerformed(null);		
+		actionShowMaterialImbalance.actionPerformed(null);		
+		actionAnnounceMoves.actionPerformed(null);
+								
 	}
 	
 	public static AbstractButton createButton(Action action, String icon, boolean showText, boolean toggleButton) {
