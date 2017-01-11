@@ -20,7 +20,7 @@ public class PositionTableModel extends AbstractTableModel {
 
 	@Override
 	public int getColumnCount() {		
-		return 2;
+		return 3;
 	}
 
 	@Override
@@ -40,21 +40,29 @@ public class PositionTableModel extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {		
-		Position p = getPositionAt(rowIndex, columnIndex);
+		Position p = getPositionAt(rowIndex, columnIndex);		
 		if (p != null) {
-			return p.getMoveNotation(p.whiteMoved());
-		} else {
-			if (columnIndex == 1) {
-				return "";
+			if (columnIndex == 0) {
+				return p.getMoveNumber() + ".";
 			} else {
-				Position blackMove = getPositionAt(rowIndex, 1);
-				return blackMove != null ? blackMove.getMoveNumber()+"..." : "";
+				return p.getMoveNotation(false);
+			}
+		} else {
+			if (columnIndex == 0) {
+				p = getPositionAt(rowIndex, 2);
+				if (p != null) {
+					return p.getMoveNumber() + "..."; 
+				} else {
+					return "";
+				}
+			} else {
+				return "";
 			}
 		}
 	}
 	
 	public Position getPositionAt(int rowIndex, int columnIndex) {		
-		List<Position> l = columnIndex == 0 ? white : black;
+		List<Position> l = columnIndex == 2 ? black : white ;
 		return l.size() <= rowIndex ? null : l.get(rowIndex);
 	}
 	

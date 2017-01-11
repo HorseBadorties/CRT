@@ -2,6 +2,7 @@ package de.toto.gui.swing;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.File;
 import java.util.List;
@@ -600,6 +601,16 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
+	private Action actionCopyFEN = new AbstractAction("Copy FEN") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			if (getCurrentGame() != null) {
+				Toolkit.getDefaultToolkit().getSystemClipboard()
+					.setContents(new StringSelection(getCurrentGame().getPosition().getFen()), null);
+			}				
+		}
+	};
+	
 	private Action actionPasteFEN = new AbstractAction("Paste FEN") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
@@ -805,8 +816,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		KeyStroke keyControlP = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK);
 		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlP, "pasteFEN");
 		pnlAll.getActionMap().put("pasteFEN",actionPasteFEN);
-		
-		
+		KeyStroke keyControlC = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlC, "copyFEN");
+		pnlAll.getActionMap().put("copyFEN",actionCopyFEN);		
 		
 		Dimension prefSize = new Dimension(prefs.getInt(PREFS_FRAME_WIDTH, defaultFrameSize.width), 
 				prefs.getInt(PREFS_FRAME_HEIGHT, defaultFrameSize.height));		
