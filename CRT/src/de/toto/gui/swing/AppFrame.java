@@ -363,9 +363,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	protected Action actionAnnounceMoves = new AbstractAction("Announce moves?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (e != null) {
-				prefs.putBoolean(PREFS_ANNOUNCE_MOVES, !prefs.getBoolean(PREFS_ANNOUNCE_MOVES, true));				
-			}
+			prefs.putBoolean(PREFS_ANNOUNCE_MOVES, e == null ? false : !prefs.getBoolean(PREFS_ANNOUNCE_MOVES, true));				
+			
 			if (prefs.getBoolean(PREFS_ANNOUNCE_MOVES, false) && tts == null) {
 				try {
 					tts = new MaryTTS();
