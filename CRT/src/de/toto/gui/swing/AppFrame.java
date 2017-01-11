@@ -543,7 +543,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 						"Skill Level", JOptionPane.QUESTION_MESSAGE, null, 
 						levels, levels[2]);
 				if (result != null) {
-					gameEngine.startGame(result, gameAgainstTheEngine.getPosition().getFen());				
+					gameEngine.startGame(result, gameAgainstTheEngine.getPosition().getFen());					
+					modelMoves.setBlindfoldMode(!prefs.getBoolean(PREFS_SHOW_BOARD, true));
 					updateBoard(false);
 					btnGameAgainstTheEngine.setIcon(loadIcon("Robot red"));
 					this.putValue(Action.NAME, "End Game");					
