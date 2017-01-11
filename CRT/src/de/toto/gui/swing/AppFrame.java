@@ -608,11 +608,14 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		@Override
 		public void actionPerformed(ActionEvent e) {			
 			if (getCurrentGame() != null) {
-				Toolkit.getDefaultToolkit().getSystemClipboard()
-					.setContents(new StringSelection(getCurrentGame().getPosition().getFen()), null);
+				copyToClipboard(getCurrentGame().getPosition().getFen());
 			}				
 		}
 	};
+	
+	private static void copyToClipboard(String s) {
+		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(s), null);
+	}
 	
 	private Action actionPasteFEN = new AbstractAction("Paste FEN") {
 		@Override
@@ -626,7 +629,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				Position p = tryVariation.addMove("--", fen);
 				tryVariation.gotoPosition(p);
 				JOptionPane.showMessageDialog(AppFrame.this, p.describe());		
-				System.out.println(p.describe());
+				copyToClipboard(p.describe());
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				JOptionPane.showMessageDialog(AppFrame.this, "Invalid FEN: \"" + fen + "\"", 
