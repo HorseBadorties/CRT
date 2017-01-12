@@ -613,6 +613,27 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
+	private Action actionPastePGN = new AbstractAction("Paste PGN") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			String pgn = "";
+			try {
+				pgn = Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor).toString().trim();			
+				Game game = PGNReader.parse(pgn).get(0);	
+				while (game.hasNext()) game.goForward();
+				int moveCount = game.getPosition().getMoveNumber();
+				setGame(game);
+				setTitle(String.format("Loaded game: %s vs %s [%d moves]", 
+						game.getTagValue("White"), game.getTagValue("Black"), moveCount));
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(AppFrame.this, "Invalid PGN: \n\n" + pgn, 
+						"Invalid PGN", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+					
+		}
+	};
+	
 	private static void copyToClipboard(String s) {
 		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(s), null);
 	}
@@ -623,21 +644,23 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			String fen = "";
 			try {
 				fen = Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor).toString().trim();			
-				if (tryVariation == null) {
-					actionTryVariation.actionPerformed(null);
-				} 
-				Position p = tryVariation.addMove("--", fen);
-				tryVariation.gotoPosition(p);
+				Game g = new Game();
+				Position p = g.addMove("--", fen);
 				JOptionPane.showMessageDialog(AppFrame.this, p.describe());		
-				copyToClipboard(p.describe());
+				copyToClipboard(p.describe());						
 			} catch (Exception ex) {
-				ex.printStackTrace();
-				JOptionPane.showMessageDialog(AppFrame.this, "Invalid FEN: \"" + fen + "\"", 
-						"Invalid FEN", JOptionPane.ERROR_MESSAGE);				
-			}			
+				JOptionPane.showMessageDialog(AppFrame.this, "Invalid FEN: \n\n" + fen, 
+						"Invalid FEN", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			if (tryVariation == null) {
+				btnTryVariation.doClick();				
+			}
+			Position p = tryVariation.addMove("--", fen);
+			tryVariation.gotoPosition(p);	
 		}
 	};
-	
+		
 	private void doUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -817,7 +840,10 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlAll.getActionMap().put("pasteFEN",actionPasteFEN);
 		KeyStroke keyControlC = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
 		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlC, "copyFEN");
-		pnlAll.getActionMap().put("copyFEN",actionCopyFEN);		
+		pnlAll.getActionMap().put("copyFEN",actionCopyFEN);	
+		KeyStroke keyControlV = KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK);
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlV, "pastePGN");
+		pnlAll.getActionMap().put("pastePGN",actionPastePGN);	
 		
 		Dimension prefSize = new Dimension(prefs.getInt(PREFS_FRAME_WIDTH, defaultFrameSize.width), 
 				prefs.getInt(PREFS_FRAME_HEIGHT, defaultFrameSize.height));		
