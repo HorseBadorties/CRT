@@ -899,6 +899,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		board.setShowMaterialImbalance(prefs.getBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, false));	
 		board.setShowPieces(prefs.getBoolean(PREFS_SHOW_PIECES, true));	
 		modelMoves.setBlindfoldMode(!prefs.getBoolean(PREFS_SHOW_MOVE_NOTATION, true));
+		prefs.putBoolean(PREFS_ANNOUNCE_MOVES, false);
 								
 	}
 	
