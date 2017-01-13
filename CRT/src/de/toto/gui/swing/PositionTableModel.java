@@ -52,7 +52,10 @@ public class PositionTableModel extends AbstractTableModel {
 				return p.getMoveNumber() + ".";
 			} else {
 				if (blindfoldMode) {
-					return p.hasNext() ? "..." : p.getMoveNotation(false);
+					int lastMoveColumn = white.size() > black.size() ? 1 : 2;
+					int lastMoveRow = Math.max(white.size()-1, black.size()-1);
+					return rowIndex == lastMoveRow && columnIndex == lastMoveColumn 
+							? p.getMoveNotation(false) : "...";
 				} else {
 					return p.getMoveNotation(false);
 				}

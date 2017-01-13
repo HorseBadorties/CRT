@@ -7,6 +7,8 @@ import java.awt.event.*;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.*;
@@ -104,6 +106,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	public static final String PREFS_SHOW_BOARD = "SHOW_BOARD";
 	public static final String PREFS_SHOW_COORDINATES = "SHOW_COORDINATES";
 	public static final String PREFS_SHOW_MATERIAL_IMBALANCE = "SHOW_MATERIAL_IMBALANCE";
+	public static final String PREFS_SHOW_MOVE_NOTATION = "SHOW_MOVE_NOTATION";
 	public static final String PREFS_ANNOUNCE_MOVES = "ANNOUNCE_MOVES";	
 	private static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
 	
@@ -137,6 +140,33 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			}
 			
 		});		
+		prefs.addPreferenceChangeListener(new PreferenceChangeListener() {			
+			@Override
+			public void preferenceChange(PreferenceChangeEvent evt) {				 
+				if (evt.getKey().equals(PREFS_ANNOUNCE_MOVES)) {
+					if (prefs.getBoolean(PREFS_ANNOUNCE_MOVES, false) && tts == null) {
+						try {
+							tts = new MaryTTS();
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
+				} else if (evt.getKey().equals(PREFS_SHOW_ARROWS)) {
+					board.setShowGraphicsComments(prefs.getBoolean(PREFS_SHOW_ARROWS, true));
+				} else if (evt.getKey().equals(PREFS_SHOW_BOARD)) {
+					board.setShowBoard(prefs.getBoolean(PREFS_SHOW_BOARD, true));
+				} else if (evt.getKey().equals(PREFS_SHOW_COORDINATES)) {
+					board.setShowCoordinates(prefs.getBoolean(PREFS_SHOW_COORDINATES, true));
+				} else if (evt.getKey().equals(PREFS_SHOW_MATERIAL_IMBALANCE)) {
+					board.setShowMaterialImbalance(prefs.getBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, false));
+				} else if (evt.getKey().equals(PREFS_SHOW_PIECES)) {
+					board.setShowPieces(prefs.getBoolean(PREFS_SHOW_PIECES, true));			
+				} else if (evt.getKey().equals(PREFS_SHOW_MOVE_NOTATION)) {
+					modelMoves.setBlindfoldMode(!prefs.getBoolean(PREFS_SHOW_MOVE_NOTATION, true));			
+				} 				
+				if (getCurrentGame() != null) updateBoard(false);
+			}
+		});
 	}
 	
 	private void savePrefs() {
@@ -309,72 +339,47 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	protected Action actionShowArrows = new AbstractAction("Show arrows/colored squares?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (e != null) {
-				prefs.putBoolean(PREFS_SHOW_ARROWS, !prefs.getBoolean(PREFS_SHOW_ARROWS, false));				
-			}
-			board.setShowGraphicsComments(prefs.getBoolean(PREFS_SHOW_ARROWS, true));
-			if (getCurrentGame() != null) updateBoard(false);
+			toggleBooleanPreference(PREFS_SHOW_ARROWS);				
+			
 		}
 	};
 	
 	protected Action actionShowPieces = new AbstractAction("Show pieces?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (e != null) {
-				prefs.putBoolean(PREFS_SHOW_PIECES, !prefs.getBoolean(PREFS_SHOW_PIECES, false));				
-			}
-			board.setShowPieces(prefs.getBoolean(PREFS_SHOW_PIECES, true));
-			if (getCurrentGame() != null) updateBoard(false);
+			toggleBooleanPreference(PREFS_SHOW_PIECES);
 		}
 	};
 	
 	protected Action actionShowBoard = new AbstractAction("Show board?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (e != null) {
-				prefs.putBoolean(PREFS_SHOW_BOARD, !prefs.getBoolean(PREFS_SHOW_BOARD, false));				
-			}
-			boolean showBoard = prefs.getBoolean(PREFS_SHOW_BOARD, true); 
-			board.setShowBoard(showBoard);
-			modelMoves.setBlindfoldMode(!showBoard && getCurrentGame() == gameAgainstTheEngine);
-			if (getCurrentGame() != null) updateBoard(false);
+			toggleBooleanPreference(PREFS_SHOW_BOARD);	
 		}
 	};
 	
 	protected Action actionShowCoordinates = new AbstractAction("Show coordinates?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (e != null) {
-				prefs.putBoolean(PREFS_SHOW_COORDINATES, !prefs.getBoolean(PREFS_SHOW_COORDINATES, false));				
-			}
-			board.setShowCoordinates(prefs.getBoolean(PREFS_SHOW_COORDINATES, false));
-			if (getCurrentGame() != null) updateBoard(false);
+			toggleBooleanPreference(PREFS_SHOW_COORDINATES);			
 		}
 	};
 	
 	protected Action actionShowMaterialImbalance = new AbstractAction("Show material imbalance?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
-			if (e != null) {
-				prefs.putBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, !prefs.getBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, true));				
-			}
-			board.setShowMaterialImbalance(prefs.getBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, false));
-			if (getCurrentGame() != null) updateBoard(false);
+			toggleBooleanPreference(PREFS_SHOW_MATERIAL_IMBALANCE);			
 		}
 	};
+	
+	private void toggleBooleanPreference(String preferenceKey) {
+		prefs.putBoolean(preferenceKey, !prefs.getBoolean(preferenceKey, true));
+	}
 	
 	protected Action actionAnnounceMoves = new AbstractAction("Announce moves?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			prefs.putBoolean(PREFS_ANNOUNCE_MOVES, e == null ? false : !prefs.getBoolean(PREFS_ANNOUNCE_MOVES, true));				
-			
-			if (prefs.getBoolean(PREFS_ANNOUNCE_MOVES, false) && tts == null) {
-				try {
-					tts = new MaryTTS();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
+			prefs.putBoolean(PREFS_ANNOUNCE_MOVES, e == null ? false : !prefs.getBoolean(PREFS_ANNOUNCE_MOVES, true));		
 		}
 	};
 		
@@ -543,8 +548,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 						"Skill Level", JOptionPane.QUESTION_MESSAGE, null, 
 						levels, levels[2]);
 				if (result != null) {
-					gameEngine.startGame(result, gameAgainstTheEngine.getPosition().getFen());					
-					modelMoves.setBlindfoldMode(!prefs.getBoolean(PREFS_SHOW_BOARD, true));
+					gameEngine.startGame(result, gameAgainstTheEngine.getPosition().getFen());
 					updateBoard(false);
 					btnGameAgainstTheEngine.setIcon(loadIcon("Robot red"));
 					this.putValue(Action.NAME, "End Game");					
@@ -658,6 +662,14 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			}
 			Position p = tryVariation.addMove("--", fen);
 			tryVariation.gotoPosition(p);	
+		}
+	};
+	
+	private Action actionToggleBlindfoldMode = new AbstractAction("Toggle blindfold mode") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			toggleBooleanPreference(PREFS_SHOW_BOARD);
+			toggleBooleanPreference(PREFS_SHOW_MOVE_NOTATION);
 		}
 	};
 		
@@ -844,6 +856,10 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		KeyStroke keyControlV = KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK);
 		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlV, "pastePGN");
 		pnlAll.getActionMap().put("pastePGN",actionPastePGN);	
+		KeyStroke keyControlB = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_DOWN_MASK);
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlB, "toggleBlindfoldMode");
+		pnlAll.getActionMap().put("toggleBlindfoldMode",actionToggleBlindfoldMode);
+		
 		
 		Dimension prefSize = new Dimension(prefs.getInt(PREFS_FRAME_WIDTH, defaultFrameSize.width), 
 				prefs.getInt(PREFS_FRAME_HEIGHT, defaultFrameSize.height));		
@@ -877,12 +893,12 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pathToEngine = prefs.get(PREFS_PATH_TO_ENGINE, null);
 		pathToGameEngine = prefs.get(PREFS_PATH_TO_GAME_ENGINE, null);
 		
-		actionShowArrows.actionPerformed(null);
-		actionShowPieces.actionPerformed(null);		
-		actionShowBoard.actionPerformed(null);		
-		actionShowCoordinates.actionPerformed(null);		
-		actionShowMaterialImbalance.actionPerformed(null);		
-		actionAnnounceMoves.actionPerformed(null);
+		board.setShowGraphicsComments(prefs.getBoolean(PREFS_SHOW_ARROWS, true));	
+		board.setShowBoard(prefs.getBoolean(PREFS_SHOW_BOARD, true));	
+		board.setShowCoordinates(prefs.getBoolean(PREFS_SHOW_COORDINATES, false));	
+		board.setShowMaterialImbalance(prefs.getBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, false));	
+		board.setShowPieces(prefs.getBoolean(PREFS_SHOW_PIECES, true));	
+		modelMoves.setBlindfoldMode(!prefs.getBoolean(PREFS_SHOW_MOVE_NOTATION, true));
 								
 	}
 	
