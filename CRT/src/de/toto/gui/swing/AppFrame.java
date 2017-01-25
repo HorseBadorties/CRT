@@ -897,8 +897,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		board.setShowBoard(prefs.getBoolean(PREFS_SHOW_BOARD, true));	
 		board.setShowCoordinates(prefs.getBoolean(PREFS_SHOW_COORDINATES, false));	
 		board.setShowMaterialImbalance(prefs.getBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, false));	
-		board.setShowPieces(prefs.getBoolean(PREFS_SHOW_PIECES, true));	
-		modelMoves.setBlindfoldMode(!prefs.getBoolean(PREFS_SHOW_MOVE_NOTATION, true));
+		board.setShowPieces(prefs.getBoolean(PREFS_SHOW_PIECES, true));
+		prefs.putBoolean(PREFS_SHOW_MOVE_NOTATION, true);
 		prefs.putBoolean(PREFS_ANNOUNCE_MOVES, false);
 								
 	}
@@ -1190,7 +1190,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				@Override
 				public void run() {					
 					//draw engine suggestion arrow
-					if (engine.isStarted() && s.multiPV == 1 && !s.bestLine.isEmpty()) {
+					if (engine.isStarted() && s.multiPV == 1 && s.bestLine != null && !s.bestLine.isEmpty()) {
 						if (!s.bestMove.equals(enginesBestMove)) {							
 							enginesBestMove = s.bestMove;
 							updateBoard(false);
