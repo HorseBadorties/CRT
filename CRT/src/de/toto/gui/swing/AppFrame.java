@@ -85,6 +85,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
 	private String keysTyped = "";
 	private TextToSpeach tts;
+	private int delayAfterMove = 500;
 	
 	private static Logger log = Logger.getLogger("AppFrame");
 
@@ -108,7 +109,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	public static final String PREFS_SHOW_MATERIAL_IMBALANCE = "SHOW_MATERIAL_IMBALANCE";
 	public static final String PREFS_SHOW_MOVE_NOTATION = "SHOW_MOVE_NOTATION";
 	public static final String PREFS_ANNOUNCE_MOVES = "ANNOUNCE_MOVES";	
-	private static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
+	public static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
+	public static final String PREFS_DELAY_AFTER_MOVE = "DELAY_AFTER_MOVE";
 	
 	public AppFrame() throws HeadlessException {
 		Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.KEY_EVENT_MASK);
@@ -163,7 +165,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					board.setShowPieces(prefs.getBoolean(PREFS_SHOW_PIECES, true));			
 				} else if (evt.getKey().equals(PREFS_SHOW_MOVE_NOTATION)) {
 					modelMoves.setBlindfoldMode(!prefs.getBoolean(PREFS_SHOW_MOVE_NOTATION, true));			
-				} 				
+				} else if (evt.getKey().equals(PREFS_DELAY_AFTER_MOVE)) {
+					delayAfterMove = prefs.getInt(PREFS_DELAY_AFTER_MOVE, 500);
+				}
 				if (getCurrentGame() != null) updateBoard(false);
 			}
 		});
@@ -900,6 +904,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		board.setShowPieces(prefs.getBoolean(PREFS_SHOW_PIECES, true));
 		prefs.putBoolean(PREFS_SHOW_MOVE_NOTATION, true);
 		prefs.putBoolean(PREFS_ANNOUNCE_MOVES, false);
+		delayAfterMove = prefs.getInt(PREFS_DELAY_AFTER_MOVE, 500);
 								
 	}
 	
@@ -1061,7 +1066,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			
 			@Override
 			protected Void doInBackground() throws Exception {
-				Thread.sleep(cbRandomDrill.isSelected() || p.hasNext() ? 500 : 500);
+				Thread.sleep(delayAfterMove);
 				return null;
 			}
 
