@@ -30,17 +30,17 @@ public class SettingsPanel extends JPanel {
 	
 	public SettingsPanel(AppFrame appFrame) {
 		
-		cbShowBoard = createCheckBox(appFrame.actionShowBoard);
+		cbShowBoard = new JCheckBox(appFrame.actionShowBoard);
 		cbShowBoard.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_BOARD, true));	
-		cbShowPieces = createCheckBox(appFrame.actionShowPieces);
+		cbShowPieces = new JCheckBox(appFrame.actionShowPieces);
 		cbShowPieces.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_PIECES, true));	
-		cbShowCoordinates = createCheckBox(appFrame.actionShowCoordinates);
+		cbShowCoordinates = new JCheckBox(appFrame.actionShowCoordinates);
 		cbShowCoordinates.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_COORDINATES, false));
-		cbShowArrows = createCheckBox(appFrame.actionShowArrows);
+		cbShowArrows = new JCheckBox(appFrame.actionShowArrows);
 		cbShowArrows.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_ARROWS, true));	
-		cbShowMetarialImbalance = createCheckBox(appFrame.actionShowMaterialImbalance);
+		cbShowMetarialImbalance = new JCheckBox(appFrame.actionShowMaterialImbalance);
 		cbShowMetarialImbalance.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_MATERIAL_IMBALANCE, false));		
-		cbAnnounceMoves = createCheckBox(appFrame.actionAnnounceMoves);
+		cbAnnounceMoves = new JCheckBox(appFrame.actionAnnounceMoves);
 		cbAnnounceMoves.setSelected(prefs.getBoolean(AppFrame.PREFS_ANNOUNCE_MOVES, false));	
 		spinnerModel = new SpinnerNumberModel(prefs.getInt(AppFrame.PREFS_DELAY_AFTER_MOVE, 500), 0, 3000, 100);  
 		spinnerModel.addChangeListener(new ChangeListener() {			
@@ -67,10 +67,5 @@ public class SettingsPanel extends JPanel {
 		add(pnlDelayAfterMove);
 	}
 	
-	private static JCheckBox createCheckBox(Action action) {
-		JCheckBox result = new JCheckBox(action);
-//		result.setHorizontalTextPosition(SwingConstants.LEADING);
-		return result;
-	}
 	
 }
