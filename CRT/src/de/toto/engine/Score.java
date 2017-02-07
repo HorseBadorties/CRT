@@ -12,6 +12,7 @@ public class Score {
 	public int multiPV;
 	public int depth;
 	public int mate;
+	public int time;
 	public float score;	
 	public String bestLine;
 	public String bestMove;
@@ -22,6 +23,7 @@ public class Score {
 	private static final String TOKEN_PV = "pv";
 	private static final String TOKEN_DEPTH = "depth";
 	private static final String TOKEN_MULTIPV = "multipv";
+	private static final String TOKEN_TIME = "time";
 	
 	public static Score parse(String fen, String outputLine) {
 		Score result = null;
@@ -35,6 +37,7 @@ public class Score {
 				result.score = (float)readTokenValue(outputLine, TOKEN_SCORE_CP, 0) / 100;
 			}
 			result.depth = readTokenValue(outputLine, TOKEN_DEPTH, 0);
+			result.time = readTokenValue(outputLine, TOKEN_TIME, 0);
 			List<String> bestLineToken = null;
 			for (String aToken : outputLine.split(" ")) {
 				if (TOKEN_PV.equals(aToken)) {

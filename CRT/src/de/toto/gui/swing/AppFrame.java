@@ -76,10 +76,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private JSplitPane splitCenter;
 	private JSplitPane splitEast;
 	private JSplitPane splitMovesAndEngine;
-	private String pathToEngine;
 	private UCIEngine engine;
 	private EnginePanel enginePanel;
-	private String pathToGameEngine;
 	private UCIEngine gameEngine;
 	private String enginesBestMove;
 	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
@@ -89,8 +87,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	
 	private static Logger log = Logger.getLogger("AppFrame");
 
-	private static final String PREFS_PATH_TO_ENGINE = "PATH_TO_ENGINE";
-	private static final String PREFS_PATH_TO_GAME_ENGINE = "PATH_TO_GAME_ENGINE";
+	public static final String PREFS_PATH_TO_ENGINE = "PATH_TO_ENGINE";
+	public static final String PREFS_PATH_TO_GAME_ENGINE = "PATH_TO_GAME_ENGINE";
 	private static final String PREFS_FRAME_WIDTH = "FRAME_WIDTH";
 	private static final String PREFS_FRAME_HEIGHT = "FRAME_HEIGHT";
 	private static final String PREFS_FRAME_EXTENDED_STATE = "FRAME_EXTENDED_STATE";
@@ -167,6 +165,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					modelMoves.setBlindfoldMode(!prefs.getBoolean(PREFS_SHOW_MOVE_NOTATION, true));			
 				} else if (evt.getKey().equals(PREFS_DELAY_AFTER_MOVE)) {
 					delayAfterMove = prefs.getInt(PREFS_DELAY_AFTER_MOVE, 500);
+				} else {
+					return;
 				}
 				if (getCurrentGame() != null) updateBoard(false);
 			}
@@ -191,13 +191,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		prefs.put(PREFS_FONT_NAME, lstVariations.getFont().getName());
 		prefs.putBoolean(PREFS_ONLY_MAINLINE, cbOnlyMainline.isSelected());
 		prefs.putBoolean(PREFS_RANDOM_DRILL, cbRandomDrill.isSelected());
-		
-		if (engine != null) {
-			prefs.put(PREFS_PATH_TO_ENGINE, pathToEngine);
-		}
-		if (gameEngine != null) {
-			prefs.put(PREFS_PATH_TO_GAME_ENGINE, pathToGameEngine);
-		}
+				
 	}	
 	
 	private void loadPgn(final File pgn) {
@@ -399,11 +393,11 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
-	private String askForPathToEngine() {
+	public static String askForPathToEngine(Component dialogParent) {
 		JFileChooser fc = new JFileChooser();
 		fc.setDialogTitle("Please choose an UCI-compatible engine!");
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		int ok = fc.showOpenDialog(AppFrame.this);
+		int ok = fc.showOpenDialog(dialogParent);
 		if (ok == JFileChooser.APPROVE_OPTION) {
 			return fc.getSelectedFile().getAbsolutePath();
 		} else {
@@ -414,16 +408,16 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	
 	private Action actionChangeEngine = new AbstractAction("Start Engine") {
 		@Override
-		public void actionPerformed(ActionEvent e) {			
-			String pathToNewEngine = askForPathToEngine();
-			if (pathToNewEngine == null || pathToNewEngine.equals(pathToEngine)) return;
+		public void actionPerformed(ActionEvent e) {
+			String pathToNewEngine = askForPathToEngine(AppFrame.this);
+			if (pathToNewEngine == null || pathToNewEngine.equals(prefs.get(PREFS_PATH_TO_ENGINE, null))) return;
 			
-			pathToEngine = pathToNewEngine;
+			prefs.put(PREFS_PATH_TO_ENGINE, pathToNewEngine);
 			if (engine != null) {
 				engine.removeEngineListener(AppFrame.this);
 				engine.stop();
 			}			
-			engine = new UCIEngine(pathToEngine);
+			engine = new UCIEngine(pathToNewEngine);
 			engine.addEngineListener(AppFrame.this);
 			engine.start();
 			enginePanel.setEngine(engine);			
@@ -440,12 +434,14 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private Action actionEngine = new AbstractAction("Start Engine") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
+			String pathToEngine = prefs.get(PREFS_PATH_TO_ENGINE, null);
 			if (pathToEngine == null) {				
-				pathToEngine = askForPathToEngine();				
+				pathToEngine = askForPathToEngine(AppFrame.this);				
 			}
 			if (pathToEngine == null) return;
 			
 			try {
+				prefs.put(PREFS_PATH_TO_ENGINE, pathToEngine);
 				if (engine == null) {				
 					engine = new UCIEngine(pathToEngine);
 					engine.addEngineListener(AppFrame.this);					
@@ -473,7 +469,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				updateBoard(false);
 			} catch (RuntimeException ex) {
 				engine = null;
-				pathToEngine = null;
+				prefs.remove(PREFS_PATH_TO_ENGINE);
 				throw ex;
 			}
 			
@@ -532,10 +528,15 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				this.putValue(Action.NAME, "Training Game");	
 				setTitle("Chess Repertoire Trainer: " + pgn.getName());				
 			} else {
+				String pathToGameEngine = prefs.get(PREFS_PATH_TO_GAME_ENGINE, null);
 				if (pathToGameEngine == null) {				
-					pathToGameEngine = askForPathToEngine();				
+					pathToGameEngine = askForPathToEngine(AppFrame.this);				
 				}
-				if (pathToGameEngine == null) return;				
+				if (pathToGameEngine == null) { 
+					return;				
+				} else {
+					prefs.put(PREFS_PATH_TO_GAME_ENGINE, pathToGameEngine);
+				}
 				if (gameEngine == null) {				
 					gameEngine = new UCIEngine(pathToGameEngine);
 					gameEngine.addEngineListener(AppFrame.this);
@@ -893,10 +894,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		int fontSize = prefs.getInt(PREFS_FONT_SIZE, isUltraHighResolution() ? 24 : 12);
 		String fontName = prefs.get(PREFS_FONT_NAME, "Frutiger Standard");
 		setFonts(new Font(fontName, Font.PLAIN, fontSize));
-		
-		pathToEngine = prefs.get(PREFS_PATH_TO_ENGINE, null);
-		pathToGameEngine = prefs.get(PREFS_PATH_TO_GAME_ENGINE, null);
-		
+				
 		board.setShowGraphicsComments(prefs.getBoolean(PREFS_SHOW_ARROWS, true));	
 		board.setShowBoard(prefs.getBoolean(PREFS_SHOW_BOARD, true));	
 		board.setShowCoordinates(prefs.getBoolean(PREFS_SHOW_COORDINATES, false));	
@@ -1215,7 +1213,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				
 				@Override
 				public void run() {	
-					if (!"(none)".equals(engineMove) && getCurrentPosition().getFen().equals(fen)) {				
+					if ("0000".equals(engineMove)) return;
+					if ("(none)".equals(engineMove)) return;
+					if (getCurrentPosition().getFen().equals(fen)) {				
 						gameAgainstTheEngine.addMove(getCurrentPosition().translateMove(engineMove));
 					}
 				}

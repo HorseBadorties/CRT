@@ -334,7 +334,7 @@ public class Position {
 			String[] moveParts = move.split(wasCapture() ? "x" : "-");
 			from = getSquare(moveParts[0].substring(moveParts[0].length()-2, moveParts[0].length()));
 			to = getSquare(moveParts[1].substring(0, 2));
-			return from.getName() + to.getName() + (wasPromotion() ? getPromotionPiece().fenChar : "");
+			return from.getName() + to.getName() + (wasPromotion() ? String.valueOf(getPromotionPiece().fenChar).toLowerCase() : "");
 		}	
 	}
 

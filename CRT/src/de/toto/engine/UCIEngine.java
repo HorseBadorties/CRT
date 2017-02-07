@@ -20,6 +20,8 @@ public class UCIEngine {
 	private int multiPV = 1;
 	private int threadCount = 1;
 	private boolean gameStarted = false;
+	private long gameTimeInMillis = 0;
+	private long lastTimeAnnounced = 0;
 	private volatile boolean isThinking = false;
 	
 	private static final int[] MOVETIMES = {50, 100, 150, 200, 400, 800, 1600, 3200, 6400 };
@@ -70,6 +72,7 @@ public class UCIEngine {
 			boolean idReceived = false;
 			boolean uciokReceived = false;
 			while ((line = reader.readLine()) != null) {
+//				log.info(line);
 				if (line.startsWith("id name")) {
 					idReceived = true;
 					name = line.substring(7, line.length()).trim();
@@ -188,20 +191,42 @@ public class UCIEngine {
 		return result > 20 ? 20 : result;
 	}
 	
+	private int translateElo() {
+		return 600 + skillLevel*200;
+	}
+	
+	private int translateGameTime() {
+		int thirtySeconds = 1000 * 30;
+		return skillLevel * thirtySeconds;
+	}
+	
 	public int[] getAllSkillLevel() {
 		return new int[]{1,2,3,4,5,6,7,8,9};
 	}
 	
+	
+	private static final String RODENT_DIR = "C:\\Scid vs PC-4.12\\bin\\engines\\rodent_II\\";
+//	private static final String RODENT_DIR = "C:\\Program Files\\engines\\Rodent_II\\";
+	
+//	private static final String RODENT_PERSONALITY = RODENT_DIR + "personalities\\masters\\victor.txt";
+	private static final String RODENT_PERSONALITY = RODENT_DIR + "personalities\\school\\ben.txt";
+	
 	public void startGame(int skillLevel, String startFEN) {
-		this.skillLevel = skillLevel;				
+		this.skillLevel = skillLevel;		
+		gameTimeInMillis = translateGameTime(); 
 		if (!isStarted()) {
 			start();
 		}
 		sendCommand("stop");
 		sendCommand("setoption name Skill Level value " + translateSkillLevel());
-		sendCommand("setoption name PersonalityFile value C:\\Program Files\\engines\\Rodent_II\\rodent.txt");
-		sendCommand("setoption name GuideBookFile value C:\\Program Files\\engines\\Rodent_II\\books\\guide\\solid.bin");
-		sendCommand("setoption name MainBookFile value C:\\Program Files\\engines\\Rodent_II\\books\\rodent.bin");
+		
+//		sendCommand("setoption name UCI_LimitStrength value true");
+//		sendCommand("setoption name UCI_Elo value " + translateElo());
+		
+		
+		sendCommand("setoption name PersonalityFile value " + RODENT_PERSONALITY);
+//		sendCommand("setoption name GuideBookFile value " + RODENT_DIR + "books\\guide\\solid.bin");
+//		sendCommand("setoption name MainBookFile value " + RODENT_DIR + "books\\rodent.bin");
 		sendCommand("ucinewgame");
 		sendCommand("isready");
 		setMultiPV(multiPV);
@@ -228,7 +253,8 @@ public class UCIEngine {
 		String positionCommand = String.format("position %s moves %s", 
 				startFEN != null ? "fen " + startFEN : "startpos", moves);	
 		sendCommand(positionCommand);
-		sendCommand(String.format("go depth %d movetime %d", DEPTHS[skillLevel-1], MOVETIMES[skillLevel-1]));
+//		sendCommand(String.format("go depth %d movetime %d", DEPTHS[skillLevel-1], MOVETIMES[skillLevel-1]));
+		sendCommand(String.format("go wtime %d btime %d ", gameTimeInMillis, gameTimeInMillis));
 		isThinking = true;
 	}
 	
@@ -268,13 +294,15 @@ public class UCIEngine {
 				String line = null;
 				while (isAlive && (line = engine.reader.readLine()) != null) {
 					String fen = engine.getFEN();
-					//log.info(line);
+//					log.info(line);
 					Score newScore = Score.parse(fen, line);
 					if (newScore != null) {
+						engine.lastTimeAnnounced = newScore.time;
 						engine.fireNewScore(newScore);
 					} else if (line.startsWith("bestmove")) {
 						if (engine.announcesBestMove) {
 							engine.isThinking = false;
+							engine.gameTimeInMillis -= engine.lastTimeAnnounced;
 							engine.fireEngineMoved(fen, line.split(" ")[1]);
 						} 
 					}
