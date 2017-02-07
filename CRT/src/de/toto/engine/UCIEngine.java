@@ -187,7 +187,7 @@ public class UCIEngine {
 	}
 		
 	private int translateSkillLevel() {
-		int result = skillLevel * 20 / 7;
+		int result = skillLevel * 20 / 9;
 		return result > 20 ? 20 : result;
 	}
 	
@@ -195,9 +195,15 @@ public class UCIEngine {
 		return 600 + skillLevel*200;
 	}
 	
+	private static final int ONE_MINUTE = 1000 * 60;
+	
 	private int translateGameTime() {
-		int thirtySeconds = 1000 * 30;
-		return skillLevel * thirtySeconds;
+		switch (skillLevel) {
+			case 9: return ONE_MINUTE * 5;
+			case 8: return ONE_MINUTE * 4;
+			case 7: return ONE_MINUTE * 2;
+			default: return skillLevel * 1000 * 10;
+		}
 	}
 	
 	public int[] getAllSkillLevel() {
