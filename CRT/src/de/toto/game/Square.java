@@ -18,6 +18,16 @@ public class Square {
 		
 		}
 		
+		public static Square[][] createEmpty8x8() {
+			Square[][] squares = new Square[8][8];			
+			for (int rank = 1; rank <= 8; rank++) {				
+				for (int file = 1; file <= 8; file++) {
+					squares[rank - 1][file - 1] = new Square((byte)rank, (byte)file);
+				}
+			}
+			return squares;
+		}
+		
 		/**
 		 * returns 1 for "a" and so forth
 		 */		

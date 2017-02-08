@@ -440,7 +440,18 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		actionChangeEngine.actionPerformed(null);
 	}
 	
-	private Action actionEngine = new AbstractAction("Start Engine") {
+	public void unloadEngine() {
+		if (engine != null && engine.isStarted()) {
+			actionEngine.actionPerformed(null);
+		}		
+		if (engine != null) {
+			engine.removeEngineListener(AppFrame.this);
+			engine.stop();
+			engine = null;
+		}
+	}
+		
+	public Action actionEngine = new AbstractAction("Start Engine") {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
 			String pathToEngine = prefs.get(PREFS_PATH_TO_ENGINE, null);
@@ -694,6 +705,13 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
+	public Action actionSquareColorDrill = new AbstractAction("Square Color Drill") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JOptionPane.showMessageDialog(AppFrame.this, new SquareColorDrillPanel());
+		}
+	};
+	
 		
 	private void doUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -876,6 +894,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		KeyStroke keyControlB = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_DOWN_MASK);
 		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlB, "toggleBlindfoldMode");
 		pnlAll.getActionMap().put("toggleBlindfoldMode",actionToggleBlindfoldMode);
+		KeyStroke keyControlD = KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK);
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlD, "squareColorDrill");
+		pnlAll.getActionMap().put("squareColorDrill",actionSquareColorDrill);
 		
 		
 		

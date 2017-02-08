@@ -23,6 +23,7 @@ import javax.swing.event.ChangeListener;
 
 public class SettingsPanel extends JPanel implements ActionListener {
 	
+	private AppFrame appFrame;
 	private JTabbedPane tabs;
 	private JCheckBox cbShowBoard;
 	private JCheckBox cbShowPieces;	
@@ -42,6 +43,7 @@ public class SettingsPanel extends JPanel implements ActionListener {
 	
 	public SettingsPanel(AppFrame appFrame) {
 		
+		this.appFrame = appFrame;
 		cbShowBoard = new JCheckBox(appFrame.actionShowBoard);
 		cbShowBoard.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_BOARD, true));	
 		cbShowPieces = new JCheckBox(appFrame.actionShowPieces);
@@ -132,19 +134,16 @@ public class SettingsPanel extends JPanel implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == btnPickGameEngine) {
-			String newPath = AppFrame.askForPathToEngine(this, prefs.get(AppFrame.PREFS_PATH_TO_GAME_ENGINE, null));
-			if (newPath != null && !newPath.equals(txtGameEnginePath.getText())) {
-				txtGameEnginePath.setText(newPath);
-				prefs.put(AppFrame.PREFS_PATH_TO_GAME_ENGINE, newPath);
-			}
-		} else if (e.getSource() == btnPickEngine) {
-			String newPath = AppFrame.askForPathToEngine(this, prefs.get(AppFrame.PREFS_PATH_TO_ENGINE, null));
-			if (newPath != null && !newPath.equals(txtEnginePath.getText())) {
-				txtEnginePath.setText(newPath);
-				prefs.put(AppFrame.PREFS_PATH_TO_ENGINE, newPath);
-			}
+		String pref = e.getSource() == btnPickGameEngine ? AppFrame.PREFS_PATH_TO_GAME_ENGINE : AppFrame.PREFS_PATH_TO_ENGINE;
+		JLabel textField = e.getSource() == btnPickGameEngine ? txtGameEnginePath : txtEnginePath; 
+		
+		String newPath = AppFrame.askForPathToEngine(this, prefs.get(pref, null));
+		if (newPath != null && !newPath.equals(textField.getText())) {
+			textField.setText(newPath);
+			prefs.put(pref, newPath);			
 		}
+		
+		
 		
 	}
 	

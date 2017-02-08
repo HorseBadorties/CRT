@@ -425,15 +425,7 @@ public class Position {
 	}
 		
 	private void initSquares() {
-		squares = new Square[8][8];
-		boolean isWhite;
-		for (int rank = 1; rank <= 8; rank++) {
-			isWhite = rank % 2 == 0 ? true : false;
-			for (int file = 1; file <= 8; file++) {
-				squares[rank - 1][file - 1] = new Square((byte)rank, (byte)file);
-				isWhite = !isWhite;
-			}
-		}
+		squares = Square.createEmpty8x8();
 	}
 	
 	public Square getSquare(int rank, int file) {
