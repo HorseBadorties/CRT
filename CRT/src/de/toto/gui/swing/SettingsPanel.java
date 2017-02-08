@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -31,7 +32,9 @@ public class SettingsPanel extends JPanel implements ActionListener {
 	private JCheckBox cbAnnounceMoves;
 	private SpinnerModel spinnerModel;  
 	private JSpinner spinnerDelayAfterMove;
-	private JTextField txtEnginePath;
+	private JCheckBox cbAcceptMainlineOnly;
+	private JLabel txtEnginePath;
+	private JButton btnPickEngine;
 	private JLabel txtGameEnginePath;
 	private JButton btnPickGameEngine;	
 	
@@ -61,10 +64,18 @@ public class SettingsPanel extends JPanel implements ActionListener {
 			}
 		});
 		spinnerDelayAfterMove = new JSpinner(spinnerModel);
+		cbAcceptMainlineOnly = new JCheckBox(appFrame.actionAcceptMainLineOnly);
+		cbAcceptMainlineOnly.setSelected(prefs.getBoolean(AppFrame.PREFS_ONLY_MAINLINE, true));	
+		txtEnginePath = new JLabel(prefs.get(AppFrame.PREFS_PATH_TO_ENGINE, ""));
+		txtEnginePath.setBorder(BorderFactory.createLoweredBevelBorder());	
+		btnPickEngine = new JButton("..");
+		btnPickEngine.addActionListener(this);		
 		txtGameEnginePath = new JLabel(prefs.get(AppFrame.PREFS_PATH_TO_GAME_ENGINE, ""));
 		txtGameEnginePath.setBorder(BorderFactory.createLoweredBevelBorder());	
 		btnPickGameEngine = new JButton("..");
 		btnPickGameEngine.addActionListener(this);
+		
+		
 		
 		tabs = new JTabbedPane();
 		JPanel pnlBoardOptions = createTabPanel();
@@ -81,16 +92,27 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		JPanel pnlDelayAfterMove = new JPanel(new FlowLayout(FlowLayout.LEFT, 5,0));
 		pnlDelayAfterMove.add(new JLabel("Delay in milliseconds after drill move: "));
 		pnlDelayAfterMove.add(spinnerDelayAfterMove);
-		pnlDelayAfterMove.setAlignmentX(cbAnnounceMoves.getAlignmentX());
+		pnlDelayAfterMove.setAlignmentX(LEFT_ALIGNMENT);
+		pnlDelayAfterMove.setMaximumSize(pnlDelayAfterMove.getPreferredSize());
 		pnlDrillOptions.add(pnlDelayAfterMove);
+		pnlDrillOptions.add(cbAcceptMainlineOnly);
+		
 		
 		JPanel pnlEngineOptions = createTabPanel();
 		tabs.add("Engine Options", pnlEngineOptions);
+		JPanel pnlEngine = new JPanel(new FlowLayout(FlowLayout.LEFT, 5,0));
+		pnlEngine.add(new JLabel("Analysis engine: "));
+		pnlEngine.add(txtEnginePath);
+		pnlEngine.add(btnPickEngine);
+		pnlEngine.setAlignmentX(LEFT_ALIGNMENT);
+		pnlEngine.setMaximumSize(pnlEngine.getPreferredSize());
+		pnlEngineOptions.add(pnlEngine);
 		JPanel pnlGameEngine = new JPanel(new FlowLayout(FlowLayout.LEFT, 5,0));
 		pnlGameEngine.add(new JLabel("Game engine: "));
 		pnlGameEngine.add(txtGameEnginePath);
-		pnlGameEngine.setAlignmentX(cbAnnounceMoves.getAlignmentX());
 		pnlGameEngine.add(btnPickGameEngine);
+		pnlGameEngine.setAlignmentX(LEFT_ALIGNMENT);
+		pnlGameEngine.setMaximumSize(pnlGameEngine.getPreferredSize());
 		pnlEngineOptions.add(pnlGameEngine);
 		
 		
@@ -103,6 +125,8 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		JPanel result = new JPanel();
 		result.setLayout(new BoxLayout(result, BoxLayout.PAGE_AXIS));
 		result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		result.setAlignmentX(LEFT_ALIGNMENT);
+		//result.setAlignmentY(TOP_ALIGNMENT);
 		return result;
 	}
 
@@ -113,6 +137,12 @@ public class SettingsPanel extends JPanel implements ActionListener {
 			if (newPath != null && !newPath.equals(txtGameEnginePath.getText())) {
 				txtGameEnginePath.setText(newPath);
 				prefs.put(AppFrame.PREFS_PATH_TO_GAME_ENGINE, newPath);
+			}
+		} else if (e.getSource() == btnPickEngine) {
+			String newPath = AppFrame.askForPathToEngine(this, prefs.get(AppFrame.PREFS_PATH_TO_ENGINE, null));
+			if (newPath != null && !newPath.equals(txtEnginePath.getText())) {
+				txtEnginePath.setText(newPath);
+				prefs.put(AppFrame.PREFS_PATH_TO_ENGINE, newPath);
 			}
 		}
 		

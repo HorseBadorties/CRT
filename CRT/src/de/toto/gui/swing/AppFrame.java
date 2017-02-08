@@ -60,7 +60,6 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private JPanel pnlTryVariation;
 	private JLabel lblTryVariation;
 	private JPanel pnlToolBar;
-	private JCheckBox cbOnlyMainline;
 	
 	private JCheckBox cbRandomDrill;
 	private AbstractButton btnLoadPGN;
@@ -80,26 +79,29 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private EnginePanel enginePanel;
 	private UCIEngine gameEngine;
 	private String enginesBestMove;
-	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
+	
 	private String keysTyped = "";
 	private TextToSpeach tts;
 	private int delayAfterMove = 500;
 	
 	private static Logger log = Logger.getLogger("AppFrame");
 
+	private static Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);	 
+	
 	public static final String PREFS_PATH_TO_ENGINE = "PATH_TO_ENGINE";
 	public static final String PREFS_PATH_TO_GAME_ENGINE = "PATH_TO_GAME_ENGINE";
-	private static final String PREFS_FRAME_WIDTH = "FRAME_WIDTH";
-	private static final String PREFS_FRAME_HEIGHT = "FRAME_HEIGHT";
-	private static final String PREFS_FRAME_EXTENDED_STATE = "FRAME_EXTENDED_STATE";
-	private static final String PREFS_PGN_FILE = "PGN_FILE";	
-	private static final String PREFS_WHITE_PERSPECTIVE = "WHITE_PERSPECTIVE";
-	private static final String PREFS_SPLITTER_CENTER_POSITION = "SPLITTER_CENTER_POSITION";
-	private static final String PREFS_SPLITTER_EAST_POSITION = "SPLITTER_EAST_POSITION";
-	private static final String PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION = "PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION";
-	private static final String PREFS_FONT_SIZE = "FONT_SIZE";
-	private static final String PREFS_FONT_NAME = "FONT_NAME";
-	private static final String PREFS_ONLY_MAINLINE = "ONLY_MAINLINE";
+	public static final String PREFS_FRAME_WIDTH = "FRAME_WIDTH";
+	public static final String PREFS_FRAME_HEIGHT = "FRAME_HEIGHT";
+	public static final String PREFS_FRAME_EXTENDED_STATE = "FRAME_EXTENDED_STATE";
+	public static final String PREFS_FRAME_SCREEN_ID = "FRAME_SCREEN_ID";
+	public static final String PREFS_PGN_FILE = "PGN_FILE";	
+	public static final String PREFS_WHITE_PERSPECTIVE = "WHITE_PERSPECTIVE";
+	public static final String PREFS_SPLITTER_CENTER_POSITION = "SPLITTER_CENTER_POSITION";
+	public static final String PREFS_SPLITTER_EAST_POSITION = "SPLITTER_EAST_POSITION";
+	public static final String PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION = "PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION";
+	public static final String PREFS_FONT_SIZE = "FONT_SIZE";
+	public static final String PREFS_FONT_NAME = "FONT_NAME";
+	public static final String PREFS_ONLY_MAINLINE = "ONLY_MAINLINE";
 	public static final String PREFS_SHOW_ARROWS = "SHOW_ARROWS";
 	public static final String PREFS_SHOW_PIECES = "SHOW_PIECES";
 	public static final String PREFS_SHOW_BOARD = "SHOW_BOARD";
@@ -109,8 +111,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	public static final String PREFS_ANNOUNCE_MOVES = "ANNOUNCE_MOVES";	
 	public static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
 	public static final String PREFS_DELAY_AFTER_MOVE = "DELAY_AFTER_MOVE";
-	
+		
 	public AppFrame() throws HeadlessException {
+		
 		Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.KEY_EVENT_MASK);
 		String pathToIcon = "/images/icon/White Knight-96.png"; //"/images/pieces/png/Chess_klt60.png";
 		setIconImage(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource(pathToIcon)));
@@ -180,6 +183,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			prefs.putInt(PREFS_FRAME_HEIGHT, getSize().height);
 		} 
 		prefs.putBoolean(PREFS_FRAME_EXTENDED_STATE, maximized);
+		prefs.put(PREFS_FRAME_SCREEN_ID, getGraphicsConfiguration().getDevice().getIDstring());
 		if (pgn != null) {
 			prefs.put(PREFS_PGN_FILE, pgn.getAbsolutePath());
 		}
@@ -189,7 +193,6 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		prefs.putInt(PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION, splitMovesAndEngine.getDividerLocation());
 		prefs.putInt(PREFS_FONT_SIZE, lstVariations.getFont().getSize());
 		prefs.put(PREFS_FONT_NAME, lstVariations.getFont().getName());
-		prefs.putBoolean(PREFS_ONLY_MAINLINE, cbOnlyMainline.isSelected());
 		prefs.putBoolean(PREFS_RANDOM_DRILL, cbRandomDrill.isSelected());
 				
 	}	
@@ -314,13 +317,12 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (drill == null) {				
-				drill = new Drill(repertoire.getPosition(), board.isOrientationWhite(), cbOnlyMainline.isSelected(), cbRandomDrill.isSelected());
+				drill = new Drill(repertoire.getPosition(), board.isOrientationWhite(), prefs.getBoolean(PREFS_ONLY_MAINLINE, true), cbRandomDrill.isSelected());
 				drill.addGameListener(AppFrame.this);
 				drill.addDrillListener(AppFrame.this);
 				modelVariations.clear();
 				actionLoadPGN.setEnabled(false);
 				actionGameAgainstTheEngine.setEnabled(false);
-				cbOnlyMainline.setEnabled(false);
 				cbRandomDrill.setEnabled(false);
 				pnlDrillStatus = new DrillStatusPanel(drill);
 				pnlDrillStatus.setFont(lstVariations.getFont());
@@ -684,6 +686,14 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			toggleBooleanPreference(PREFS_SHOW_MOVE_NOTATION);
 		}
 	};
+	
+	public Action actionAcceptMainLineOnly = new AbstractAction("Accept main line only?") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			toggleBooleanPreference(PREFS_ONLY_MAINLINE);
+		}
+	};
+	
 		
 	private void doUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -704,11 +714,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlAll.add(splitCenter, BorderLayout.CENTER);		
 		pnlAll.add(pnlSouth, BorderLayout.PAGE_END);
 		getContentPane().add(pnlAll, BorderLayout.CENTER);
-			
-		cbOnlyMainline = new JCheckBox("Accept main line only?");
-		cbOnlyMainline.setSelected(prefs.getBoolean(PREFS_ONLY_MAINLINE, true));
-		cbOnlyMainline.setFocusable(false);
-		cbOnlyMainline.setEnabled(false);		
+					
 		cbRandomDrill = new JCheckBox("Random position drill?");
 		cbRandomDrill.setFocusable(false);
 		cbRandomDrill.setSelected(prefs.getBoolean(PREFS_RANDOM_DRILL, false));
@@ -824,7 +830,6 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		JPanel pnlCheckboxes = new JPanel();
 		pnlCheckboxes.setLayout(new BoxLayout(pnlCheckboxes, BoxLayout.PAGE_AXIS));
 		pnlCheckboxes.add(cbRandomDrill);
-		pnlCheckboxes.add(cbOnlyMainline);
 		
 		pnlToolBar.add(Box.createHorizontalStrut(10));
 		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true, false));
@@ -873,14 +878,19 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlAll.getActionMap().put("toggleBlindfoldMode",actionToggleBlindfoldMode);
 		
 		
+		
+		
+		
+		
 		Dimension prefSize = new Dimension(prefs.getInt(PREFS_FRAME_WIDTH, defaultFrameSize.width), 
 				prefs.getInt(PREFS_FRAME_HEIGHT, defaultFrameSize.height));		
 		this.setPreferredSize(prefSize);
 		pack();
+		
 		if (prefs.getBoolean(PREFS_FRAME_EXTENDED_STATE, false)) {
 			setExtendedState(JFrame.MAXIMIZED_BOTH);
 		} else {
-			setLocationRelativeTo(null);
+			centerFrame();
 		}
 		
 		final String lastPGN = prefs.get(PREFS_PGN_FILE, null);
@@ -910,8 +920,30 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		prefs.putBoolean(PREFS_SHOW_MOVE_NOTATION, true);
 		prefs.putBoolean(PREFS_ANNOUNCE_MOVES, false);
 		delayAfterMove = prefs.getInt(PREFS_DELAY_AFTER_MOVE, 500);
+		prefs.getBoolean(PREFS_ONLY_MAINLINE, true);
 								
 	}
+	
+	
+	private void centerFrame() {
+		GraphicsDevice screen = null;
+		String screenID = prefs.get(PREFS_FRAME_SCREEN_ID, null);
+		if (screenID != null) {
+	        for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {        
+		        if (screenID.equals(device.getIDstring())) {
+		        	screen = device;
+		        }
+	        }
+		}
+	    if (screen == null) {
+	    	screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+	    }	    			
+        GraphicsConfiguration gc = screen.getDefaultConfiguration();
+        Rectangle gcBounds = gc.getBounds();        
+        Point p = new Point((int) (gcBounds.getX() + (gcBounds.getWidth() / 2 - this.getWidth() / 2)), (int) (gcBounds.getY() + (gcBounds.getHeight() / 2 - this.getHeight() / 2)));
+        this.setLocation(p);
+        
+    }
 	
 	public static AbstractButton createButton(Action action, String icon, boolean showText, boolean toggleButton) {
 		AbstractButton btn = toggleButton ? new JToggleButton(action) : new JButton(action);
