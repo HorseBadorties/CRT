@@ -393,10 +393,17 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
-	public static String askForPathToEngine(Component dialogParent) {
+	public static String askForPathToEngine(Component dialogParent, String startDir) {
 		JFileChooser fc = new JFileChooser();
 		fc.setDialogTitle("Please choose an UCI-compatible engine!");
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		if (startDir != null) {
+			File f = new File(startDir);
+			if (!f.isDirectory()) {
+				f = f.getParentFile();
+			}
+			fc.setCurrentDirectory(f);
+		}
 		int ok = fc.showOpenDialog(dialogParent);
 		if (ok == JFileChooser.APPROVE_OPTION) {
 			return fc.getSelectedFile().getAbsolutePath();
@@ -409,7 +416,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private Action actionChangeEngine = new AbstractAction("Start Engine") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			String pathToNewEngine = askForPathToEngine(AppFrame.this);
+			String pathToNewEngine = askForPathToEngine(AppFrame.this, prefs.get(PREFS_PATH_TO_ENGINE, null));
 			if (pathToNewEngine == null || pathToNewEngine.equals(prefs.get(PREFS_PATH_TO_ENGINE, null))) return;
 			
 			prefs.put(PREFS_PATH_TO_ENGINE, pathToNewEngine);
@@ -436,7 +443,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		public void actionPerformed(ActionEvent e) {			
 			String pathToEngine = prefs.get(PREFS_PATH_TO_ENGINE, null);
 			if (pathToEngine == null) {				
-				pathToEngine = askForPathToEngine(AppFrame.this);				
+				pathToEngine = askForPathToEngine(AppFrame.this, null);				
 			}
 			if (pathToEngine == null) return;
 			
@@ -530,7 +537,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			} else {
 				String pathToGameEngine = prefs.get(PREFS_PATH_TO_GAME_ENGINE, null);
 				if (pathToGameEngine == null) {				
-					pathToGameEngine = askForPathToEngine(AppFrame.this);				
+					pathToGameEngine = askForPathToEngine(AppFrame.this, prefs.get(PREFS_PATH_TO_ENGINE, null));				
 				}
 				if (pathToGameEngine == null) { 
 					return;				

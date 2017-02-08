@@ -1,5 +1,6 @@
 package de.toto.gui.swing;
 
+import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,6 +13,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
@@ -20,6 +22,7 @@ import javax.swing.event.ChangeListener;
 
 public class SettingsPanel extends JPanel implements ActionListener {
 	
+	private JTabbedPane tabs;
 	private JCheckBox cbShowBoard;
 	private JCheckBox cbShowPieces;	
 	private JCheckBox cbShowCoordinates;
@@ -63,31 +66,50 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		btnPickGameEngine = new JButton("..");
 		btnPickGameEngine.addActionListener(this);
 		
-		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-		add(cbShowBoard);
-		add(cbShowPieces);
-		add(cbShowCoordinates);
-		add(cbShowArrows);
-		add(cbShowMaterialImbalance);
-		add(cbAnnounceMoves);
+		tabs = new JTabbedPane();
+		JPanel pnlBoardOptions = createTabPanel();
+		tabs.add("Board Options", pnlBoardOptions);
+		pnlBoardOptions.add(cbShowBoard);
+		pnlBoardOptions.add(cbShowPieces);
+		pnlBoardOptions.add(cbShowCoordinates);
+		pnlBoardOptions.add(cbShowArrows);
+		pnlBoardOptions.add(cbShowMaterialImbalance);
+		pnlBoardOptions.add(cbAnnounceMoves);
+		
+		JPanel pnlDrillOptions = createTabPanel();
+		tabs.add("Drill Options", pnlDrillOptions);
 		JPanel pnlDelayAfterMove = new JPanel(new FlowLayout(FlowLayout.LEFT, 5,0));
 		pnlDelayAfterMove.add(new JLabel("Delay in milliseconds after drill move: "));
 		pnlDelayAfterMove.add(spinnerDelayAfterMove);
 		pnlDelayAfterMove.setAlignmentX(cbAnnounceMoves.getAlignmentX());
-		add(pnlDelayAfterMove);
+		pnlDrillOptions.add(pnlDelayAfterMove);
+		
+		JPanel pnlEngineOptions = createTabPanel();
+		tabs.add("Engine Options", pnlEngineOptions);
 		JPanel pnlGameEngine = new JPanel(new FlowLayout(FlowLayout.LEFT, 5,0));
 		pnlGameEngine.add(new JLabel("Game engine: "));
 		pnlGameEngine.add(txtGameEnginePath);
 		pnlGameEngine.setAlignmentX(cbAnnounceMoves.getAlignmentX());
 		pnlGameEngine.add(btnPickGameEngine);
-		add(pnlGameEngine);
+		pnlEngineOptions.add(pnlGameEngine);
 		
+		
+		setLayout(new BorderLayout());
+		add(tabs);		
+		
+	}
+	
+	private static JPanel createTabPanel() {
+		JPanel result = new JPanel();
+		result.setLayout(new BoxLayout(result, BoxLayout.PAGE_AXIS));
+		result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		return result;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == btnPickGameEngine) {
-			String newPath = AppFrame.askForPathToEngine(this);
+			String newPath = AppFrame.askForPathToEngine(this, prefs.get(AppFrame.PREFS_PATH_TO_GAME_ENGINE, null));
 			if (newPath != null && !newPath.equals(txtGameEnginePath.getText())) {
 				txtGameEnginePath.setText(newPath);
 				prefs.put(AppFrame.PREFS_PATH_TO_GAME_ENGINE, newPath);

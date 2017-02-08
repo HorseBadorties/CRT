@@ -224,15 +224,18 @@ public class UCIEngine {
 			start();
 		}
 		sendCommand("stop");
-		sendCommand("setoption name Skill Level value " + translateSkillLevel());
 		
 //		sendCommand("setoption name UCI_LimitStrength value true");
 //		sendCommand("setoption name UCI_Elo value " + translateElo());
 		
-		
-		sendCommand("setoption name PersonalityFile value " + RODENT_PERSONALITY);
-//		sendCommand("setoption name GuideBookFile value " + RODENT_DIR + "books\\guide\\solid.bin");
-//		sendCommand("setoption name MainBookFile value " + RODENT_DIR + "books\\rodent.bin");
+		if (isStockfish()) {
+			sendCommand("setoption name Skill Level value " + translateSkillLevel()); 
+		}
+		if (isRodentII()) {
+			sendCommand("setoption name PersonalityFile value " + RODENT_PERSONALITY);
+//			sendCommand("setoption name GuideBookFile value " + RODENT_DIR + "books\\guide\\solid.bin");
+//			sendCommand("setoption name MainBookFile value " + RODENT_DIR + "books\\rodent.bin");
+		}
 		sendCommand("ucinewgame");
 		sendCommand("isready");
 		setMultiPV(multiPV);
@@ -259,13 +262,24 @@ public class UCIEngine {
 		String positionCommand = String.format("position %s moves %s", 
 				startFEN != null ? "fen " + startFEN : "startpos", moves);	
 		sendCommand(positionCommand);
-//		sendCommand(String.format("go depth %d movetime %d", DEPTHS[skillLevel-1], MOVETIMES[skillLevel-1]));
-		sendCommand(String.format("go wtime %d btime %d ", gameTimeInMillis, gameTimeInMillis));
+		if (isStockfish()) {
+			sendCommand(String.format("go depth %d movetime %d", DEPTHS[skillLevel-1], MOVETIMES[skillLevel-1]));
+		} else {
+			sendCommand(String.format("go wtime %d btime %d ", gameTimeInMillis, gameTimeInMillis));
+		}
 		isThinking = true;
 	}
 	
 	public boolean isThinking() {
 		return isThinking;
+	}
+	
+	public boolean isStockfish() {
+		return getName().indexOf("Stockfish") >= 0;
+	}
+	
+	public boolean isRodentII() {
+		return getName().indexOf("Rodent II") >= 0;
 	}
 				
 	private static class OutputReader implements Runnable {
