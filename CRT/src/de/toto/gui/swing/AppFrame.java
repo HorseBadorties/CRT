@@ -147,12 +147,16 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			@Override
 			public void preferenceChange(PreferenceChangeEvent evt) {				 
 				if (evt.getKey().equals(PREFS_ANNOUNCE_MOVES)) {
-					if (prefs.getBoolean(PREFS_ANNOUNCE_MOVES, false) && tts == null) {
-						try {
-							tts = new MaryTTS();
-						} catch (Exception ex) {
-							ex.printStackTrace();
+					if (prefs.getBoolean(PREFS_ANNOUNCE_MOVES, false)) {
+						if (tts == null) {
+							try {
+								tts = new MaryTTS();
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							}
 						}
+					} else {
+						tts = null;
 					}
 				} else if (evt.getKey().equals(PREFS_SHOW_ARROWS)) {
 					board.setShowGraphicsComments(prefs.getBoolean(PREFS_SHOW_ARROWS, true));
@@ -708,7 +712,10 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	public Action actionSquareColorDrill = new AbstractAction("Square Color Drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			JOptionPane.showMessageDialog(AppFrame.this, new SquareColorDrillPanel());
+			JOptionPane.showMessageDialog(AppFrame.this, 
+					new SquareColorDrillPanel(AppFrame.this),
+					"Name the correct color of a square!",
+					JOptionPane.PLAIN_MESSAGE);
 		}
 	};
 	
@@ -1178,6 +1185,15 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
+		}
+	}
+	
+	public void announce(String text) {
+		if (tts == null) return;
+		try {
+			tts.say(text);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
