@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import de.toto.game.Game;
 import de.toto.game.Position;
@@ -40,14 +41,18 @@ public class DiagonalDrillPanel extends AbstractDrillPanel {
 			secondSquare = allSquares.get(random.nextInt(64));
 		}
 		setText(firstSquare.getName() + " " + secondSquare.getName(), Color.BLACK);		
-		btnFirst.setEnabled(true);
-		btnSecond.setEnabled(true);	
-		appFrame.announce(firstSquare.getName() + ". " + secondSquare.getName() + ".");
+		actionYes.setEnabled(true);
+		actionNo.setEnabled(true);
+		appFrame.announce(announceString(firstSquare) + ". " + announceString(secondSquare) + ".");
 	}
-		
+	
+	private static String announceString(Square s) {
+		return " ." + s.getFileName().toUpperCase() + " " + s.rank;
+	}
+ 		
 	public void check(boolean yes) {
-		btnFirst.setEnabled(false);
-		btnSecond.setEnabled(false);		
+		actionYes.setEnabled(false);
+		actionNo.setEnabled(false);		
 		boolean correct = firstSquare.onDiagonalWith(secondSquare) == yes ;
 		if (!correct) {
 			Sounds.wrong();
@@ -56,19 +61,21 @@ public class DiagonalDrillPanel extends AbstractDrillPanel {
 				(correct ? "CORRECT" : "INCORRECT"),								
 				(correct ? ++correctCounter : correctCounter),
 				++counter), correct ? Color.BLACK : Color.RED);
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				try {
+		SwingUtilities.invokeLater(
+			new SwingWorker() {
+	
+				@Override
+				protected Object doInBackground() throws Exception {
 					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+					return null;
 				}
-				newRandomSquare();				
-			}
-			
-		});
+	
+				@Override
+				protected void done() {
+					newRandomSquare();
+				}
+			});
+		
 	}
 		
 
