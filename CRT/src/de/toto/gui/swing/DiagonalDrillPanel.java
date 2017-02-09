@@ -1,5 +1,6 @@
 package de.toto.gui.swing;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -38,7 +39,7 @@ public class DiagonalDrillPanel extends AbstractDrillPanel {
 		while (firstSquare.equals(secondSquare) || firstSquare.rank == secondSquare.rank || firstSquare.file == secondSquare.file) {
 			secondSquare = allSquares.get(random.nextInt(64));
 		}
-		textfield.setText(firstSquare.getName() + " " + secondSquare.getName());		
+		setText(firstSquare.getName() + " " + secondSquare.getName(), Color.BLACK);		
 		btnFirst.setEnabled(true);
 		btnSecond.setEnabled(true);	
 		appFrame.announce(firstSquare.getName() + ". " + secondSquare.getName() + ".");
@@ -51,10 +52,10 @@ public class DiagonalDrillPanel extends AbstractDrillPanel {
 		if (!correct) {
 			Sounds.wrong();
 		}
-		textfield.setText(String.format("%s (%d/%d)",				
+		setText(String.format("%s (%d/%d)",				
 				(correct ? "CORRECT" : "INCORRECT"),								
 				(correct ? ++correctCounter : correctCounter),
-				++counter));
+				++counter), correct ? Color.BLACK : Color.RED);
 		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override

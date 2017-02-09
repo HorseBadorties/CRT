@@ -1,5 +1,6 @@
 package de.toto.gui.swing;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -47,6 +48,11 @@ public abstract class AbstractDrillPanel extends JPanel {
 		this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyB, "second");		
 		this.getActionMap().put("second", getSecondAction());
 			
+	}
+	
+	public void setText(String text, Color color) {
+		textfield.setForeground(color);
+		textfield.setText(text);
 	}
 	
 	public abstract int getFirstKeyCode();

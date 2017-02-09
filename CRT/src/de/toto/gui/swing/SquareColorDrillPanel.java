@@ -1,24 +1,13 @@
 package de.toto.gui.swing;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import de.toto.game.Game;
-import de.toto.game.Position;
 import de.toto.game.Square;
 
 public class SquareColorDrillPanel extends AbstractDrillPanel {
@@ -33,8 +22,12 @@ public class SquareColorDrillPanel extends AbstractDrillPanel {
 	}	
 	
 	private void newRandomSquare() {
-		currentSquare = allSquares.get(random.nextInt(64));
-		textfield.setText(currentSquare.getName());		
+		Square newSquare = allSquares.get(random.nextInt(64));
+		while (newSquare.equals(currentSquare)) {
+			newSquare = allSquares.get(random.nextInt(64));
+		}
+		currentSquare = newSquare;
+		setText(currentSquare.getName(), Color.BLACK);		
 		btnFirst.setEnabled(true);
 		btnSecond.setEnabled(true);	
 		appFrame.announce(currentSquare.getName());
@@ -47,12 +40,12 @@ public class SquareColorDrillPanel extends AbstractDrillPanel {
 		if (!correct) {
 			Sounds.wrong();
 		}
-		textfield.setText(String.format("%s is %s %s (%d/%d)",
+		setText(String.format("%s is %s %s (%d/%d)",
 				currentSquare.getName(),
 				(correct ? "" : "NOT"),
 				(white ? "white" : "black"),				
 				(correct ? ++correctCounter : correctCounter),
-				++counter));
+				++counter), correct ? Color.BLACK : Color.RED);
 		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
