@@ -129,6 +129,13 @@ public class Square {
 		
 		
 		/**
+		 * Does this Square share a diagonal with another Square?
+		 */
+		public boolean onDiagonalWith(Square other) {
+			return bishopAttacks(other, Position.EMPTY_BOARD, null);
+		}
+		
+		/**
 		 * Can the piece on this Square move to the other square?
 		 */
 		public boolean canMoveTo(Square other, Position p, Square ignore) {

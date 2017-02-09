@@ -21,36 +21,38 @@ import de.toto.game.Game;
 import de.toto.game.Position;
 import de.toto.game.Square;
 
-public class SquareColorDrillPanel extends AbstractDrillPanel {
+public class DiagonalDrillPanel extends AbstractDrillPanel {
 	
-	private Square currentSquare;
-	private Action actionWhite;	
-	private Action actionBlack;
+	private Square firstSquare, secondSquare;
+	private Action actionYes;	
+	private Action actionNo;
 	
-	public SquareColorDrillPanel(AppFrame appFrame) {
+	public DiagonalDrillPanel(AppFrame appFrame) {
 		super(appFrame);				
 		newRandomSquare();		
 	}	
 	
 	private void newRandomSquare() {
-		currentSquare = allSquares.get(random.nextInt(64));
-		textfield.setText(currentSquare.getName());		
+		firstSquare = allSquares.get(random.nextInt(64));
+		secondSquare = allSquares.get(random.nextInt(64));
+		while (firstSquare.equals(secondSquare) || firstSquare.rank == secondSquare.rank || firstSquare.file == secondSquare.file) {
+			secondSquare = allSquares.get(random.nextInt(64));
+		}
+		textfield.setText(firstSquare.getName() + " " + secondSquare.getName());		
 		btnFirst.setEnabled(true);
 		btnSecond.setEnabled(true);	
-		appFrame.announce(currentSquare.getName());
+		appFrame.announce(firstSquare.getName() + ". " + secondSquare.getName() + ".");
 	}
 		
-	public void check(boolean white) {
+	public void check(boolean yes) {
 		btnFirst.setEnabled(false);
 		btnSecond.setEnabled(false);		
-		boolean correct = (white && currentSquare.isWhite()) || (!white && !currentSquare.isWhite()) ;
+		boolean correct = firstSquare.onDiagonalWith(secondSquare) == yes ;
 		if (!correct) {
 			Sounds.wrong();
 		}
-		textfield.setText(String.format("%s is %s %s (%d/%d)",
-				currentSquare.getName(),
-				(correct ? "" : "NOT"),
-				(white ? "white" : "black"),				
+		textfield.setText(String.format("%s (%d/%d)",				
+				(correct ? "CORRECT" : "INCORRECT"),								
 				(correct ? ++correctCounter : correctCounter),
 				++counter));
 		SwingUtilities.invokeLater(new Runnable() {
@@ -67,46 +69,45 @@ public class SquareColorDrillPanel extends AbstractDrillPanel {
 			
 		});
 	}
-	
-	
+		
 
 	@Override
 	public int getFirstKeyCode() {		
-		return KeyEvent.VK_W;
+		return KeyEvent.VK_Y;
 	}
 
 
 	@Override
 	public int getSecondKeyCode() {
-		return KeyEvent.VK_B;
+		return KeyEvent.VK_N;
 	}
 
 
 	@Override
 	public Action getFirstAction() {
-		if (actionWhite == null) {
-			actionWhite = new AbstractAction("White") {
+		if (actionYes == null) {
+			actionYes = new AbstractAction("Yes") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					check(true);
 				}
 			};
 		}
-		return actionWhite;
+		return actionYes;
 	}
 
 
 	@Override
 	public Action getSecondAction() {
-		if (actionBlack == null) {
-			actionBlack = new AbstractAction("Black") {
+		if (actionNo == null) {
+			actionNo = new AbstractAction("No") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					check(false);
 				}
 			};
 		}
-		return actionBlack;
+		return actionNo;
 	}
 	
 	

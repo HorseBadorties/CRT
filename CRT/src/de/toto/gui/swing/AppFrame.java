@@ -719,6 +719,16 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
+	public Action actionDiagonalDrill = new AbstractAction("Two Squares on a Diagonal Drill") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JOptionPane.showMessageDialog(AppFrame.this, 
+					new DiagonalDrillPanel(AppFrame.this),
+					"Are two squares on one diagonal?",
+					JOptionPane.PLAIN_MESSAGE);
+		}
+	};
+	
 		
 	private void doUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -902,12 +912,11 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlB, "toggleBlindfoldMode");
 		pnlAll.getActionMap().put("toggleBlindfoldMode",actionToggleBlindfoldMode);
 		KeyStroke keyControlD = KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK);
-		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlD, "squareColorDrill");
-		pnlAll.getActionMap().put("squareColorDrill",actionSquareColorDrill);
-		
-		
-		
-		
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlD, "CTRL_D");
+		pnlAll.getActionMap().put("CTRL_D", actionDiagonalDrill);
+		KeyStroke keyControlA = KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK);
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlA, "CTRL_A");
+		pnlAll.getActionMap().put("CTRL_A", actionSquareColorDrill);
 		
 		
 		Dimension prefSize = new Dimension(prefs.getInt(PREFS_FRAME_WIDTH, defaultFrameSize.width), 

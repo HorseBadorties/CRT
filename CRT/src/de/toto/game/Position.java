@@ -31,6 +31,8 @@ public class Position {
 	
 	private static final String FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 		
+	public static final Position EMPTY_BOARD = new Position(null, "", "8/8/8/8/8/8/8/8 w KQkq - 0 1");
+	
 	// Startposition
 	public Position() {		
 		setFen(FEN_STARTPOSITION, true);
