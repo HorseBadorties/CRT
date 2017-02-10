@@ -962,8 +962,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		String fontName = prefs.get(PREFS_FONT_NAME, "Frutiger Standard");
 		setFonts(new Font(fontName, Font.PLAIN, fontSize));
 				
+		prefs.putBoolean(PREFS_SHOW_BOARD, true);
 		board.setShowGraphicsComments(prefs.getBoolean(PREFS_SHOW_ARROWS, true));	
-		board.setShowBoard(prefs.getBoolean(PREFS_SHOW_BOARD, true));	
 		board.setShowCoordinates(prefs.getBoolean(PREFS_SHOW_COORDINATES, false));	
 		board.setShowMaterialImbalance(prefs.getBoolean(PREFS_SHOW_MATERIAL_IMBALANCE, false));	
 		board.setShowPieces(prefs.getBoolean(PREFS_SHOW_PIECES, true));
