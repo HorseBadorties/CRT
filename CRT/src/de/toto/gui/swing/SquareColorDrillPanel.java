@@ -3,6 +3,9 @@ package de.toto.gui.swing;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -14,19 +17,22 @@ import de.toto.game.Square;
 public class SquareColorDrillPanel extends AbstractDrillPanel {
 	
 	private Square currentSquare;
+	private List<Square> squares;
 	private Action actionWhite;	
 	private Action actionBlack;
 	
 	public SquareColorDrillPanel(AppFrame appFrame) {
-		super(appFrame);				
+		super(appFrame);
+		squares = new ArrayList<Square>();
 		newRandomSquare();		
 	}	
 	
 	private void newRandomSquare() {		
-		Square newSquare = allSquares.get(random.nextInt(64));
-		while (newSquare.equals(currentSquare)) {
-			newSquare = allSquares.get(random.nextInt(64));
+		if (squares.isEmpty()) {
+			squares.addAll(allSquares);
+			Collections.shuffle(squares);
 		}
+		Square newSquare = squares.remove(0);
 		currentSquare = newSquare;
 		setText(currentSquare.getName(), Color.BLACK);		
 		btnFirst.setEnabled(true);
