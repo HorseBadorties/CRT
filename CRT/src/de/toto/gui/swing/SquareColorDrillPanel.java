@@ -7,6 +7,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import de.toto.game.Square;
 
@@ -21,7 +22,7 @@ public class SquareColorDrillPanel extends AbstractDrillPanel {
 		newRandomSquare();		
 	}	
 	
-	private void newRandomSquare() {
+	private void newRandomSquare() {		
 		Square newSquare = allSquares.get(random.nextInt(64));
 		while (newSquare.equals(currentSquare)) {
 			newSquare = allSquares.get(random.nextInt(64));
@@ -30,6 +31,7 @@ public class SquareColorDrillPanel extends AbstractDrillPanel {
 		setText(currentSquare.getName(), Color.BLACK);		
 		btnFirst.setEnabled(true);
 		btnSecond.setEnabled(true);	
+		showText(currentSquare.getName());
 		appFrame.announce(currentSquare.getName());
 	}
 		
@@ -46,19 +48,24 @@ public class SquareColorDrillPanel extends AbstractDrillPanel {
 				(white ? "white" : "black"),				
 				(correct ? ++correctCounter : correctCounter),
 				++counter), correct ? Color.BLACK : Color.RED);
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				newRandomSquare();				
-			}
-			
-		});
+		
+		highlightSquares(correct ? Color.GREEN : Color.RED, currentSquare);		
+		
+		SwingUtilities.invokeLater(
+				new SwingWorker<Void, Void>() {
+		
+					@Override
+					protected Void doInBackground() throws Exception {
+						Thread.sleep(1000);
+						return null;
+					}
+		
+					@Override
+					protected void done() {
+						newRandomSquare();
+					}
+				});
+				
 	}
 	
 	

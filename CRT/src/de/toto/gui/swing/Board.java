@@ -7,6 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.*;
 import java.net.URL;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public class Board extends JPanel {
 	private boolean showCoordinates = true;
 	private boolean showMaterialImbalance = true;
 	private java.util.List<GraphicsComment> additionalGraphicsComment = new ArrayList<GraphicsComment>();
+	private String text;
 
 	public Position getCurrentPosition() {
 		return currentPosition;
@@ -56,7 +58,7 @@ public class Board extends JPanel {
 
 	public void setShowBoard(boolean value) {
 		showBoard = value;
-	}
+	}	
 
 	public void setShowCoordinates(boolean value) {
 		showCoordinates = value;
@@ -65,6 +67,10 @@ public class Board extends JPanel {
 	public void setShowMaterialImbalance(boolean value) {
 		showMaterialImbalance = value;
 		boardCanvas.rescale();
+	}
+	
+	public void setShowText(String text) {
+		this.text = text;
 	}
 
 	public void clearAdditionalGraphicsComment() {
@@ -558,15 +564,26 @@ public class Board extends JPanel {
 
 		@Override
 		public void paint(Graphics g) {
-			if (!board.showBoard)
+			Graphics2D g2 = (Graphics2D) g;
+			
+			if (board.text != null) {				
+				g2.setFont(new Font("Arial", Font.PLAIN, getHeight() / 3));				
+				Rectangle2D stringBounds = g2.getFontMetrics().getStringBounds(board.text, g2);				
+				g2.drawString(board.text, 
+						getWidth() / 2 - (float)stringBounds.getWidth() / 2, 
+						getHeight() / 2 + (float)stringBounds.getHeight() / 4);
+			}			
+			if (!board.showBoard) {				
 				return;
+			}
+				
 
 			if (scaleSize != getSquareSize()) {
 				rescaleAll();
 			}
 			int squareSize = getSquareSize();
 
-			Graphics2D g2 = (Graphics2D) g;
+			
 			
 //			g2.setColor(Color.YELLOW);
 //			g2.fillRect(0, 0, getSize().width, getSize().height);
@@ -580,7 +597,7 @@ public class Board extends JPanel {
 			// draw square background if no boardImage is loaded
 			if (boardImageScaled == null) {
 				Font font = new Font("Dialog", Font.PLAIN, squareSize / 7);
-				float fontHeight = g2.getFontMetrics().getAscent();
+				float fontHeight = g2.getFontMetrics().getAscent();				
 				g2.setFont(font);
 				int span = squareSize / 25;
 				for (int rank = 1; rank <= 8; rank++) {
@@ -670,6 +687,13 @@ public class Board extends JPanel {
 					if (gc.secondSquare != null) {
 						drawArrow(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file),
 								getSquare(gc.secondSquare.rank, gc.secondSquare.file), gc.color, squareSize);
+					} else {
+						Color c = highlightColorGreen;
+						if (gc.color == Color.RED)
+							c = highlightColorRed;
+						else if (gc.color == Color.YELLOW)
+							c = highlightColorYellow;
+						colorSquare(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file), c, squareSize);						
 					}
 				}
 			}

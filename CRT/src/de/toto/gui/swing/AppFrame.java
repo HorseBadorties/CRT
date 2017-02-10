@@ -729,6 +729,16 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
+	public Action actionKnightMoveDrill = new AbstractAction("Knight move Drill") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JOptionPane.showMessageDialog(AppFrame.this, 
+					new KnightMoveDrillPanel(AppFrame.this),
+					"Are two squares a possible knight move?",
+					JOptionPane.PLAIN_MESSAGE);
+		}
+	};
+	
 		
 	private void doUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -917,6 +927,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		KeyStroke keyControlA = KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK);
 		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlA, "CTRL_A");
 		pnlAll.getActionMap().put("CTRL_A", actionSquareColorDrill);
+		KeyStroke keyControlN = KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK);
+		pnlAll.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyControlN, "CTRL_N");
+		pnlAll.getActionMap().put("CTRL_N", actionKnightMoveDrill);
 		
 		
 		Dimension prefSize = new Dimension(prefs.getInt(PREFS_FRAME_WIDTH, defaultFrameSize.width), 

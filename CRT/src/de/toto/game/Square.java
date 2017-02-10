@@ -136,6 +136,13 @@ public class Square {
 		}
 		
 		/**
+		 * Can a Knight move from this Square to another Square?
+		 */
+		public boolean isKnightMove(Square other) {
+			return knightAttacks(other, Position.EMPTY_BOARD);
+		}
+		
+		/**
 		 * Can the piece on this Square move to the other square?
 		 */
 		public boolean canMoveTo(Square other, Position p, Square ignore) {
