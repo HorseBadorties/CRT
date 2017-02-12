@@ -36,6 +36,7 @@ public class MaryTTS implements TextToSpeach {
         marytts = new LocalMaryInterface();
         try {
         	setVoice("dfki-prudence-hsmm");
+//        	setVoice("cmu-slt-hsmm");
         } catch (Exception ex) {
         	ex.printStackTrace();
         }
@@ -154,14 +155,19 @@ public class MaryTTS implements TextToSpeach {
     	try {
 			TextToSpeach tts = new MaryTTS();
 			System.out.println(tts.getAvailableVoices());
-			tts.setVoice(tts.getAvailableVoices().iterator().next());
-//			tts.announceChessMove("0-0-0");
-//			tts.announceChessMove("0-0-0#");
-//			tts.announceChessMove("0-0+");
-			tts.announceChessMove("Nf3");
-			tts.announceChessMove("Nxf3+");
-			tts.announceChessMove("gxh8=R+");
-			tts.announceChessMove("g8=Q#");
+			tts.setVoice("dfki-prudence-hsmm");
+//			tts.announceChessMove("0-0-0"); Thread.sleep(1000);
+//			tts.announceChessMove("0-0-0#"); Thread.sleep(1000);
+//			tts.announceChessMove("0-0+"); Thread.sleep(1000);
+//			tts.announceChessMove("Nf3"); Thread.sleep(1000);
+//			tts.announceChessMove("Nxf3+"); Thread.sleep(1000);
+//			tts.announceChessMove("gxh8=R+"); Thread.sleep(1000);
+//			tts.announceChessMove("g8=Q#");
+			tts.say("<t ph=\"'ba-t@n\">Button</t>"); Thread.sleep(3000);
+			tts.say("A! 1"); Thread.sleep(3000);
+			tts.say("A? 1?"); Thread.sleep(3000);
+			tts.say("A-1"); Thread.sleep(3000);
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }

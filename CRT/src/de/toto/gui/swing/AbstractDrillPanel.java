@@ -74,6 +74,18 @@ public abstract class AbstractDrillPanel extends JPanel {
 			
 	}
 	
+	public static String translateForAnnouncement(Square s) {
+		StringBuilder result = new StringBuilder();
+		switch (s.getFileName().charAt(0)) {
+		case 'a': result.append(".A"); break;
+		case 'b': result.append("Bee"); break;
+		case 'd': result.append("Dee"); break;
+		default: result.append(s.getFileName());
+		}
+		result.append(" ").append(s.rank);
+		return result.toString();
+	}
+	
 	public void setText(String text, Color color) {
 		textfield.setForeground(color);
 		textfield.setText(text);
@@ -113,5 +125,6 @@ public abstract class AbstractDrillPanel extends JPanel {
 	public abstract Action getFirstAction();
 	public abstract Action getSecondAction();
 		
+	
 	
 }

@@ -38,8 +38,9 @@ public class SquareColorDrillPanel extends AbstractDrillPanel {
 		btnFirst.setEnabled(true);
 		btnSecond.setEnabled(true);	
 		showText(currentSquare.getName());
-		appFrame.announce(currentSquare.getName());
+		appFrame.announce(translateForAnnouncement(currentSquare));
 	}
+
 		
 	public void check(boolean white) {
 		btnFirst.setEnabled(false);
@@ -114,6 +115,5 @@ public class SquareColorDrillPanel extends AbstractDrillPanel {
 		}
 		return actionBlack;
 	}
-	
 	
 }
