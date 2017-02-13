@@ -1053,6 +1053,16 @@ public class Position {
     	}
     	return result;
     }
+    
+    /**
+     * Can any of my pieces move to a certain Square?
+     */
+    public boolean canMoveTo(Square targetSquare) {
+    	for (Square s : getSquaresWithPiecesByColor(isWhiteToMove())) {
+    		if (s.canMoveTo(targetSquare, this, null)) return true;
+    	}
+    	return false;
+    }
 	
 	public static class GraphicsComment {
 		public Square firstSquare;

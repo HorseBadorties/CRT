@@ -1119,8 +1119,14 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	}
 	
 	@Override
-	public void userClickedSquare(String squareName) {
+	public void userClickedSquare(String squareName) {		
 		Game g = getCurrentGame();
+		Position p = g.getPosition();
+		Square s = p.getSquare(squareName);		
+		if (s.piece == null || s.piece.isWhite != p.isWhiteToMove()) {
+			if (!getCurrentPosition().canMoveTo(s)) return; //most probably a miss-click
+		}
+		
 		if (g instanceof Drill) {			
 			if (drill.isInDrillHistory()) {
 				if (drill.isCorrectSquare(squareName)) {

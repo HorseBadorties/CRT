@@ -132,7 +132,7 @@ public class Drill extends Game {
 	}
 	
 	public boolean isCorrectSquare(String squareName) {
-		boolean result = false;
+		boolean result = false;		
 		Position correctPosition = currentPosition.hasNext() ? currentPosition.getNext() : null;
 		//TODO !acceptOnlyMainline
 		if (correctPosition != null) {			
