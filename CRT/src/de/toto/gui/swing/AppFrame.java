@@ -120,6 +120,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		board = new Board();
 		board.addBoardListener(this);		
 		doUI();
+		doMenu();
 		SwingUtilities.updateComponentTreeUI(this);
 		addWindowListener(new WindowAdapter() {
 				
@@ -178,6 +179,28 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				if (getCurrentGame() != null) updateBoard(false);
 			}
 		});
+	}
+	
+	private void doMenu() {
+		JMenuBar menuBar = new JMenuBar();
+		JMenu menuFile = new JMenu("File");
+		menuFile.add(actionLoadPGN);
+		menuFile.add(actionShowNovelties);		
+		
+		JMenu menuEdit = new JMenu("Edit");
+		menuEdit.add(actionCopyFEN);
+		menuEdit.add(actionPasteFEN);
+		menuEdit.add(actionPastePGN);
+		
+		JMenu menuActions = new JMenu("Actions");
+		menuActions.add(actionSquareColorDrill	);
+		menuActions.add(actionDiagonalDrill);
+		menuActions.add(actionKnightMoveDrill);
+		
+		menuBar.add(menuFile);
+		menuBar.add(menuEdit);
+		menuBar.add(menuActions);
+		this.setJMenuBar(menuBar);
 	}
 	
 	private void savePrefs() {
@@ -729,7 +752,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
-	public Action actionKnightMoveDrill = new AbstractAction("Knight move Drill") {
+	public Action actionKnightMoveDrill = new AbstractAction("Knight Move Drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			JOptionPane.showMessageDialog(AppFrame.this, 
