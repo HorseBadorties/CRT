@@ -22,9 +22,10 @@ public class KnightMoveDrillPanel extends AbstractDrillPanel {
 		newRandomSquares();		
 	}	
 	
-	private void newRandomSquares() {		
+	@Override
+	public void doNewRandomSquares() {			
 		getRandomSquares();
-		setText(firstSquare.getName() + " " + secondSquare.getName(), Color.BLACK);	
+//		setText(firstSquare.getName() + " " + secondSquare.getName(), Color.BLACK);	
 		showText(firstSquare.getName() + " " + secondSquare.getName());
 		actionYes.setEnabled(true);
 		actionNo.setEnabled(true);
@@ -64,22 +65,18 @@ public class KnightMoveDrillPanel extends AbstractDrillPanel {
 				(correct ? ++correctCounter : correctCounter),
 				++counter), correct ? Color.BLACK : Color.RED);
 		
-		highlightDiagonal(yes ? Color.GREEN : Color.RED, firstSquare, secondSquare, yes);		
+		delay = 100;
+		if (correct) {
+			if (prefs.getBoolean(PREFS_SHOW_SUCCESS, true)) {
+				highlightDiagonal(Color.GREEN, firstSquare, secondSquare, yes);
+				delay = 1000;
+			}
+		} else if (prefs.getBoolean(PREFS_SHOW_ERROR, true)) {
+			highlightDiagonal(Color.RED, firstSquare, secondSquare, yes);	
+			delay = 1000;
+		} 
 		
-		SwingUtilities.invokeLater(
-			new SwingWorker<Void, Void>() {
-	
-				@Override
-				protected Void doInBackground() throws Exception {
-					Thread.sleep(1000);
-					return null;
-				}
-	
-				@Override
-				protected void done() {
-					newRandomSquares();
-				}
-			});
+		newRandomSquares();
 		
 	}
 		
@@ -122,6 +119,6 @@ public class KnightMoveDrillPanel extends AbstractDrillPanel {
 		}
 		return actionNo;
 	}
-	
+
 	
 }

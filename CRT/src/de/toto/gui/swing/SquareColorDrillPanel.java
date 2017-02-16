@@ -21,20 +21,22 @@ public class SquareColorDrillPanel extends AbstractDrillPanel {
 	private Action actionWhite;	
 	private Action actionBlack;
 	
+	
 	public SquareColorDrillPanel(AppFrame appFrame) {
 		super(appFrame);
 		squares = new ArrayList<Square>();
-		newRandomSquare();		
+		doNewRandomSquares();		
 	}	
 	
-	private void newRandomSquare() {		
+	@Override
+	public void doNewRandomSquares() {		
 		if (squares.isEmpty()) {
 			squares.addAll(allSquares);
 			Collections.shuffle(squares);
 		}
 		Square newSquare = squares.remove(0);
 		currentSquare = newSquare;
-		setText(currentSquare.getName(), Color.BLACK);		
+//		setText(currentSquare.getName(), Color.BLACK);		
 		btnFirst.setEnabled(true);
 		btnSecond.setEnabled(true);	
 		showText(currentSquare.getName());
@@ -56,26 +58,20 @@ public class SquareColorDrillPanel extends AbstractDrillPanel {
 				(correct ? ++correctCounter : correctCounter),
 				++counter), correct ? Color.BLACK : Color.RED);
 		
-		highlightSquares(correct ? Color.GREEN : Color.RED, currentSquare);		
-		
-		SwingUtilities.invokeLater(
-				new SwingWorker<Void, Void>() {
-		
-					@Override
-					protected Void doInBackground() throws Exception {
-						Thread.sleep(1000);
-						return null;
-					}
-		
-					@Override
-					protected void done() {
-						newRandomSquare();
-					}
-				});
+		delay = 100;
+		if (correct) {
+			if (prefs.getBoolean(PREFS_SHOW_SUCCESS, true)) {
+				highlightSquares(Color.GREEN, currentSquare);
+				delay = 1000;
+			}
+		} else if (prefs.getBoolean(PREFS_SHOW_ERROR, true)) {
+			highlightSquares(Color.RED, currentSquare);	
+			delay = 1000;
+		} 
 				
-	}
-	
-	
+		newRandomSquares();
+				
+	}	
 
 	@Override
 	public int getFirstKeyCode() {		
@@ -115,5 +111,6 @@ public class SquareColorDrillPanel extends AbstractDrillPanel {
 		}
 		return actionBlack;
 	}
+
 	
 }

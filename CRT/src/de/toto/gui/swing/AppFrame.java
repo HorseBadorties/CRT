@@ -112,6 +112,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	public static final String PREFS_ANNOUNCE_MOVES = "ANNOUNCE_MOVES";	
 	public static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
 	public static final String PREFS_DELAY_AFTER_MOVE = "DELAY_AFTER_MOVE";
+	public static final String PREFS_DRILL_DIALOG_WIDTH = "DRILL_DIALOG_WIDTH";
+	public static final String PREFS_DRILL_DIALOG_HEIGHT = "DRILL_DIALOG_HEIGHT";
 		
 	public AppFrame() throws HeadlessException {
 		
@@ -409,7 +411,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
-	private void toggleBooleanPreference(String preferenceKey) {
+	public static void toggleBooleanPreference(String preferenceKey) {
 		prefs.putBoolean(preferenceKey, !prefs.getBoolean(preferenceKey, true));
 	}
 	
@@ -745,32 +747,37 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	public Action actionSquareColorDrill = new AbstractAction("Square Color Drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			JOptionPane.showMessageDialog(AppFrame.this, 
-					new SquareColorDrillPanel(AppFrame.this),
-					"Name the correct color of a square!",
-					JOptionPane.PLAIN_MESSAGE);
+			showDrillPanel(new SquareColorDrillPanel(AppFrame.this),
+					"Name the correct color of a square!");
 		}
 	};
 	
 	public Action actionDiagonalDrill = new AbstractAction("Two Squares on a Diagonal Drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			JOptionPane.showMessageDialog(AppFrame.this, 
-					new DiagonalDrillPanel(AppFrame.this),
-					"Are two squares on one diagonal?",
-					JOptionPane.PLAIN_MESSAGE);
+			showDrillPanel(new DiagonalDrillPanel(AppFrame.this),
+					"Are two squares on one diagonal?");
 		}
 	};
 	
 	public Action actionKnightMoveDrill = new AbstractAction("Knight Move Drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			JOptionPane.showMessageDialog(AppFrame.this, 
-					new KnightMoveDrillPanel(AppFrame.this),
-					"Are two squares a possible knight move?",
-					JOptionPane.PLAIN_MESSAGE);
+			showDrillPanel(new KnightMoveDrillPanel(AppFrame.this),
+					"Are two squares a possible knight move?");
 		}
 	};
+	
+	private void showDrillPanel(JPanel drillPanel, String title) {
+		JDialog d = new JDialog(AppFrame.this, title, true);
+		d.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		d.add(drillPanel, BorderLayout.CENTER);
+		Dimension size = new Dimension(prefs.getInt(PREFS_DRILL_DIALOG_WIDTH, 400), 
+				prefs.getInt(PREFS_DRILL_DIALOG_HEIGHT, 400));		
+		d.setSize(size);
+		d.setLocationRelativeTo(this);
+		d.setVisible(true);
+	}
 	
 		
 	private void doUI() {

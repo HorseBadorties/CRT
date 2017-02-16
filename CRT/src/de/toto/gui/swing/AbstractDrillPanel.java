@@ -4,19 +4,23 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.prefs.Preferences;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import de.toto.game.Position;
 import de.toto.game.Position.GraphicsComment;
@@ -32,6 +36,11 @@ public abstract class AbstractDrillPanel extends JPanel {
 	protected int counter, correctCounter;	
 	protected Board board;
 	protected JPanel pnlBoard;
+	protected int delay = 1000;
+	
+	protected Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
+	public static final String PREFS_SHOW_SUCCESS = "SHOW_VISUALIZATION_DRILL_SUCCESS";
+	public static final String PREFS_SHOW_ERROR = "SHOW_VISUALIZATION_DRILL_ERROR";
 	
 	public AbstractDrillPanel(AppFrame appFrame) {
 		this.appFrame = appFrame;
@@ -61,9 +70,19 @@ public abstract class AbstractDrillPanel extends JPanel {
 		pnlBoard.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		pnlBoard.setPreferredSize(new Dimension(300, 300));
 		
+		JPanel pnlOptions = new JPanel();
+		JCheckBox cbShowBoardAlways = new JCheckBox(actionShowSuccess);
+		cbShowBoardAlways.setSelected(prefs.getBoolean(PREFS_SHOW_SUCCESS, true));
+		JCheckBox cbShowBoardOnError = new JCheckBox(actionShowError);
+		cbShowBoardOnError.setSelected(prefs.getBoolean(PREFS_SHOW_ERROR, true));
+		pnlOptions.add(cbShowBoardOnError);
+		pnlOptions.add(cbShowBoardAlways);
+		
+		
 		setLayout(new BorderLayout(5,5));		
 		add(pnlControls, BorderLayout.PAGE_START);
 		add(pnlBoard, BorderLayout.CENTER);
+		add(pnlOptions, BorderLayout.PAGE_END);
 		
 		KeyStroke keyW = KeyStroke.getKeyStroke(getFirstKeyCode(), 0);
 		this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyW, "first");		
@@ -73,6 +92,20 @@ public abstract class AbstractDrillPanel extends JPanel {
 		this.getActionMap().put("second", getSecondAction());
 			
 	}
+	
+	protected Action actionShowSuccess = new AbstractAction("Show Success") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			AppFrame.toggleBooleanPreference(PREFS_SHOW_SUCCESS);			
+		}
+	};
+	
+	protected Action actionShowError = new AbstractAction("Show Error") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			AppFrame.toggleBooleanPreference(PREFS_SHOW_ERROR);			
+		}
+	};
 	
 	public static String translateForAnnouncement(Square s) {
 		StringBuilder result = new StringBuilder();
@@ -120,11 +153,27 @@ public abstract class AbstractDrillPanel extends JPanel {
 		board.repaint();	
 	}
 	
+	protected void newRandomSquares() {
+		SwingUtilities.invokeLater(
+				new SwingWorker<Void, Void>() {
+		
+					@Override
+					protected Void doInBackground() throws Exception {
+						Thread.sleep(delay);
+						return null;
+					}
+		
+					@Override
+					protected void done() {
+						doNewRandomSquares();
+					}
+				});
+	}
+	
 	public abstract int getFirstKeyCode();
 	public abstract int getSecondKeyCode();
 	public abstract Action getFirstAction();
 	public abstract Action getSecondAction();
-		
-	
+	public abstract void doNewRandomSquares();
 	
 }
