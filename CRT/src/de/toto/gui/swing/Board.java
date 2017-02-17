@@ -11,6 +11,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.*;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.prefs.Preferences;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
@@ -37,7 +38,12 @@ public class Board extends JPanel {
 	private boolean showMaterialImbalance = true;
 	private java.util.List<GraphicsComment> additionalGraphicsComment = new ArrayList<GraphicsComment>();
 	private String text;
-
+	
+	public static final String[] BOARD_NAMES = new String[] {"Maple", "Wood", "Metal", "Blue", "Green", "Gray", "Brown"};
+	public static final String[] PIECES_NAMES = new String[] {"cburnett", "merida"};
+	
+	private static Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
+	
 	public Position getCurrentPosition() {
 		return currentPosition;
 	}
@@ -72,6 +78,11 @@ public class Board extends JPanel {
 	public void setShowText(String text) {
 		this.text = text;
 	}
+	
+	public void reloadBoard() {		
+		boardCanvas.loadImages();
+		boardCanvas.rescale();
+	}
 
 	public void clearAdditionalGraphicsComment() {
 		additionalGraphicsComment.clear();
@@ -93,6 +104,7 @@ public class Board extends JPanel {
 		super();
 		add(boardCanvas);
 		resizeBoardCanvas();
+		reloadBoard();
 		addComponentListener(new ComponentAdapter() {
 
 			@Override
@@ -186,11 +198,11 @@ public class Board extends JPanel {
 		private static final Color darkGreen = new Color(81, 160, 104);
 		private static final Color lightGray = new Color(223, 223, 223);
 		private static final Color darkGray = new Color(128, 128, 128);
-		private static final Color lighBrown = new Color(208, 192, 160);
+		private static final Color lightBrown = new Color(208, 192, 160);
 		private static final Color darkBrown = new Color(160, 128, 80);
 
-		private static final Color squareColorWhite = lighBrown;
-		private static final Color squareColorBlack = darkBrown;
+		private Color squareColorWhite = lightBrown;
+		private Color squareColorBlack = darkBrown;
 		
 		private boolean isDragging = false;
 		private Point cursorLocation;
@@ -207,6 +219,12 @@ public class Board extends JPanel {
 					squares[rank - 1][file - 1].gameSquare = board.currentPosition.getSquare(rank, file);
 				}
 			}
+		}
+				
+		private void setSquareColors(Color light, Color dark) {
+			boardImageScaled = null;
+			squareColorWhite = light;
+			squareColorBlack = dark;
 		}
 
 		private MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -354,10 +372,40 @@ public class Board extends JPanel {
 
 		private void loadImages() {
 			try {
-				// maple.jpg wood-1024.jpg metal-1024.jpg
-//				boardImage = ImageIO.read(Board.class.getResource("/images/board/maple.jpg"));
-				SVGUniverse svgUniverse = new SVGUniverse();
-				String folder = "merida"; // "cburnett", "merida", "pirouetti";
+				boardImage = null;			
+				String boardName = prefs.get(AppFrame.PREFS_BOARD_NAME, "Brown");
+				switch (boardName) {				
+					case "Maple": {
+						boardImage = ImageIO.read(Board.class.getResource("/images/board/maple.jpg"));
+						break;
+					} 
+					case "Wood": {
+						boardImage = ImageIO.read(Board.class.getResource("/images/board/wood-1024.jpg"));
+						break;
+					} 
+					case "Metal": {
+						boardImage = ImageIO.read(Board.class.getResource("/images/board/metal-1024.jpg"));
+						break;
+					} 
+					case "Blue": {
+						setSquareColors(lightBlue, darkBlue);
+						break;
+					}
+					case "Green": {
+						setSquareColors(lightGreen, darkGreen);
+						break;
+					}
+					case "Gray": {
+						setSquareColors(lightGray, darkGray);
+						break;
+					}
+					case "Brown": {
+						setSquareColors(lightBrown, darkBrown);
+						break;
+					}
+				}				
+				SVGUniverse svgUniverse = new SVGUniverse();				
+				String folder = prefs.get(AppFrame.PREFS_PIECES_NAME, "merida"); 
 				wK = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wK.svg"));
 				wQ = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wQ.svg"));
 				wR = loadIcon(svgUniverse, Board.class.getResource("/images/pieces/" + folder + "/wR.svg"));
@@ -445,7 +493,7 @@ public class Board extends JPanel {
 			return result;
 		}
 
-		private void rescaleAll() {			
+		private void rescaleAll() {
 			int borderSize = getBorderSize();
 			int squareSize = getSquareSize();			
 			int boardSize = getSize().height - borderSize*2;
@@ -463,7 +511,7 @@ public class Board extends JPanel {
 					square.topLeftOnBoard = new Point(x, y);
 				}
 			}
-			if (boardImage != null) {
+			if (boardImage != null && squareSize > 0) {
 				boardImageScaled = scaleImage(boardImage, squareSize * 8);
 			}
 			wK.setPreferredSize(new Dimension(squareSize, squareSize));

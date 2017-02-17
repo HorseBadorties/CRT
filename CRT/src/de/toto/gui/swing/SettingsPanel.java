@@ -11,6 +11,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
@@ -25,6 +26,8 @@ public class SettingsPanel extends JPanel implements ActionListener {
 	
 	private AppFrame appFrame;
 	private JTabbedPane tabs;
+	private JComboBox cmbBoard;
+	private JComboBox cmbPieces;
 	private JCheckBox cbShowBoard;
 	private JCheckBox cbShowPieces;	
 	private JCheckBox cbShowCoordinates;
@@ -44,6 +47,12 @@ public class SettingsPanel extends JPanel implements ActionListener {
 	public SettingsPanel(AppFrame appFrame) {
 		
 		this.appFrame = appFrame;
+		cmbBoard = new JComboBox<String>(Board.BOARD_NAMES);
+		cmbBoard.setSelectedItem(prefs.get(AppFrame.PREFS_BOARD_NAME, "Brown"));
+		cmbBoard.addActionListener(this);
+		cmbPieces = new JComboBox<String>(Board.PIECES_NAMES);
+		cmbPieces.setSelectedItem(prefs.get(AppFrame.PREFS_PIECES_NAME, "merida"));
+		cmbPieces.addActionListener(this);
 		cbShowBoard = new JCheckBox(appFrame.actionShowBoard);
 		cbShowBoard.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_BOARD, true));	
 		cbShowPieces = new JCheckBox(appFrame.actionShowPieces);
@@ -82,6 +91,16 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		tabs = new JTabbedPane();
 		JPanel pnlBoardOptions = createTabPanel();
 		tabs.add("Board Options", pnlBoardOptions);
+		JPanel pnlBoard = new JPanel(new FlowLayout(FlowLayout.LEFT, 5,0));
+		pnlBoard.add(new JLabel("Board: "));
+		pnlBoard.add(cmbBoard);
+		pnlBoard.setAlignmentX(LEFT_ALIGNMENT);
+		pnlBoardOptions.add(pnlBoard);
+		JPanel pnlPieces = new JPanel(new FlowLayout(FlowLayout.LEFT, 5,0));
+		pnlPieces.add(new JLabel("Pieces: "));
+		pnlPieces.add(cmbPieces);
+		pnlPieces.setAlignmentX(LEFT_ALIGNMENT);
+		pnlBoardOptions.add(pnlPieces);
 		pnlBoardOptions.add(cbShowBoard);
 		pnlBoardOptions.add(cbShowPieces);
 		pnlBoardOptions.add(cbShowCoordinates);
@@ -134,17 +153,20 @@ public class SettingsPanel extends JPanel implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		String pref = e.getSource() == btnPickGameEngine ? AppFrame.PREFS_PATH_TO_GAME_ENGINE : AppFrame.PREFS_PATH_TO_ENGINE;
-		JLabel textField = e.getSource() == btnPickGameEngine ? txtGameEnginePath : txtEnginePath; 
-		
-		String newPath = AppFrame.askForPathToEngine(this, prefs.get(pref, null));
-		if (newPath != null && !newPath.equals(textField.getText())) {
-			textField.setText(newPath);
-			prefs.put(pref, newPath);			
-		}
-		
-		
-		
+		if (e.getSource() == cmbBoard) {
+			prefs.put(AppFrame.PREFS_BOARD_NAME, cmbBoard.getSelectedItem().toString());
+		} else if (e.getSource() == cmbPieces) {
+			prefs.put(AppFrame.PREFS_PIECES_NAME, cmbPieces.getSelectedItem().toString());
+		} else {
+			String pref = e.getSource() == btnPickGameEngine ? AppFrame.PREFS_PATH_TO_GAME_ENGINE : AppFrame.PREFS_PATH_TO_ENGINE;
+			JLabel textField = e.getSource() == btnPickGameEngine ? txtGameEnginePath : txtEnginePath; 
+			
+			String newPath = AppFrame.askForPathToEngine(this, prefs.get(pref, null));
+			if (newPath != null && !newPath.equals(textField.getText())) {
+				textField.setText(newPath);
+				prefs.put(pref, newPath);			
+			}
+		}		
 	}
 	
 	

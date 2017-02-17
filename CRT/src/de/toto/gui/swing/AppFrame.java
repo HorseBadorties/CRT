@@ -103,6 +103,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	public static final String PREFS_FONT_SIZE = "FONT_SIZE";
 	public static final String PREFS_FONT_NAME = "FONT_NAME";
 	public static final String PREFS_ONLY_MAINLINE = "ONLY_MAINLINE";
+	public static final String PREFS_BOARD_NAME = "BOARD_NAME";
+	public static final String PREFS_PIECES_NAME = "PIECES_NAME";
 	public static final String PREFS_SHOW_ARROWS = "SHOW_ARROWS";
 	public static final String PREFS_SHOW_PIECES = "SHOW_PIECES";
 	public static final String PREFS_SHOW_BOARD = "SHOW_BOARD";
@@ -120,7 +122,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.KEY_EVENT_MASK);
 		String pathToIcon = "/images/icon/White Knight-96.png"; //"/images/pieces/png/Chess_klt60.png";
 		setIconImage(Toolkit.getDefaultToolkit().getImage(AppFrame.class.getResource(pathToIcon)));
-		board = new Board();
+		board = new Board();		
 		board.addBoardListener(this);		
 		doUI();
 		doMenu();
@@ -162,7 +164,11 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					} else {
 						tts = null;
 					}
-				} else if (evt.getKey().equals(PREFS_SHOW_ARROWS)) {
+				} else if (evt.getKey().equals(PREFS_BOARD_NAME)) {
+					board.reloadBoard();
+				} else if (evt.getKey().equals(PREFS_PIECES_NAME)) {
+					board.reloadBoard();
+				} else if (evt.getKey().equals(PREFS_SHOW_ARROWS)) {					
 					board.setShowGraphicsComments(prefs.getBoolean(PREFS_SHOW_ARROWS, true));
 				} else if (evt.getKey().equals(PREFS_SHOW_BOARD)) {
 					board.setShowBoard(prefs.getBoolean(PREFS_SHOW_BOARD, true));
