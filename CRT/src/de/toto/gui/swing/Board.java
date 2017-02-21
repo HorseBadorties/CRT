@@ -23,8 +23,8 @@ import com.kitfox.svg.app.beans.SVGIcon;
 
 import de.toto.game.Position;
 import de.toto.game.Position.GraphicsComment;
-import de.toto.game.Rules.Piece;
-import de.toto.game.Rules.PieceType;
+import de.toto.game.Piece;
+import de.toto.game.Piece.PieceType;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel {
@@ -294,7 +294,7 @@ public class Board extends JPanel {
 								}
 							}
 							// Castles?
-							if (dragSquare.gameSquare.piece.type == de.toto.game.Rules.PieceType.KING
+							if (dragSquare.gameSquare.piece.type == PieceType.KING
 									&& dragSquare.file == 5) {
 								if (dropSquare.file == 3) {
 									move = "0-0-0";

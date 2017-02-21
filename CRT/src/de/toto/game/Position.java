@@ -11,8 +11,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import de.toto.game.Rules.Piece;
-import de.toto.game.Rules.PieceType;
+import de.toto.game.Piece;
+import de.toto.game.Piece.PieceType;
 
 public class Position {
 	
@@ -835,7 +835,7 @@ public class Position {
 	}
 	
 	private List<Square> getAllPiecesByColor(boolean white) {
-		return getAllPiecesByColor(white, (Rules.PieceType[])null);
+		return getAllPiecesByColor(white, (PieceType[])null);
 	}
 	
 	private List<Square> getAllPiecesByColor(boolean white, PieceType... types) {

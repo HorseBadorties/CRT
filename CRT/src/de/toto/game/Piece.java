@@ -1,12 +1,7 @@
 package de.toto.game;
-
-public class Rules {
 	
-	public enum PieceType {			
-		KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN
-	}
-	
-	public enum Piece {			
+public enum Piece {			
+		
 		WHITE_KING(PieceType.KING, true, 'K', 'K'), 
 		WHITE_QUEEN(PieceType.QUEEN, true, 'Q', 'Q'), 
 		WHITE_ROOK(PieceType.ROOK, true, 'R', 'R'), 
@@ -20,6 +15,10 @@ public class Rules {
 		BLACK_KNIGHT(PieceType.KNIGHT, false, 'n', 'N'), 
 		BLACK_PAWN(PieceType.PAWN, false, 'p', ' ');
 		
+		public enum PieceType {			
+			KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN
+		}
+	
 		public PieceType type;
 		public final boolean isWhite; 
 		public final char fenChar;
@@ -42,26 +41,26 @@ public class Rules {
 		
 		public String getFigurine() {
 			switch (type) {
-				case KING: return "♔";
-				case QUEEN: return "♕";
-				case ROOK: return "♖";
-				case BISHOP: return "♗";
-				case KNIGHT: return "♘";
-				case PAWN: return "♙";
+				case KING: return "â™”";
+				case QUEEN: return "â™•";
+				case ROOK: return "â™–";
+				case BISHOP: return "â™—";
+				case KNIGHT: return "â™˜";
+				case PAWN: return "â™™";
 			}
 			return null;
 		}
 		
 		public String getColoredFigurine() {
 			switch (type) {
-				case KING: return isWhite ? "♔" : "♚";
-				case QUEEN: return isWhite ? "♕" : "♛";
-				case ROOK: return isWhite ? "♖" : "♜";
-				case BISHOP: return isWhite ? "♗" : "♝";
-				case KNIGHT: return isWhite ? "♘" : "♞";
-				case PAWN: return isWhite ? "♙" : "♟";
+				case KING: return isWhite ? "â™”" : "â™š";
+				case QUEEN: return isWhite ? "â™•" : "â™›";
+				case ROOK: return isWhite ? "â™–" : "â™œ";
+				case BISHOP: return isWhite ? "â™—" : "â™�";
+				case KNIGHT: return isWhite ? "â™˜" : "â™ž";
+				case PAWN: return isWhite ? "â™™" : "â™Ÿ";
 			}
 			return null;
 		}
 	}
-}
+

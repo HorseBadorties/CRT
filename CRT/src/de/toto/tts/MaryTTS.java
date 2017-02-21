@@ -10,8 +10,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
 import de.toto.game.Position;
-import de.toto.game.Rules.PieceType;
-import de.toto.game.Square;
 import marytts.LocalMaryInterface;
 import marytts.MaryInterface;
 import marytts.exceptions.*;

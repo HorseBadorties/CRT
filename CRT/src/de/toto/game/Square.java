@@ -3,8 +3,8 @@ package de.toto.game;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.toto.game.Rules.Piece;
-import de.toto.game.Rules.PieceType;
+import de.toto.game.Piece;
+import de.toto.game.Piece.PieceType;
 
 public class Square {
 	
