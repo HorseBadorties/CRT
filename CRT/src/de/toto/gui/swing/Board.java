@@ -192,7 +192,7 @@ public class Board extends JPanel {
 		private static final Color arrowColorYellow20Percent = new Color(1f, 1f, 0f, .2f);
 		private static final Color arrowColorBlack20Percent = new Color(0f, 0f, 0f, .2f);
 
-		private static final Color lightBlue = new Color(243, 243, 243);
+		private static final Color lightBlue = new Color(243, 243, 255);
 		private static final Color darkBlue = new Color(115, 137, 182);
 		private static final Color lightGreen = new Color(208, 217, 168);
 		private static final Color darkGreen = new Color(81, 160, 104);
