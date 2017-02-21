@@ -142,8 +142,7 @@ public class Game {
 	
 	public Set<Position> getAllPositions() {
 		Set<Position> result = new HashSet<Position>();
-		Position p = gotoStartPosition();
-		result.add(p);
+		Position p = gotoStartPosition();		
 		p = findNextPosition(p);
 		while (p != null) {
 			result.add(p);

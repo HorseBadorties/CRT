@@ -5,6 +5,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -206,6 +207,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		menuActions.add(actionSquareColorDrill	);
 		menuActions.add(actionDiagonalDrill);
 		menuActions.add(actionKnightMoveDrill);
+		menuActions.add(actionShowTranspositions);
 		
 		menuBar.add(menuFile);
 		menuBar.add(menuEdit);
@@ -654,6 +656,31 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					repertoire.findNovelty(g);
 				}
 			}		
+		}
+	};
+	
+	private Action actionShowTranspositions = new AbstractAction("Show Transpositions") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			java.util.List<Position> allPositions = 
+					new java.util.ArrayList<Position>(getCurrentGame().getAllPositions());
+			Collections.sort(allPositions, new java.util.Comparator<Position>() {
+
+				@Override
+				public int compare(Position p1, Position p2) {
+					return p1.getFen().compareTo(p2.getFen());
+				}
+				
+			});
+			Position p = allPositions.get(0);
+			for (int i = 1; i < allPositions.size(); i++) {
+				if (p.getFen().equals(allPositions.get(i).getFen())) {
+					System.out.println(p.getFen());
+				}
+				p = allPositions.get(i);
+			}		
+					
 		}
 	};
 	
