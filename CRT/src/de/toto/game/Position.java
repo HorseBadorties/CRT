@@ -425,6 +425,10 @@ public class Position {
 			log.warning(String.format("ignoring duplicate variation %s for position %s", nextPosition, this));
 		}
 	}
+	
+	public void removeNextPosition(Position nextPosition) {
+		next.remove(nextPosition);
+	}
 		
 	private void initSquares() {
 		squares = Square.createEmpty8x8();
