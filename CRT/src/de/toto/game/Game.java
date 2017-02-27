@@ -236,6 +236,31 @@ public class Game {
 		}
 	}
 	
+	public void merge() {
+		List<Position>  allPositions = new ArrayList<Position>(getAllPositions()); 		
+		for (int i = 0; i < allPositions.size(); i++) {
+			int indexOfSame = findSame(allPositions.get(i), allPositions, i+1);
+			if (indexOfSame >= 0) {
+				System.out.println(String.format("found %s at %d and %d", allPositions.get(i).getFen(), i, indexOfSame));
+				Position current = allPositions.get(i);
+				Position same = allPositions.get(indexOfSame);
+				for (Position childrenOfSame : same.getVariations()) {
+					childrenOfSame.setPrevious(current);
+					//current.addVariation(childrenOfSame);
+				}
+				same.getPrevious().removeNextPosition(same);
+				allPositions.remove(indexOfSame);				
+			}
+		}		
+	}
+	
+	private int findSame(Position p, List<Position> positions, int index) {
+		for (int i = index; i < positions.size(); i++) {
+			if (p.isSamePositionAs(positions.get(i))) return i;
+		}
+		return -1;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("%s - %s: %s", getTagValue("White"), getTagValue("Black"), getTagValue("Event")); 

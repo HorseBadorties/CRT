@@ -202,6 +202,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		menuEdit.add(actionPasteFEN);
 		menuEdit.add(actionPastePGN);
 		menuEdit.add(actionTestDB);		
+		menuEdit.add(actionMergeGame);
 		
 		JMenu menuActions = new JMenu("Actions");
 		menuActions.add(actionSquareColorDrill	);
@@ -300,7 +301,14 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			JOptionPane.showMessageDialog(AppFrame.this, String.format("Anzahl Datens�tze: %d", db.count()));
 			org.hsqldb.util.DatabaseManagerSwing.main(new String[] {});
 		}
-	};		
+	};	
+	
+	private Action actionMergeGame = new AbstractAction("Merge Game") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			getCurrentGame().merge();
+		}
+	};
 	
 	private Action actionNext = new AbstractAction("Next move") {
 		@Override
