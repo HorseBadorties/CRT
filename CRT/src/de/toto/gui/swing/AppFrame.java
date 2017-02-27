@@ -297,7 +297,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		@Override
 		public void actionPerformed(ActionEvent e) {			
 			DB db = new DB(null);
-			JOptionPane.showMessageDialog(AppFrame.this, String.format("Anzahl Datensätze: %d", db.count()));
+			JOptionPane.showMessageDialog(AppFrame.this, String.format("Anzahl Datensï¿½tze: %d", db.count()));
+			org.hsqldb.util.DatabaseManagerSwing.main(new String[] {});
 		}
 	};		
 	
@@ -810,6 +811,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		d.setSize(size);
 		d.setLocationRelativeTo(this);
 		d.setVisible(true);
+		prefs.putInt(PREFS_DRILL_DIALOG_WIDTH, d.getWidth()); 
+		prefs.putInt(PREFS_DRILL_DIALOG_HEIGHT, d.getHeight());
 	}
 	
 		

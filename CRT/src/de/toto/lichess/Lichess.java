@@ -3,9 +3,14 @@ package de.toto.lichess;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.URL;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 
 public class Lichess {
@@ -16,11 +21,14 @@ public class Lichess {
 		InputStream is = null;
 		try {
 			int nb = 10;
-			URL url = new URL(String.format("https://37.187.205.99/api/user/%s/games?nb=%d&page=%d",
+			URL url = new URL(String.format("https://lichess.org/api/user/%s/games?nb=%d&page=%d",
 					lichessUser, nb, (int)(gameNumber /nb)));
 			is = url.openStream();	
 			Gson gson = new Gson();
-			String result = gson.fromJson(new InputStreamReader(is, "UTF-8"), String.class);
+			JsonObject result = gson.fromJson(new InputStreamReader(is, "UTF-8"), JsonObject.class);
+			for (JsonElement e : result.getAsJsonArray("currentPageResults")) {
+//				String s = e.getAsString();
+			}
 			
 			System.out.println(result);
 		} catch (IOException ioEx) {
