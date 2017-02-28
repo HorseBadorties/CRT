@@ -16,6 +16,8 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.*;
 
+import de.toto.NetworkConfig;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -51,7 +53,8 @@ public class Quickstart {
 
     static {
         try {
-            HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            NetworkConfig.doConfig();
+        	HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
             DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
         } catch (Throwable t) {
             t.printStackTrace();
