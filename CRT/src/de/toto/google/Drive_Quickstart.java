@@ -20,9 +20,11 @@ import de.toto.NetworkConfig;
 
 import com.google.api.services.drive.Drive;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,7 +53,7 @@ public class Drive_Quickstart {
      * at ~/.credentials/drive-java-quickstart
      */
     private static final List<String> SCOPES =
-        Arrays.asList(DriveScopes.DRIVE_METADATA_READONLY);
+        Arrays.asList(DriveScopes.DRIVE_READONLY);
 
     static {
         try {
@@ -114,22 +116,31 @@ public class Drive_Quickstart {
 	        .setFields("nextPageToken, files(id, name)")
 	        .setPageToken(null)
 	        .execute();
-        String id = repList.getFiles().get(0).getId();
-        // Print the names and IDs for up to 10 files.
+        File rep = repList.getFiles().get(0);        
+        System.out.printf("%s (%s)\n", rep.getName(), rep.getId());
+
         FileList result = service.files().list()
-             .setQ(String.format("parents in '%s'", id))
-        	 .setPageSize(10)
-             .setFields("nextPageToken, files(id, name)")
-             .execute();
+        	.setQ(String.format("('%s' in parents) and (name contains '%s')", rep.getId(), ".pgn"))
+        	.setSpaces("drive")
+            .setFields("nextPageToken, files(id, name, parents)")
+            .setPageToken(null)
+            .execute();
         List<File> files = result.getFiles();
         if (files == null || files.size() == 0) {
             System.out.println("No files found.");
         } else {
-            System.out.println("Files:");
             for (File file : files) {
-                System.out.printf("%s (%s)\n", file.getName(), file.getId());
+                System.out.printf("%s (%s) - parents: %s\n", file.getName(), file.getId(), file.getParents());
             }
+            //download first file
+            File first = files.get(0);
+            OutputStream outputStream = new FileOutputStream(new java.io.File(String.format("c:/TempTree/%s", first.getName())));
+            service.files().get(first.getId())
+                    .executeMediaAndDownloadTo(outputStream);
         }
+        
+        
+
     }
 
 }
