@@ -19,9 +19,8 @@ public class NetworkConfig {
 		
 		configurationDone = true;
 		
-		//check if we are behind "the" firewall...
-		
-		if (!"080064".equals(System.getProperty("user.name"))) return;
+		//check if we are behind "the" firewall...		
+		if (!atWork()) return;
 		
 		System.setProperty("http.proxyHost", "149.213.3.254");
 		System.setProperty("http.proxyPort", "3128");
@@ -35,6 +34,10 @@ public class NetworkConfig {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+	
+	public static boolean atWork() {
+		return "080064".equals(System.getProperty("user.name"));
 	}
 
 	private static class DefaultTrustManager implements X509TrustManager {

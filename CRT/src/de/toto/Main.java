@@ -1,13 +1,23 @@
 package de.toto;
 
+import java.io.IOException;
+
 import javax.swing.UIManager;
 
+import de.toto.google.GoogleDrive;
 import de.toto.gui.swing.AppFrame;
 
 public class Main {
 
 	
 	public static void main(String[] args) {
+		if (NetworkConfig.atWork()) {
+			try {
+				GoogleDrive.downloadPGNs(new java.io.File("C:/Users/080064/Downloads"));
+			} catch (IOException ioEx) {
+				ioEx.printStackTrace();
+			}
+		}
 //		try {
 //			for (javax.swing.UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 //		        if ("Nimbus".equals(info.getName())) {
