@@ -81,5 +81,10 @@
 			<artifactId>svg-salamander</artifactId>
 			<version>0.1.19</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-drive</artifactId>
+			<version>v3-rev59-1.22.0</version>
+		</dependency>
 	</dependencies>
 </project>
