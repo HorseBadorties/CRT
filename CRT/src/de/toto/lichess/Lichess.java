@@ -24,17 +24,25 @@ public class Lichess {
 		
 		InputStream is = null;
 		try {
-			int nb = 10;
-			URL url = new URL(String.format("https://lichess.org/api/user/%s/games?nb=%d&page=%d",
+			int nb = 100;
+			int i = 0;
+			URL url = new URL(String.format("https://lichess.org/api/user/%s/games?nb=%d&page=%d&with_moves=1",
 					lichessUser, nb, (int)(gameNumber /nb)));
 			is = url.openStream();	
 			Gson gson = new Gson();
 			JsonObject result = gson.fromJson(new InputStreamReader(is, "UTF-8"), JsonObject.class);
-			for (JsonElement e : result.getAsJsonArray("currentPageResults")) {
-//				String s = e.getAsString();
+			System.out.printf("Found %s games\n", get(result, "nbResults"));
+			for (JsonElement e : result.getAsJsonArray("currentPageResults")) {				
+				JsonObject game = e.getAsJsonObject();
+				System.out.printf("%d: %s; %s vs %s: %s\n",
+						i++,
+						get(game, "id"),
+						get(game, "players.white.userId"),
+						get(game, "players.black.userId"),
+						get(game, "moves"));					
+			
 			}
 			
-			System.out.println(result);
 		} catch (IOException ioEx) {
 			throw new RuntimeException(ioEx);		
 		} finally {
@@ -46,8 +54,28 @@ public class Lichess {
 		}
 	}
 	
+	private static String get(JsonObject o, String element) {		
+		try {
+			String[] token = element.split("\\.");		
+			for (int i = 0; i < token.length; i++) {
+				if (i == token.length-1) {
+					return o.get(token[i]).toString();
+				} else {
+					// drill down
+					o = o.getAsJsonObject(token[i]);
+				}
+			}
+			return null;
+		} catch (Exception ex) {
+			return element;
+		}
+	}
+	
+	
+	
+	
 	public static void main(String[] args) {
-		new Lichess().foo("Horse_Badorties", 1);
+		new Lichess().foo("H_Badorties", 1);
 	}
 	
 	
