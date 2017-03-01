@@ -199,6 +199,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		
 		JMenu menuEdit = new JMenu("Edit");
 		menuEdit.add(actionCopyFEN);
+		menuEdit.add(actionCopyPGN);
 		menuEdit.add(actionPasteFEN);
 		menuEdit.add(actionPastePGN);
 		menuEdit.add(actionTestDB);		
@@ -719,6 +720,15 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		public void actionPerformed(ActionEvent e) {			
 			if (getCurrentGame() != null) {
 				copyToClipboard(getCurrentGame().getPosition().getFen());
+			}				
+		}
+	};
+	
+	private Action actionCopyPGN = new AbstractAction("Copy PGN") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			if (getCurrentGame() != null) {
+				copyToClipboard(getCurrentGame().toPGN());
 			}				
 		}
 	};

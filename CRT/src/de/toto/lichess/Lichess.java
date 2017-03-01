@@ -1,16 +1,21 @@
 package de.toto.lichess;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import de.toto.NetworkConfig;
+import de.toto.game.*;
 
 
 public class Lichess {
@@ -19,50 +24,87 @@ public class Lichess {
 		NetworkConfig.doConfig();
 	}
 	
-	public void foo(String lichessUser) {		
-		
+	public static void downloadGames(String lichessUser, File targetDir) {
+		downloadGames(lichessUser, targetDir, null, null, true, true, (String[])null, (String[])null);
+	}
+			
+	// speed=bullet|blitz|classical|unlimited
+	public static void downloadGames(String lichessUser, File targetDir, Date from, Date to, boolean whiteGames, boolean blackGames, String[] speed, String[] movesStartWith) {		
+		System.out.println("starting at " + new Date());
+		if (!whiteGames && !blackGames) {
+			System.out.println("neither white nor black games requested");
+			return;
+		}
 		InputStream is = null;
+		FileWriter writer = null;
 		try {
+			File pgn = new File(targetDir, lichessUser + ".pgn");
+			writer = new FileWriter(pgn);
+			System.out.println("downloading to " + pgn);
 			int nb = 100;
 			int page = 1;
-			boolean hasNextPage = true;
-			int i = 0;
-			
-			while (hasNextPage) { 
+						
+			while (page > 0) { 
 				URL url = new URL(String.format("https://lichess.org/api/user/%s/games?nb=%d&page=%d&with_moves=1",
 						lichessUser, nb, page));
-				JsonObject result = null;
+				JsonObject json = null;
 				try {
+					System.out.println("opening " + url);
 					is = url.openStream();	
 					Gson gson = new Gson();
-					result = gson.fromJson(new InputStreamReader(is, "UTF-8"), JsonObject.class);
+					json = gson.fromJson(new InputStreamReader(is, "UTF-8"), JsonObject.class);
 				} catch (IOException ex){
 					if (ex.getMessage().startsWith("Server returned HTTP response code: 429")) {
 						System.out.println("got a 429");
-						pause(600);
+						pause(70);
 						continue;
 					} else {
 						throw ex;
 					}
 				} finally {
 					if (is != null) is.close();
+				}				
+				for (JsonElement e : json.getAsJsonArray("currentPageResults")) {	
+					JsonObject jsonGame = e.getAsJsonObject();
+					//matches the search criteria?
+					Date createdAt = new Date(Long.valueOf(get(jsonGame, "createdAt")));
+					if (from != null && createdAt.before(from)) continue;
+					if (to != null && createdAt.after(to)) continue;
+					if (whiteGames && !blackGames) {
+						if (!lichessUser.equalsIgnoreCase(get(jsonGame, "players.white.userId"))) continue;
+					} 
+					if (!whiteGames && blackGames) {
+						if (!lichessUser.equalsIgnoreCase(get(jsonGame, "players.black.userId"))) continue;
+					}
+					if (speed != null && !Arrays.asList(speed).contains(get(jsonGame, "speed"))) {
+						continue;
+					}
+					if (movesStartWith != null) {
+						String moves = get(jsonGame, "moves");	
+						boolean match = false;
+						for (String requestedMoves : movesStartWith) {
+							if (moves.startsWith(requestedMoves)) {
+								match = true; 
+								break;
+							}
+						}
+						if (!match) continue;
+					}
+					
+					Game g = toGame(jsonGame);
+					if (g != null) {
+						writer.write(g.toPGN() + "\n");	
+						writer.flush();
+					}
+				}				
+				if (get(json, "nextPage") != null) {
+					page++;
+					pause(2);
+				} else {
+					page = -1;
 				}
-				System.out.printf("received %d games\n", nb * page);
-				for (JsonElement e : result.getAsJsonArray("currentPageResults")) {				
-					JsonObject game = e.getAsJsonObject();
-//					System.out.printf("%d: %s; %s vs %s: %s\n",
-//							i++,
-//							get(game, "id"),
-//							get(game, "players.white.userId"),
-//							get(game, "players.black.userId"),
-//							get(game, "moves"));					
-				
-				}
-				hasNextPage = get(result, "nextPage") != null;
-				page++;
-				pause(10);
-			}
-			
+			}			
+			System.out.println("finished at " + new Date());
 		} catch (IOException ioEx) {
 			throw new RuntimeException(ioEx);		
 		} finally {
@@ -70,7 +112,12 @@ public class Lichess {
 				if (is != null) is.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-			}
+			}			
+			try {
+				if (writer != null) writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} 
 		}
 	}
 	
@@ -89,7 +136,8 @@ public class Lichess {
 			String[] token = element.split("\\.");		
 			for (int i = 0; i < token.length; i++) {
 				if (i == token.length-1) {
-					return o.get(token[i]).toString();
+					JsonElement el = o.get(token[i]); 
+					return el == null || el.isJsonNull() ? null : el.getAsString();
 				} else {
 					// drill down
 					o = o.getAsJsonObject(token[i]);
@@ -101,11 +149,71 @@ public class Lichess {
 		}
 	}
 	
+	private static Game toGame(JsonObject lichessGame) {
+		if (!"standard".equalsIgnoreCase(get(lichessGame, "variant"))) return null;
+		try {
+			Game result = new Game(new Position());
+			String moves = get(lichessGame, "moves");	
+			if (moves == null || moves.trim().isEmpty()) return null; //ignore empty games
+			for (String move : moves.split(" ")) {
+				result.addMove(move);
+			}		
+			result.addTag("Event", toPGNEvent(get(lichessGame, "rated")));
+			result.addTag("Site", "https://lichess.org/" + get(lichessGame, "id"));
+			result.addTag("Date", toPGNTimestamp(get(lichessGame, "createdAt")));
+			result.addTag("White", get(lichessGame, "players.white.userId"));
+			result.addTag("Black", get(lichessGame, "players.black.userId"));
+			result.addTag("Result", toPGNResult(lichessGame));
+			result.addTag("WhiteElo", get(lichessGame, "players.white.rating"));
+			result.addTag("BlackElo", get(lichessGame, "players.black.rating"));
+			result.addTag("PlyCount", get(lichessGame, "turns"));
+			result.addTag("TimeControl", get(lichessGame, "clock.initial") + "+" + get(lichessGame, "clock.increment"));
+			result.addTag("Termination", toPGNTermination(get(lichessGame, "status")));
+			return result;
+		} catch (Exception ex) {
+			System.err.println("failed to parse game " + get(lichessGame, "url"));
+			return null;
+		}
+	}
 	
 	
+	private static String toPGNEvent(String rated) {
+		if ("true".equalsIgnoreCase(rated)) return "Rated game";		
+		return "unrated game";
+	}
+	
+	private static DateFormat PGN_DATE_FOMATTER = new SimpleDateFormat("yyyy.MM.dd");
+	
+	private static String toPGNTimestamp(String millis) {
+		return PGN_DATE_FOMATTER.format(new Date(Long.valueOf(millis)));
+	}
+	
+	private static String toPGNResult(JsonObject lichessGame) {
+		String winner = get(lichessGame, "winner");
+		String status = get(lichessGame, "status");
+		if ("white".equalsIgnoreCase(winner)) return "1-0";
+		if ("black".equalsIgnoreCase(winner)) return "0-1";
+		if ("draw".equalsIgnoreCase(status)
+			|| "outoftime".equalsIgnoreCase(status)
+			|| "timeout".equalsIgnoreCase(status)) return "1/2-1/2";
+		return "*";
+	}
+	
+	private static String toPGNTermination(String status) {
+		if ("timeout".equalsIgnoreCase(status)) return "time forfeit";
+		if ("outoftime".equalsIgnoreCase(status)) return "time forfeit";
+		return "normal";
+	}
 	
 	public static void main(String[] args) {
-		new Lichess().foo("H_Badorties");
+		Lichess.downloadGames("koenig", 
+				new File(System.getProperty("user.home") + "/Downloads"),
+				null, // from //new GregorianCalendar(2016, Calendar.JANUARY, 1).getTime()
+				null, // to
+				true, // whiteGames
+				false, // blackGames
+				new String[] {"blitz","classical","unlimited"}, // speed
+				null); // moves  //new String[] {"e4 e6", "e3"}
 	}
 	
 	

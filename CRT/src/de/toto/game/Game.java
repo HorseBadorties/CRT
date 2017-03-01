@@ -1,6 +1,7 @@
 package de.toto.game;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 public class Game {
@@ -344,6 +345,32 @@ public class Game {
 			return startPosition.getFen();
 		}
 	}
+	
+	public String toPGN() {
+		StringBuilder result = new StringBuilder();
+		for (Entry<String, String> tag : tags.entrySet()) {
+			result.append("[").append(tag.getKey()).append(" \"").append(tag.getValue()).append("\"]\n");
+		}
+		if (result.length() > 0) {
+			result.append("\n");
+		}
+		Position p = findStartPosition();
+		if (p.isStartPosition()) {
+			p = p.getNext();
+		}
+		while (p != null) {
+			if (p.whiteMoved()) result.append(p.getMoveNumber()).append(". ");
+			result.append(p.getMoveAsSan()).append(" ");
+			if (p.hasNext()) {
+				p = p.getNext();
+			} else {
+				p = null;
+			}
+		}
+		result.append(getTagValue("Result")).append("\n");
+		return result.toString();
+	}
 		
+	
 	
 }

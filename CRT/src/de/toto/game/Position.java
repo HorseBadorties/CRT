@@ -29,7 +29,7 @@ public class Position {
 	
 	private static final Pattern GRAPHICS_COMMENT_PATTERN = Pattern.compile("\\[(.*?)\\]");
 	
-	private static final String FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	public static final String FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 		
 	public static final Position EMPTY_BOARD = new Position(null, "", "8/8/8/8/8/8/8/8 w KQkq - 0 1");
 	
