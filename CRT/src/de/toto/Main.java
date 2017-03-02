@@ -14,8 +14,8 @@ public class Main {
 		if (NetworkConfig.atWork()) {
 			try {
 				GoogleDrive.downloadPGNs(new java.io.File("C:/Users/080064/Downloads"));
-			} catch (IOException ioEx) {
-				ioEx.printStackTrace();
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
 		}
 		
