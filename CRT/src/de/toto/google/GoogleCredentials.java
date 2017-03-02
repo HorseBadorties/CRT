@@ -85,10 +85,7 @@ public class GoogleCredentials {
                 .setAccessType("offline")
                 .build();
         Credential credential = new AuthorizationCodeInstalledApp(
-            flow, new LocalServerReceiver()).authorize("user");
-        credential.refreshToken();
-        System.out.println(
-                "Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
+            flow, new LocalServerReceiver()).authorize("user");               
         return credential;
     }
 }

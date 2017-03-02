@@ -18,6 +18,7 @@ public class Main {
 				ioEx.printStackTrace();
 			}
 		}
+		
 //		try {
 //			for (javax.swing.UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 //		        if ("Nimbus".equals(info.getName())) {

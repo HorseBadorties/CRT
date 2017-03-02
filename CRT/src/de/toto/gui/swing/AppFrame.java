@@ -5,6 +5,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
@@ -25,6 +26,7 @@ import de.toto.game.Game;
 import de.toto.game.Drill;
 import de.toto.game.Drill.DrillStats;
 import de.toto.game.Position.GraphicsComment;
+import de.toto.google.GoogleDrive;
 import de.toto.game.Square;
 import de.toto.game.DrillListener;
 import de.toto.game.GameEvent;
@@ -195,7 +197,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		JMenuBar menuBar = new JMenuBar();
 		JMenu menuFile = new JMenu("File");
 		menuFile.add(actionLoadPGN);
-		menuFile.add(actionShowNovelties);		
+		menuFile.add(actionShowNovelties);
+		menuFile.add(actionDownloadPGN);
 		
 		JMenu menuEdit = new JMenu("Edit");
 		menuEdit.add(actionCopyFEN);
@@ -550,6 +553,18 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				throw ex;
 			}
 			
+		}
+	};
+	
+	private Action actionDownloadPGN = new AbstractAction("Download PGNs from Google Drive") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			File targetDir = new File(System.getProperty("user.home") + "/Downloads");
+			try {
+				GoogleDrive.downloadPGNs(targetDir);
+			} catch (IOException ioEx) {
+				new UncaughtExceptionHandler(AppFrame.this).uncaughtException(Thread.currentThread(), ioEx);
+			}
 		}
 	};
 	

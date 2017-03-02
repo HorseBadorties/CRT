@@ -222,14 +222,18 @@ public class Game {
 		Position first = getPosition();
 		Position second = other.getPosition();
 		
-		for (;;) {
-			if (!second.hasNext()) break;
+		while (second.hasNext()) {
 			second = second.getNext();
 			if (second == null) break;
-			if (!first.hasVariation(second)) {
-				first.addVariation(second);
-				second.setComment(other.toString());
-				log.info(String.format("merged %s as variation of %s", second, first));
+			
+			if (!first.hasVariation(second)) {				
+				for (Position variation : second.getPrevious().getVariations()) {
+					if (!first.hasVariation(variation)) {
+						first.addVariation(variation);
+						variation.setComment(other.toString());
+						log.info(String.format("merged %s as variation of %s", variation, first));
+					}
+				}								
 				break;
 			} else {
 				first = first.getVariation(second);
