@@ -18,6 +18,7 @@ public class Position {
 	
 	private static Logger log = Logger.getLogger("Position");
 	
+	private int dbId;
 	private Square[][] squares;	
 	private Position previous = null;
 	private List<Position> next = new ArrayList<Position>(); 
@@ -57,9 +58,9 @@ public class Position {
 		if (previous != null) {
 			this.variationLevel = asVariation ? previous.variationLevel+1 : previous.variationLevel;
 		}
-		if (fen != null) {
+		if (fen != null) {			
+			setFen(fen, true);
 			setMove(move, false, false);
-			setFen(fen, true);		
 		} else if (move != null) {
 			setMove(move, true, checkMateOrCheck);
 		}
@@ -1068,6 +1069,14 @@ public class Position {
     	return false;
     }
 	
+	public int getDbId() {
+		return dbId;
+	}
+
+	public void setDbId(int dbId) {
+		this.dbId = dbId;
+	}
+
 	public static class GraphicsComment {
 		public Square firstSquare;
 		public Square secondSquare;

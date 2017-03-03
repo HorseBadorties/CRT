@@ -8,6 +8,7 @@ public class Game {
 	
 	private static Logger log = Logger.getLogger("Game");
 	
+	private int dbId;
 	protected Position currentPosition;
 	private Map<String, String> tags = new HashMap<String, String>();
 	
@@ -373,6 +374,14 @@ public class Game {
 		}
 		result.append(getTagValue("Result")).append("\n");
 		return result.toString();
+	}
+
+	public int getDbId() {
+		return dbId;
+	}
+
+	public void setDbId(int dbId) {
+		this.dbId = dbId;
 	}
 		
 	

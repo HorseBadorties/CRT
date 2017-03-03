@@ -27,6 +27,7 @@ import de.toto.game.Drill;
 import de.toto.game.Drill.DrillStats;
 import de.toto.game.Position.GraphicsComment;
 import de.toto.google.GoogleDrive;
+import de.toto.lichess.Lichess;
 import de.toto.game.Square;
 import de.toto.game.DrillListener;
 import de.toto.game.GameEvent;
@@ -205,8 +206,11 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		menuEdit.add(actionCopyPGN);
 		menuEdit.add(actionPasteFEN);
 		menuEdit.add(actionPastePGN);
-		menuEdit.add(actionTestDB);		
+		menuEdit.add(actionDBManager);
+		menuEdit.add(actionSaveGame);		
+		menuEdit.add(actionLoadGame);
 		menuEdit.add(actionMergeGame);
+		menuEdit.add(actionDownloadLichessGame);
 		
 		JMenu menuActions = new JMenu("Actions");
 		menuActions.add(actionSquareColorDrill	);
@@ -298,14 +302,57 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		return g;
 	}
 	
-	private Action actionTestDB = new AbstractAction("Test DB") {
+	private Action actionDBManager = new AbstractAction("DB Manager") {
 		@Override
-		public void actionPerformed(ActionEvent e) {			
-			DB db = new DB(null);
-			JOptionPane.showMessageDialog(AppFrame.this, String.format("Anzahl Datens�tze: %d", db.count()));
-			org.hsqldb.util.DatabaseManagerSwing.main(new String[] {});
+		public void actionPerformed(ActionEvent e) {
+			org.hsqldb.util.DatabaseManagerSwing.main(new String[] {"-url", "jdbc:hsqldb:file:CRT", "-user",  "SA", "-noexit" });
+		}
+	};
+	
+	private Action actionSaveGame = new AbstractAction("Save Game") {
+		@Override
+		public void actionPerformed(ActionEvent e) {					
+			DB db = new DB("CRT");
+			db.saveGame(getCurrentGame());
+			db.close();
+			//org.hsqldb.util.DatabaseManagerSwing.main(new String[] {"-url", "jdbc:hsqldb:file:CRT", "-user",  "SA", "-noexit" });
 		}
 	};	
+	
+	private Action actionLoadGame = new AbstractAction("Load Game") {
+		@Override
+		public void actionPerformed(ActionEvent e) {	
+			String number = JOptionPane.showInputDialog("Game number"); 
+			DB db = new DB("CRT");
+			Game g = db.loadGame(Integer.parseInt(number));
+			db.close();
+			setGame(g);
+			//org.hsqldb.util.DatabaseManagerSwing.main(new String[] {"-url", "jdbc:hsqldb:file:CRT", "-user",  "SA", "-noexit" });
+		}
+	};
+	
+	private Action actionDownloadLichessGame = new AbstractAction("Download Lichess Games") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			final String name = JOptionPane.showInputDialog("Lichess user name"); 
+			new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					DB db = new DB("CRT");
+					try {
+						List<Game> games = Lichess.downloadGames(name, null);
+						for (Game g : games) {
+							db.saveGame(g);
+						}
+						System.out.println(String.format("downloaded and saved %d games", games.size()));
+					} finally {
+						db.close();
+					}					
+				}
+			}).run();			
+		}
+	};
 	
 	private Action actionMergeGame = new AbstractAction("Merge Game") {
 		@Override
@@ -313,6 +360,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			getCurrentGame().merge();
 		}
 	};
+	
 	
 	private Action actionNext = new AbstractAction("Next move") {
 		@Override

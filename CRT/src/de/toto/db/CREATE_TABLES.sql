@@ -1,0 +1,25 @@
+DROP TABLE POSITION;
+
+CREATE TABLE POSITION 
+(
+id INTEGER PRIMARY KEY, 
+previous INTEGER,
+next INTEGER,
+san VARCHAR(8),
+fen VARCHAR(100),
+comment VARCHAR(256)
+);
+
+DROP TABLE GAME;
+
+CREATE TABLE GAME 
+(
+id INTEGER PRIMARY KEY, 
+date DATE,   
+white VARCHAR(50),
+black VARCHAR(50),
+result VARCHAR(7),
+event VARCHAR(128),
+startPosition INTEGER
+);
+
