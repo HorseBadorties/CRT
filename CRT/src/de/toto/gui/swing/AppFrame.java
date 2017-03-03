@@ -305,7 +305,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private Action actionDBManager = new AbstractAction("DB Manager") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			org.hsqldb.util.DatabaseManagerSwing.main(new String[] {"-url", "jdbc:hsqldb:file:CRT", "-user",  "SA", "-noexit" });
+			org.hsqldb.util.DatabaseManagerSwing.main(new String[] {"-url", "jdbc:hsqldb:file:db/CRT", "-user",  "SA", "-noexit" });
 		}
 	};
 	

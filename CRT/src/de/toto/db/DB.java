@@ -16,7 +16,7 @@ public class DB {
 	
 	public DB(String dbName) {
 		try {
-			con = DriverManager.getConnection(String.format("jdbc:hsqldb:file:%s", dbName), "SA", "");
+			con = DriverManager.getConnection(String.format("jdbc:hsqldb:file:db/%s", dbName), "SA", "");
 			con.setAutoCommit(false);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
