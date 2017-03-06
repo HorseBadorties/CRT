@@ -1,10 +1,6 @@
 package de.toto.game;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class Drill extends Game {
@@ -84,17 +80,17 @@ public class Drill extends Game {
 	}
 	
 	
-	public Drill(Position startPosition, boolean drillingWhite, boolean acceptOnlyMainline, boolean randomDrill) {
+	public Drill(Position startPosition, boolean drillingWhite, boolean acceptOnlyMainline, boolean randomDrill, boolean variationDrill) {
 		drillStats = new DrillStats();
 		drillHistory = new ArrayList<Position>();
 		currentPosition = startPosition;
 		drillStartingPosition = startPosition;
 		this.drillingWhite = drillingWhite;
 		this.acceptOnlyMainline = acceptOnlyMainline;		
-		drillPositions = getAllDrillPositions();
+		drillPositions = getAllDrillPositions(randomDrill, variationDrill);
 		drillHistory.clear();
 		drilledVariations.clear();		
-		if (randomDrill) Collections.shuffle(drillPositions);
+		
 		drillStats = new DrillStats();	
 		currentPosition = startPosition;
 		log.info(String.format("Drilling %s now for %d positions", drillingWhite ? "White" : "Black", drillPositions.size()));
@@ -113,7 +109,7 @@ public class Drill extends Game {
 			} else {
 				for (Position p : currentPosition.getVariations()) {
 					if (isCorrect(move, p)) {
-						result = true;
+						result = true;						
 						break;
 					}				
 				}
@@ -138,7 +134,7 @@ public class Drill extends Game {
 		if (correctPosition != null) {			
 			String[] correctSquareNames = correctPosition.getMoveSquareNames();
 			if (correctSquareNames[0].equals(squareName) || correctSquareNames[1].equals(squareName)) {
-				result = true;
+				result = true;				
 			}
 			if (!isInDrillHistory() && currentPosition != drillStats.lastDrilledPosition) {
 				if (result) {
@@ -235,11 +231,18 @@ public class Drill extends Game {
 			endDrill();
 			return currentPosition;
 		} else {
-			if (currentPosition != drillStartingPosition) {					
+			if (currentPosition != drillStartingPosition) {				
 				drillHistory.add(currentPosition.getPrevious());
 				drillHistory.add(currentPosition);
-			}
+			} 
 			setCurrentDrillPosition(drillPositions.remove(0));
+			if (currentPosition.hasPrevious() 
+					&& drillStartingPosition.equals(currentPosition.getPrevious())
+					|| (currentPosition.hasPrevious() && 
+							drillStartingPosition.equals(currentPosition.getPrevious().getPrevious()))) 
+			{
+				drillHistory.clear();
+			}
 			firePositionChangedEvent();
 			drillStats.drilledPositions++;
 			return currentPosition;
@@ -272,12 +275,14 @@ public class Drill extends Game {
 		fireDrillEvent(new DrillEvent(DrillEvent.ID_DRILL_ENDED, this, null));		
 	}
 	
-	private List<Position> getAllDrillPositions() {
+	private List<Position> getAllDrillPositions(boolean randomDrill, boolean variationDrill) {
 		List<Position> result = new ArrayList<Position>();		
+		Position drillStartPosition = currentPosition;
 		Position drillPosition = currentPosition;
 		if (drillPosition.isWhiteToMove() != drillingWhite) {
 			drillPosition = gotoNextPosition();
 		}
+		
 		for(;;) { 
 			Position repertoireAnswer = drillPosition.hasNext() ? drillPosition.getNext() : null;
 			Position nextDrillPosition = null;			
@@ -298,6 +303,25 @@ public class Drill extends Game {
 			}
 			drillPosition = nextDrillPosition;
 		}
+		if (randomDrill) Collections.shuffle(result);
+		if (variationDrill) {
+			List<Position> endpoints = new ArrayList<Position>();
+			for (Position p : result) {
+				if (!p.hasNext() || !p.getNext().hasNext() || !p.getNext().getNext().hasNext()) {
+					endpoints.add(p);
+				}
+			}
+			result .clear();
+			for (Position p : endpoints) {
+				result.addAll(p.getLine(drillStartPosition));
+			}
+			Iterator<Position> it = result.iterator();
+			while (it.hasNext()) {
+				if (it.next().isWhiteToMove() != drillingWhite) {
+					it.remove();
+				}
+			}
+		} 
 		return result;
 	}
 	

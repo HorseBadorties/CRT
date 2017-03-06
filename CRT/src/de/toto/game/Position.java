@@ -214,6 +214,21 @@ public class Position {
 		return next;
 	}
 	
+	/**
+	 * 
+	 * @return the complete variation that leads to this position - beginning at startPosition and including this position. 
+	 */
+	public List<Position> getLine(Position startPosition) {
+		List<Position> result = new ArrayList<Position>();
+		Position p = this;
+		while (p.hasPrevious()) {			
+			result.add(0, p);
+			p = p.getPrevious();
+			if (p.equals(startPosition)) break;
+		}
+		return result;
+	}
+	
 	public boolean hasVariation(Position variation) {
 		return getVariation(variation) != null;
 	}
@@ -224,6 +239,8 @@ public class Position {
 		}
 		return null;
 	}
+	
+	
 	
 	public String getFen() {
 		return fen;

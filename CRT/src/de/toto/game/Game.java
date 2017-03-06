@@ -142,15 +142,19 @@ public class Game {
 		return tags.get(tagName);
 	}
 	
-	public Set<Position> getAllPositions() {
+	public Set<Position> getAllPositions(Position startPosition) {
 		Set<Position> result = new HashSet<Position>();
-		Position p = gotoStartPosition();		
-		p = findNextPosition(p);
+		Position p = startPosition;		
+		p = findNextPosition(p, startPosition);
 		while (p != null) {
 			result.add(p);
-			p = findNextPosition(p);
+			p = findNextPosition(p, startPosition);
 		}		
 		return result;
+	}
+	
+	public Set<Position> getAllPositions() {		
+		return getAllPositions(gotoStartPosition());
 	}
 	
 	
@@ -185,7 +189,7 @@ public class Game {
 		return false;
 	}
 	
-	private Position findNextPosition(Position p) {		
+	private Position findNextPosition(Position p, Position startPosition) {		
 		if (p.hasVariations()) {
 			// enter first variation 
 			return p.getVariations().get(1);
@@ -203,6 +207,7 @@ public class Game {
 					if (previous.getVariationLevel() == p.getVariationLevel()) headOfVariation = previous;
 					previous = previous.getPrevious();
 				}
+				if (previous.hasVariation(startPosition)) return null;
 				// now look for the next variation
 				List<Position> variations = previous.getVariations();
 				int indexOfHeadOfVariation = variations.indexOf(headOfVariation);
@@ -213,6 +218,18 @@ public class Game {
 				}				
 			}			 
 		}
+	}
+	
+	public Set<Position> getVariationEndpoints(Position startPosition) {
+		Set<Position> result = getAllPositions(startPosition);
+		Iterator<Position> it = result.iterator();
+		while (it.hasNext()) {			
+			Position p = it.next();
+			if (p.hasNext()) {
+				it.remove();
+			}
+		}		
+		return result;
 	}
 	
 	

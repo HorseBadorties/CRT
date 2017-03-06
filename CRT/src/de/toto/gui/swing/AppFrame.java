@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -67,6 +68,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private JPanel pnlToolBar;
 	
 	private JCheckBox cbRandomDrill;
+	private JCheckBox cbVariationDrill;
 	private AbstractButton btnDrill;
 	private AbstractButton btnTryVariation;
 	private AbstractButton btnEngine;
@@ -113,6 +115,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	public static final String PREFS_SHOW_MOVE_NOTATION = "SHOW_MOVE_NOTATION";
 	public static final String PREFS_ANNOUNCE_MOVES = "ANNOUNCE_MOVES";	
 	public static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
+	public static final String PREFS_VARIATION_DRILL = "VARIATION_DRILL";
 	public static final String PREFS_DELAY_AFTER_MOVE = "DELAY_AFTER_MOVE";
 	public static final String PREFS_DRILL_DIALOG_WIDTH = "DRILL_DIALOG_WIDTH";
 	public static final String PREFS_DRILL_DIALOG_HEIGHT = "DRILL_DIALOG_HEIGHT";
@@ -207,6 +210,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		menuEdit.add(actionLoadGame);
 		menuEdit.add(actionMergeGame);
 		menuEdit.add(actionDownloadLichessGame);
+		menuEdit.add(actionTest);
 		
 		JMenu menuActions = new JMenu("Actions");
 		menuActions.add(actionSquareColorDrill	);
@@ -238,6 +242,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		prefs.putInt(PREFS_FONT_SIZE, lstVariations.getFont().getSize());
 		prefs.put(PREFS_FONT_NAME, lstVariations.getFont().getName());
 		prefs.putBoolean(PREFS_RANDOM_DRILL, cbRandomDrill.isSelected());
+		prefs.putBoolean(PREFS_VARIATION_DRILL, cbVariationDrill.isSelected());		
 				
 	}	
 	
@@ -382,7 +387,6 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			if (g == tryVariation || g == gameAgainstTheEngine) {
 				g.goForward();
 			} else if (g == drill) {
-				//gotoNextDrillPosition();
 				drill.goForward();
 			} else if (lstVariations.getSelectedIndex() >= 0) {
 				Position p = (Position)modelVariations.get(lstVariations.getSelectedIndex());
@@ -438,13 +442,17 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (drill == null) {				
-				drill = new Drill(repertoire.getPosition(), board.isOrientationWhite(), prefs.getBoolean(PREFS_ONLY_MAINLINE, true), cbRandomDrill.isSelected());
+				drill = new Drill(repertoire.getPosition(), board.isOrientationWhite(), 
+						prefs.getBoolean(PREFS_ONLY_MAINLINE, true), 
+						cbRandomDrill.isSelected(),
+						cbVariationDrill.isSelected());
 				drill.addGameListener(AppFrame.this);
 				drill.addDrillListener(AppFrame.this);
 				modelVariations.clear();
 				actionLoadPGN.setEnabled(false);
 				actionGameAgainstTheEngine.setEnabled(false);
 				cbRandomDrill.setEnabled(false);
+				cbVariationDrill.setEnabled(false);
 				pnlDrillStatus = new DrillStatusPanel(drill);
 				pnlDrillStatus.setFont(lstVariations.getFont());
 				setPanelVisible(pnlDrillStatus);
@@ -872,6 +880,16 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
+	
+	private Action actionTest = new AbstractAction("Test") {
+		@Override
+		public void actionPerformed(ActionEvent e) {					
+			Set<Position> vars = getCurrentGame().getVariationEndpoints(getCurrentGame().getPosition());
+			JOptionPane.showMessageDialog(AppFrame.this, new JScrollPane(new JList(vars.toArray())),
+					vars.size() + " variations", JOptionPane.INFORMATION_MESSAGE);
+		}
+	};
+	
 	public Action actionSquareColorDrill = new AbstractAction("Square Color Drill") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -933,6 +951,10 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		cbRandomDrill = new JCheckBox("Random position drill?");
 		cbRandomDrill.setFocusable(false);
 		cbRandomDrill.setSelected(prefs.getBoolean(PREFS_RANDOM_DRILL, false));
+		
+		cbVariationDrill = new JCheckBox("Drill complete variation?");
+		cbVariationDrill.setFocusable(false);
+		cbVariationDrill.setSelected(prefs.getBoolean(PREFS_VARIATION_DRILL, false));
 		
 		JPanel pnlBoard = new JPanel(new BorderLayout());
 		pnlBoard.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 5));
@@ -1045,6 +1067,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		JPanel pnlCheckboxes = new JPanel();
 		pnlCheckboxes.setLayout(new BoxLayout(pnlCheckboxes, BoxLayout.PAGE_AXIS));
 		pnlCheckboxes.add(cbRandomDrill);
+		pnlCheckboxes.add(cbVariationDrill);
 		
 		pnlToolBar.add(Box.createHorizontalStrut(10));
 		pnlToolBar.add(createButton(actionLoadPGN, "Open in Popup", true, false));
@@ -1362,6 +1385,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		actionGameAgainstTheEngine.setEnabled(true);
 		//cbOnlyMainline.setEnabled(true);
 		cbRandomDrill.setEnabled(true);
+		cbVariationDrill.setEnabled(true);
 		actionDrill.putValue(Action.NAME, "Begin Drill");
 		btnDrill.setIcon(loadIcon("Make Decision"));
 		btnDrill.setSelected(false);
