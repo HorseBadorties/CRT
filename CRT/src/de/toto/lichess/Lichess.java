@@ -46,7 +46,8 @@ public class Lichess {
 			}
 			int nb = 100;
 			int page = 1;
-						
+			
+			while_loop:
 			while (page > 0) { 
 				URL url = new URL(String.format("https://lichess.org/api/user/%s/games?nb=%d&page=%d&with_moves=1",
 						lichessUser, nb, page));
@@ -71,7 +72,9 @@ public class Lichess {
 					JsonObject jsonGame = e.getAsJsonObject();
 					//matches the search criteria?
 					Date createdAt = new Date(Long.valueOf(get(jsonGame, "createdAt")));
-					if (from != null && createdAt.before(from)) continue;
+					if (from != null && createdAt.before(from)) {
+						break while_loop;
+					}	
 					if (to != null && createdAt.after(to)) continue;
 					if (whiteGames && !blackGames) {
 						if (!lichessUser.equalsIgnoreCase(get(jsonGame, "players.white.userId"))) continue;
@@ -214,12 +217,12 @@ public class Lichess {
 	}
 	
 	public static void main(String[] args) {
-		Lichess.downloadGames("koenig", 
+		Lichess.downloadGames("h_badorties", 
 				new File(System.getProperty("user.home") + "/Downloads"),
-				null, // from //new GregorianCalendar(2016, Calendar.JANUARY, 1).getTime()
+				new GregorianCalendar(2017, Calendar.MARCH, 4).getTime(), // from //new GregorianCalendar(2016, Calendar.JANUARY, 1).getTime()
 				null, // to
 				true, // whiteGames
-				false, // blackGames
+				true, // blackGames
 				new String[] {"blitz","classical","unlimited"}, // speed
 				null); // moves  //new String[] {"e4 e6", "e3"}
 	}

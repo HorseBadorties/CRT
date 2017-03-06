@@ -67,13 +67,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private JPanel pnlToolBar;
 	
 	private JCheckBox cbRandomDrill;
-	private AbstractButton btnLoadPGN;
 	private AbstractButton btnDrill;
 	private AbstractButton btnTryVariation;
 	private AbstractButton btnEngine;
-	private AbstractButton btnBack;
-	private AbstractButton btnNext;
-	private AbstractButton btnFlip;
 	private AbstractButton btnBackToCurrentDrillPosition;
 	private AbstractButton btnGameAgainstTheEngine;
 	
@@ -335,22 +331,39 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			final String name = JOptionPane.showInputDialog("Lichess user name"); 
-			new Thread(new Runnable() {
-				
+			new SwingWorker<Integer, Void>() {
+
 				@Override
-				public void run() {
+				protected Integer doInBackground() throws Exception {
+					int result = 0;
 					DB db = new DB("CRT");
 					try {
 						List<Game> games = Lichess.downloadGames(name, null);
 						for (Game g : games) {
 							db.saveGame(g);
 						}
-						System.out.println(String.format("downloaded and saved %d games", games.size()));
+						result = Integer.valueOf(games.size());
 					} finally {
 						db.close();
-					}					
+					}	
+					return result;
 				}
-			}).run();			
+
+				@Override
+				protected void done() {
+					Integer count = 0;
+					try {
+						count = get();
+					} catch (Exception e) {
+						e.printStackTrace();
+					} 
+					JOptionPane.showMessageDialog(AppFrame.this, 
+							String.format("downloaded and saved %d games", count, "Download finished"));
+				}
+				
+				
+			}.execute();
+					
 		}
 	};
 	
@@ -929,9 +942,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		JPanel pnlBoardControls = new JPanel();
 		pnlBoardControls.setLayout(new BoxLayout(pnlBoardControls, BoxLayout.LINE_AXIS));
 		pnlBoardControls.add(Box.createHorizontalGlue());
-		pnlBoardControls.add(btnBack = createButton(actionBack, "Circled Left 2", false, false));	
-		pnlBoardControls.add(btnFlip = createButton(actionFlip, "Available Updates", false, false)); //Rotate Right-64.png
-		pnlBoardControls.add(btnNext = createButton(actionNext, "Circled Right 2", false, false));	
+		pnlBoardControls.add(createButton(actionBack, "Circled Left 2", false, false));	
+		pnlBoardControls.add(createButton(actionFlip, "Available Updates", false, false)); //Rotate Right-64.png
+		pnlBoardControls.add(createButton(actionNext, "Circled Right 2", false, false));	
 		pnlBoardControls.add(Box.createHorizontalGlue());
 		pnlCenterSouth.add(pnlBoardControls, BorderLayout.CENTER);
 		pnlCenter.add(pnlBoard, BorderLayout.CENTER);		
@@ -1034,7 +1047,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlCheckboxes.add(cbRandomDrill);
 		
 		pnlToolBar.add(Box.createHorizontalStrut(10));
-		pnlToolBar.add(btnLoadPGN = createButton(actionLoadPGN, "Open in Popup", true, false));
+		pnlToolBar.add(createButton(actionLoadPGN, "Open in Popup", true, false));
 		pnlToolBar.add(createButton(actionSettings, "Settings", true, false));
 		pnlToolBar.add(Box.createHorizontalGlue());
 		pnlToolBar.add(btnDrill = createButton(actionDrill, "Make Decision", true, true));
