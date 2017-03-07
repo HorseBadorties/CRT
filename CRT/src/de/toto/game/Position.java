@@ -224,7 +224,10 @@ public class Position {
 		while (p.hasPrevious()) {			
 			result.add(0, p);
 			p = p.getPrevious();
-			if (p.equals(startPosition)) break;
+			if (p.equals(startPosition)) {
+				result.add(0, p);
+				break;
+			}
 		}
 		return result;
 	}
