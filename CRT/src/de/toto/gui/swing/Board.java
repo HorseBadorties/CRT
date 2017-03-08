@@ -53,7 +53,7 @@ public class Board extends JPanel {
 		boardCanvas.positionChanged();
 		repaint();
 	}
-
+	
 	public void setShowGraphicsComments(boolean value) {
 		showGraphicsComments = value;
 	}
@@ -182,15 +182,7 @@ public class Board extends JPanel {
 		private static final Color squareSelectionColor = new Color(.3f, .4f, .5f, .6f);
 		private static final Color highlightColorGreen = new Color(0f, 1f, 0f, .4f);
 		private static final Color highlightColorRed = new Color(1f, 0f, 0f, .4f);
-		private static final Color highlightColorYellow = new Color(1f, 1f, 0f, .4f);
-		private static final Color arrowColorGreen50Percent = new Color(0f, 1f, 0f, .5f);
-		private static final Color arrowColorRed50Percent = new Color(1f, 0f, 0f, .5f);
-		private static final Color arrowColorYellow50Percent = new Color(1f, 1f, 0f, .5f);
-		private static final Color arrowColorBlack50Percent = new Color(0f, 0f, 0f, .5f);
-		private static final Color arrowColorGreen20Percent = new Color(0f, 1f, 0f, .2f);
-		private static final Color arrowColorRed20Percent = new Color(1f, 0f, 0f, .2f);
-		private static final Color arrowColorYellow20Percent = new Color(1f, 1f, 0f, .2f);
-		private static final Color arrowColorBlack20Percent = new Color(0f, 0f, 0f, .2f);
+		private static final Color highlightColorYellow = new Color(1f, 1f, 0f, .4f);		
 
 		private static final Color lightBlue = new Color(243, 243, 255);
 		private static final Color darkBlue = new Color(115, 137, 182);
@@ -376,14 +368,17 @@ public class Board extends JPanel {
 				String boardName = prefs.get(AppFrame.PREFS_BOARD_NAME, "Brown");
 				switch (boardName) {				
 					case "Maple": {
+						setSquareColors(Color.WHITE, Color.DARK_GRAY);
 						boardImage = ImageIO.read(Board.class.getResource("/images/board/maple.jpg"));
 						break;
 					} 
 					case "Wood": {
+						setSquareColors(Color.WHITE, Color.DARK_GRAY);
 						boardImage = ImageIO.read(Board.class.getResource("/images/board/wood-1024.jpg"));
 						break;
 					} 
 					case "Metal": {
+						setSquareColors(Color.WHITE, Color.BLACK);
 						boardImage = ImageIO.read(Board.class.getResource("/images/board/metal-1024.jpg"));
 						break;
 					} 
@@ -641,13 +636,9 @@ public class Board extends JPanel {
 			}
 			
 			Position position = board.getCurrentPosition();
-
+			
 			// draw square background if no boardImage is loaded
-			if (boardImageScaled == null) {
-				Font font = new Font("Dialog", Font.PLAIN, squareSize / 7);
-				float fontHeight = g2.getFontMetrics().getAscent();				
-				g2.setFont(font);
-				int span = squareSize / 25;
+			if (boardImageScaled == null) {				
 				for (int rank = 1; rank <= 8; rank++) {
 					for (int file = 1; file <= 8; file++) {
 						Square square = getSquare(rank, file);
@@ -655,14 +646,26 @@ public class Board extends JPanel {
 						if (boardImageScaled == null) {
 							g2.setColor(square.isWhite ? squareColorWhite : squareColorBlack);
 							g2.fillRect(square.topLeftOnBoard.x, square.topLeftOnBoard.y, squareSize, squareSize);
-							// draw square coordinates?
-							if (board.showCoordinates && ((isOrientationWhite && (square.rank == 1 || square.file == 1))
-									|| (!isOrientationWhite && (square.rank == 8 || square.file == 8)))) {
-								g2.setColor(square.isWhite ? squareColorBlack : squareColorWhite);//
-								g2.drawString(square.getName(), square.topLeftOnBoard.x + span,
-										square.topLeftOnBoard.y + fontHeight + span);
-							}
 						}
+					}
+				}
+			}
+			// draw square coordinates?
+			if (board.showCoordinates) {
+				Font font = new Font("Dialog", Font.PLAIN, squareSize / 7);
+				float fontHeight = g2.getFontMetrics().getAscent();				
+				g2.setFont(font);
+				int span = squareSize / 25;
+				for (int rank = 1; rank <= 8; rank++) {
+					for (int file = 1; file <= 8; file++) {
+						Square square = getSquare(rank, file);
+						if ( (isOrientationWhite && (square.rank == 1 || square.file == 1))
+								|| (!isOrientationWhite && (square.rank == 8 || square.file == 8))) 
+						{
+							g2.setColor(square.isWhite ? squareColorBlack : squareColorWhite);//
+							g2.drawString(square.getName(), square.topLeftOnBoard.x + span,
+									square.topLeftOnBoard.y + fontHeight + span);
+						}						
 					}
 				}
 			}
@@ -729,22 +732,21 @@ public class Board extends JPanel {
 				}
 			}
 
-			// draw additionalGraphicsComment
-			if (board.showGraphicsComments) {
-				for (Position.GraphicsComment gc : board.additionalGraphicsComment) {
-					if (gc.secondSquare != null) {
-						drawArrow(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file),
-								getSquare(gc.secondSquare.rank, gc.secondSquare.file), gc.color, squareSize);
-					} else {
-						Color c = highlightColorGreen;
-						if (gc.color == Color.RED)
-							c = highlightColorRed;
-						else if (gc.color == Color.YELLOW)
-							c = highlightColorYellow;
-						colorSquare(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file), c, squareSize);						
-					}
+			// draw additionalGraphicsComment			
+			for (Position.GraphicsComment gc : board.additionalGraphicsComment) {
+				if (gc.secondSquare != null) {
+					drawArrow(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file),
+							getSquare(gc.secondSquare.rank, gc.secondSquare.file), gc.color, squareSize);
+				} else {
+					Color c = highlightColorGreen;
+					if (gc.color == Color.RED)
+						c = highlightColorRed;
+					else if (gc.color == Color.YELLOW)
+						c = highlightColorYellow;
+					colorSquare(g2, getSquare(gc.firstSquare.rank, gc.firstSquare.file), c, squareSize);						
 				}
 			}
+			
 			
 			// draw material imbalance
 			if (board.showMaterialImbalance) {
@@ -766,22 +768,12 @@ public class Board extends JPanel {
 		private void drawArrow(Graphics2D g2, Square from, Square to, Color color, int squareSize) {
 			int x1 = from.topLeftOnBoard.x + squareSize / 2;
 			int y1 = from.topLeftOnBoard.y + squareSize / 2;
-			;
 			int x2 = to.topLeftOnBoard.x + squareSize / 2;
 			int y2 = to.topLeftOnBoard.y + squareSize / 2;
 
-			Color gradientFrom = arrowColorBlack20Percent;
-			Color gradientTo = arrowColorBlack50Percent;
-			if (color.equals(Color.GREEN)) {
-				gradientFrom = arrowColorGreen20Percent;
-				gradientTo = arrowColorGreen50Percent;
-			} else if (color.equals(Color.YELLOW)) {
-				gradientFrom = arrowColorYellow20Percent;
-				gradientTo = arrowColorYellow50Percent;
-			} else if (color.equals(Color.RED)) {
-				gradientFrom = arrowColorRed20Percent;
-				gradientTo = arrowColorRed50Percent;
-			}
+			Color gradientFrom = new Color(color.getRed(), color.getGreen(), color.getBlue(), 50);
+			Color gradientTo = new Color(color.getRed(), color.getGreen(), color.getBlue(), 128);
+
 			g2.setPaint(new GradientPaint(x1, y1, gradientFrom, x2, y2, gradientTo));
 			g2.fill(createArrowShape(new Point(x1, y1), new Point(x2, y2), squareSize));
 		}

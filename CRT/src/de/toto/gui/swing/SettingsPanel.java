@@ -32,6 +32,7 @@ public class SettingsPanel extends JPanel implements ActionListener {
 	private JCheckBox cbShowPieces;	
 	private JCheckBox cbShowCoordinates;
 	private JCheckBox cbShowArrows;
+	private JCheckBox cbShowEngineArrows;
 	private JCheckBox cbShowMaterialImbalance;
 	private JCheckBox cbAnnounceMoves;
 	private SpinnerModel spinnerModel;  
@@ -61,6 +62,8 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		cbShowCoordinates.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_COORDINATES, false));
 		cbShowArrows = new JCheckBox(appFrame.actionShowArrows);
 		cbShowArrows.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_ARROWS, true));	
+		cbShowEngineArrows = new JCheckBox(appFrame.actionShowEngineArrows);
+		cbShowEngineArrows.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_ENGINE_ARROWS, true));	
 		cbShowMaterialImbalance = new JCheckBox(appFrame.actionShowMaterialImbalance);
 		cbShowMaterialImbalance.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_MATERIAL_IMBALANCE, false));		
 		cbAnnounceMoves = new JCheckBox(appFrame.actionAnnounceMoves);
@@ -105,6 +108,7 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		pnlBoardOptions.add(cbShowPieces);
 		pnlBoardOptions.add(cbShowCoordinates);
 		pnlBoardOptions.add(cbShowArrows);
+		pnlBoardOptions.add(cbShowEngineArrows);
 		pnlBoardOptions.add(cbShowMaterialImbalance);
 		pnlBoardOptions.add(cbAnnounceMoves);
 		

@@ -1,5 +1,6 @@
 package de.toto.gui.swing;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -17,19 +18,28 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 	private JProgressBar pbPositionCount;
 	private JLabel lblLast;
 	private AbstractButton btnShowMove;
+	private AppFrame frame;
 	
 	private Action actionShowMove = new AbstractAction("Show Move") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (drill != null && !drill.isInDrillHistory()) {
-				String message = drill.getPosition().hasNext() ? drill.getPosition().getNext().toString() : "Repertoire move missing for current position";
-				JOptionPane.showMessageDialog(DrillStatusPanel.this, message, "Repertoire move", JOptionPane.INFORMATION_MESSAGE);
+				Position repertoireAnswer = drill.getPosition().getNext();
+				if (repertoireAnswer != null) {
+					btnShowMove.setEnabled(false);
+					String[] squareNames = repertoireAnswer.getMoveSquareNames();
+					frame.drawArrow(squareNames[0], squareNames[1], Color.MAGENTA);
+				} else {
+					String message = "Repertoire move missing for current position";
+					JOptionPane.showMessageDialog(DrillStatusPanel.this, message, "Repertoire move", JOptionPane.INFORMATION_MESSAGE);
+				}
 			}
 		}
 	};
 
-	public DrillStatusPanel(Drill drill) {
+	public DrillStatusPanel(Drill drill, AppFrame frame) {
 		super();
+		this.frame = frame;
 		this.drill = drill;
 		drill.addDrillListener(this);
 		
@@ -97,6 +107,7 @@ public class DrillStatusPanel extends JPanel implements DrillListener {
 	}
 	
 	private void updateProgress() {
+		btnShowMove.setEnabled(true);
 		DrillStats stats = drill.getDrillStats();
 		pbPositionCount.setValue(stats.drilledPositions);
 		pbPositionCount.setString(String.format("%d of %d positions drilled", stats.drilledPositions, drill.getPositionCount()));

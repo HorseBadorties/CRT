@@ -108,6 +108,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	public static final String PREFS_BOARD_NAME = "BOARD_NAME";
 	public static final String PREFS_PIECES_NAME = "PIECES_NAME";
 	public static final String PREFS_SHOW_ARROWS = "SHOW_ARROWS";
+	public static final String PREFS_SHOW_ENGINE_ARROWS = "SHOW_ENGINE_ARROWS";
 	public static final String PREFS_SHOW_PIECES = "SHOW_PIECES";
 	public static final String PREFS_SHOW_BOARD = "SHOW_BOARD";
 	public static final String PREFS_SHOW_COORDINATES = "SHOW_COORDINATES";
@@ -173,6 +174,11 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					board.reloadBoard();
 				} else if (evt.getKey().equals(PREFS_SHOW_ARROWS)) {					
 					board.setShowGraphicsComments(prefs.getBoolean(PREFS_SHOW_ARROWS, true));
+				} else if (evt.getKey().equals(PREFS_SHOW_ENGINE_ARROWS)) {
+					board.clearAdditionalGraphicsComment();	
+					if (prefs.getBoolean(PREFS_SHOW_ENGINE_ARROWS, true)) {						
+						drawEngineArrow();
+					} 
 				} else if (evt.getKey().equals(PREFS_SHOW_BOARD)) {
 					board.setShowBoard(prefs.getBoolean(PREFS_SHOW_BOARD, true));
 				} else if (evt.getKey().equals(PREFS_SHOW_COORDINATES)) {
@@ -191,6 +197,22 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				if (getCurrentGame() != null) updateBoard(false);
 			}
 		});
+	}
+	
+	private void drawEngineArrow() {
+		if (enginesBestMove != null) {			
+			drawArrow(enginesBestMove.substring(0, 2),
+					enginesBestMove.substring(2, 4),
+					Color.MAGENTA);
+		}
+	}
+	
+	public void drawArrow(String fromSquare, String toSquare, Color color) {				
+		Position p = getCurrentPosition();
+		Square from = p.getSquare(fromSquare);
+		Square to = p.getSquare(toSquare);								
+		board.addAdditionalGraphicsComment(new GraphicsComment(from, to, color));
+		board.repaint();
 	}
 	
 	private void doMenu() {
@@ -453,7 +475,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				actionGameAgainstTheEngine.setEnabled(false);
 				cbRandomDrill.setEnabled(false);
 				cbVariationDrill.setEnabled(false);
-				pnlDrillStatus = new DrillStatusPanel(drill);
+				pnlDrillStatus = new DrillStatusPanel(drill, AppFrame.this);
 				pnlDrillStatus.setFont(lstVariations.getFont());
 				setPanelVisible(pnlDrillStatus);
 				this.putValue(Action.NAME, "End Drill ");
@@ -469,6 +491,14 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		@Override
 		public void actionPerformed(ActionEvent e) {			
 			toggleBooleanPreference(PREFS_SHOW_ARROWS);				
+			
+		}
+	};
+	
+	protected Action actionShowEngineArrows = new AbstractAction("Show engine arrows?") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			toggleBooleanPreference(PREFS_SHOW_ENGINE_ARROWS);				
 			
 		}
 	};
@@ -1269,11 +1299,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		actionBack.setEnabled(g.hasPrevious());	
 		
 		// Engine move
-		board.clearAdditionalGraphicsComment();	
-		if (enginesBestMove != null) {			
-			Square from = p.getSquare(enginesBestMove.substring(0, 2));
-			Square to = p.getSquare(enginesBestMove.substring(2, 4));								
-			board.addAdditionalGraphicsComment(new GraphicsComment(from, to, Color.BLACK));
+		if (prefs.getBoolean(PREFS_SHOW_ENGINE_ARROWS, true)) {
+			board.clearAdditionalGraphicsComment();	
+			drawEngineArrow();
 		}
 	}
 
