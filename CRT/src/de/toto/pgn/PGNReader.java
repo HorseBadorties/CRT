@@ -2,8 +2,11 @@ package de.toto.pgn;
 
 import java.io.*;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -14,6 +17,14 @@ public class PGNReader {
 	private static final boolean DEBUG = false;
 	
 	private static Logger log = Logger.getLogger("PGNReader");
+	
+	private static DateFormat PGN_DATE_FOMATTER = new SimpleDateFormat("yyyy.MM.dd");	
+	public static String toPGNTimestamp(String millis) {
+		return toPGNTimestamp(Long.valueOf(millis));
+	}
+	public static String toPGNTimestamp(long millis) {
+		return PGN_DATE_FOMATTER.format(new Date(millis));
+	}
 	
 	public static List<Game> parse(File pgn) {
 		try {	

@@ -16,6 +16,7 @@ import com.google.gson.JsonObject;
 
 import de.toto.NetworkConfig;
 import de.toto.game.*;
+import de.toto.pgn.PGNReader;
 
 
 public class Lichess {
@@ -171,7 +172,7 @@ public class Lichess {
 			}		
 			result.addTag("Event", toPGNEvent(get(lichessGame, "rated")));
 			result.addTag("Site", "https://lichess.org/" + get(lichessGame, "id"));
-			result.addTag("Date", toPGNTimestamp(get(lichessGame, "createdAt")));
+			result.addTag("Date", PGNReader.toPGNTimestamp(get(lichessGame, "createdAt")));
 			result.addTag("White", get(lichessGame, "players.white.userId"));
 			result.addTag("Black", get(lichessGame, "players.black.userId"));
 			result.addTag("Result", toPGNResult(lichessGame));
@@ -193,11 +194,7 @@ public class Lichess {
 		return "unrated game";
 	}
 	
-	private static DateFormat PGN_DATE_FOMATTER = new SimpleDateFormat("yyyy.MM.dd");
 	
-	private static String toPGNTimestamp(String millis) {
-		return PGN_DATE_FOMATTER.format(new Date(Long.valueOf(millis)));
-	}
 	
 	private static String toPGNResult(JsonObject lichessGame) {
 		String winner = get(lichessGame, "winner");

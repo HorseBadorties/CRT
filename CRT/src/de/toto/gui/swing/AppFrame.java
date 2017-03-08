@@ -65,6 +65,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private JLabel lblDrillHistory;	
 	private JPanel pnlTryVariation;
 	private JLabel lblTryVariation;
+	private JPanel pnlEngineGame;
+	private JLabel lblEngineGame;
+	private JTextField txtYourMove;
 	private JPanel pnlToolBar;
 	
 	private JCheckBox cbRandomDrill;
@@ -708,6 +711,12 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		public void actionPerformed(ActionEvent e) {
 			if (gameAgainstTheEngine != null) {
 				gameAgainstTheEngine.removeGameListener(AppFrame.this);
+				if (JOptionPane.showConfirmDialog(AppFrame.this, "Save game?") == JOptionPane.YES_OPTION) {
+					DB db = new DB("CRT");
+					gameAgainstTheEngine.addTag("PlyCount", String.valueOf(gameAgainstTheEngine.getAllPositions().size()));
+					db.saveGame(gameAgainstTheEngine);
+					db.close();
+				}				
 				gameAgainstTheEngine = null;
 				if (gameEngine != null) {
 					gameEngine.endGame();
@@ -717,7 +726,10 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				updateBoard(false);
 				btnGameAgainstTheEngine.setIcon(loadIcon("Robot"));
 				this.putValue(Action.NAME, "Training Game");	
-				setTitle("Chess Repertoire Trainer: " + pgn.getName());				
+				setTitle("Chess Repertoire Trainer: " + pgn.getName());		
+				txtComment.setEditable(false);					
+				txtComment.setFocusable(false);
+				txtComment.setOpaque(false);
 			} else {
 				String pathToGameEngine = prefs.get(PREFS_PATH_TO_GAME_ENGINE, null);
 				if (pathToGameEngine == null) {				
@@ -749,6 +761,15 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					btnGameAgainstTheEngine.setIcon(loadIcon("Robot red"));
 					this.putValue(Action.NAME, "End Game");					
 					setTitle(String.format("Playing against %s on level %d", gameEngine.getName(), result));
+					
+					gameAgainstTheEngine.addTag("White", board.isOrientationWhite() ? "CRT-User" : gameEngine.getName());
+					gameAgainstTheEngine.addTag("Black", board.isOrientationWhite() ? gameEngine.getName() : "CRT-User");
+					gameAgainstTheEngine.addTag("Date", PGNReader.toPGNTimestamp(System.currentTimeMillis()));
+					gameAgainstTheEngine.addTag("Event", "Training game");
+					gameAgainstTheEngine.addTag("Result", "*");
+					txtComment.setEditable(true);					
+					txtComment.setFocusable(true);
+					txtComment.setOpaque(true);
 				}
 			}
 		}
@@ -1048,6 +1069,23 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		lblTryVariation.setForeground(Color.RED);
 		lblTryVariation.setHorizontalAlignment(SwingConstants.CENTER);
 		pnlTryVariation.add(lblTryVariation);
+		pnlEngineGame = new JPanel(new BorderLayout());
+		lblEngineGame = new JLabel();
+		lblEngineGame.setForeground(Color.RED);
+		lblEngineGame.setHorizontalAlignment(SwingConstants.CENTER);
+		txtYourMove = new JTextField(5);
+		pnlEngineGame.add(lblEngineGame);
+		pnlEngineGame.add(txtYourMove, BorderLayout.PAGE_END);
+		txtYourMove.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String comment = txtComment.getText();
+				userMove(txtYourMove.getText());
+				getCurrentPosition().setComment(comment);
+			}
+		});
+		
 		pnlVariationsAndDrillStatus = new JPanel(new BorderLayout());
 		pnlVariations = new JPanel(new BorderLayout());
 		pnlVariations.setBorder(BorderFactory.createTitledBorder("Repertoire Variations"));
@@ -1264,15 +1302,20 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 		if (getCurrentGame() == gameAgainstTheEngine) {			
 			if (gameAgainstTheEngine.getPosition().hasNext()) {
-				lblTryVariation.setText("Browsing game history");
+				lblEngineGame.setText("Browsing game history");
 			} else {
 				if (board.isOrientationWhite() != getCurrentPosition().isWhiteToMove()) {
 					gameEngine.move(gameAgainstTheEngine.getUCIStartFEN(),
 							gameAgainstTheEngine.getUCIEngineMoves(),
 							gameAgainstTheEngine.getPosition().getFen());
-					lblTryVariation.setText("Engine is thinking...");
+					lblEngineGame.setText("Engine is thinking...");
+					txtYourMove.setText("");
+					txtYourMove.setVisible(false);
 				} else {
-					lblTryVariation.setText("Your move!");
+					lblEngineGame.setText("Your move!");
+					txtYourMove.setText("");
+					txtYourMove.setVisible(true);
+					txtYourMove.requestFocus();
 				}
 			}
 		}
@@ -1282,7 +1325,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			txtStatus.setText(p.getFen());
 		}
 		
-		if (gameAgainstTheEngine != null || tryVariation != null) {
+		if (gameAgainstTheEngine != null) {
+			setPanelVisible(pnlEngineGame);
+		} else if (tryVariation != null) {
 			setPanelVisible(pnlTryVariation);
 		} else if (drill != null) {			
 			if (drill.isInDrillHistory()) {
@@ -1461,6 +1506,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	
 	private void setFonts(Font f) {	
 		lblTryVariation.setFont(f);
+		lblEngineGame.setFont(f);
 		lblDrillHistory.setFont(f);
 		btnBackToCurrentDrillPosition.setFont(f);
 		lstVariations.setFont(f);
@@ -1578,19 +1624,19 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			if (keyEvent.getID() == KeyEvent.KEY_TYPED) {				
 				char c = keyEvent.getKeyChar();
 				if (getCurrentGame() == gameAgainstTheEngine) {
-					if (c == '\n') {
-						String move = keysTyped.trim();
-						keysTyped = "";
-						userMove(move);
-					} else if (c == 27) { //ESC
-						keysTyped = "";
-					} else if (c == 8) { //BACKSPACE
-						if (keysTyped.length() > 0)  {
-							keysTyped = keysTyped.substring(0, keysTyped.length() - 1);
-						}
-					} else {
-						keysTyped = keysTyped + String.valueOf(c);
-					}
+//					if (c == '\n') {
+//						String move = keysTyped.trim();
+//						keysTyped = "";
+//						userMove(move);
+//					} else if (c == 27) { //ESC
+//						keysTyped = "";
+//					} else if (c == 8) { //BACKSPACE
+//						if (keysTyped.length() > 0)  {
+//							keysTyped = keysTyped.substring(0, keysTyped.length() - 1);
+//						}
+//					} else {
+//						keysTyped = keysTyped + String.valueOf(c);
+//					}
 					
 				} else {
 					if (c == 'K' || c == 'Q' || c == 'B'|| c == 'N'|| c == 'R') {
