@@ -413,9 +413,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					try {
 						List<Game> games = loadGames(db,  "H_Badorties");
 						for (Game g : games) {
-							if (g.getTagValue("White").equals("H_Badorties")) {
+							if ("H_Badorties".equals(g.getTagValue("White"))) {
 								g.addTag("White", "Horse_Badorties"); 
-							} else if (g.getTagValue("Black").equals("H_Badorties")) {
+							} else if ("H_Badorties".equals(g.getTagValue("Black"))) {
 								g.addTag("Black", "Horse_Badorties"); 
 							}
 						}
