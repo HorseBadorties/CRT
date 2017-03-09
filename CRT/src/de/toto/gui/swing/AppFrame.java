@@ -451,7 +451,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		String lastID = db.getLastID(lichessUsername);						
 		List<Game> games = Lichess.downloadGames(lichessUsername,
 				lastID,				
-				new GregorianCalendar(2017, Calendar.JANUARY, 1).getTime(), // from
+				null, // from
 				null, // to
 				true, // whiteGames
 				true, // blackGames
