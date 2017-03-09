@@ -413,9 +413,9 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					try {
 						List<Game> games = loadGames(db,  "H_Badorties");
 						for (Game g : games) {
-							if ("H_Badorties".equals(g.getTagValue("White"))) {
+							if ("H_Badorties".equalsIgnoreCase(g.getTagValue("White"))) {
 								g.addTag("White", "Horse_Badorties"); 
-							} else if ("H_Badorties".equals(g.getTagValue("Black"))) {
+							} else if ("H_Badorties".equalsIgnoreCase(g.getTagValue("Black"))) {
 								g.addTag("Black", "Horse_Badorties"); 
 							}
 						}
@@ -451,7 +451,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		String lastID = db.getLastID(lichessUsername);						
 		List<Game> games = Lichess.downloadGames(lichessUsername,
 				lastID,				
-				null, // from
+				new GregorianCalendar(2017, Calendar.JANUARY, 1).getTime(), // from
 				null, // to
 				true, // whiteGames
 				true, // blackGames
