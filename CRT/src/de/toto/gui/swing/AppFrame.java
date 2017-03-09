@@ -6,7 +6,10 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -234,7 +237,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		menuEdit.add(actionSaveGame);		
 		menuEdit.add(actionLoadGame);
 		menuEdit.add(actionMergeGame);
-		menuEdit.add(actionDownloadLichessGame);
+		menuEdit.add(actionDownloadLichessGames);
+		menuEdit.add(actionDownloadHorseBadorties);
 		menuEdit.add(actionTest);
 		
 		JMenu menuActions = new JMenu("Actions");
@@ -357,7 +361,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		}
 	};
 	
-	private Action actionDownloadLichessGame = new AbstractAction("Download Lichess Games") {
+	private Action actionDownloadLichessGames = new AbstractAction("Download Lichess Games") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			final String name = JOptionPane.showInputDialog("Lichess user name"); 
@@ -368,7 +372,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					int result = 0;
 					DB db = new DB("CRT");
 					try {
-						List<Game> games = Lichess.downloadGames(name, null);
+						List<Game> games = Lichess.downloadGames(name);
 						for (Game g : games) {
 							db.saveGame(g);
 						}
@@ -396,6 +400,71 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					
 		}
 	};
+	
+	private Action actionDownloadHorseBadorties = new AbstractAction("Download My Games") {
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			new SwingWorker<Integer, Void>() {
+
+				@Override
+				protected Integer doInBackground() throws Exception {
+					int result = 0;
+					DB db = new DB("CRT");
+					try {
+						List<Game> games = loadGames(db,  "H_Badorties");
+						for (Game g : games) {
+							if (g.getTagValue("White").equals("H_Badorties")) {
+								g.addTag("White", "Horse_Badorties"); 
+							} else if (g.getTagValue("Black").equals("H_Badorties")) {
+								g.addTag("Black", "Horse_Badorties"); 
+							}
+						}
+						games.addAll(loadGames(db,  "Horse_Badorties"));			
+						File pgn = new File(System.getProperty("user.home") + "/Downloads", "Horse_Badorties.pgn");
+						Game.saveToFile(games, pgn, true);
+						result = Integer.valueOf(games.size());
+					} finally {
+						db.close();
+					}	
+					return result;
+				}
+
+				@Override
+				protected void done() {
+					Integer count = 0;
+					try {
+						count = get();
+					} catch (Exception e) {
+						e.printStackTrace();
+					} 
+					JOptionPane.showMessageDialog(AppFrame.this, 
+							String.format("downloaded and saved %d games", count, "Download finished"));
+				}
+				
+				
+			}.execute();
+					
+		}
+	};
+	
+	private List<Game> loadGames(DB db, String lichessUsername) {		
+		String lastID = db.getLastID(lichessUsername);						
+		List<Game> games = Lichess.downloadGames(lichessUsername,
+				lastID,				
+				null, // from
+				null, // to
+				true, // whiteGames
+				true, // blackGames
+				null, // speed
+				null); // moves  //new String[] {"e4 e6", "e3"}
+		if (!games.isEmpty()) {			
+			Game lastGame = games.get(0);
+			if (lastGame != null) {				
+				db.updateLichessUsername(lichessUsername, lastGame.getTagValue("LichessID"));
+			}						
+		}
+		return games;			
+	}
 	
 	private Action actionMergeGame = new AbstractAction("Merge Game") {
 		@Override

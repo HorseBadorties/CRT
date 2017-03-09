@@ -35,6 +35,38 @@ public class DB {
 			}
 		}
 	}
+		
+	public String getLastID(String lichessUsername) {		
+		try (Statement stmt = con.createStatement()) {
+			ResultSet rslt = stmt.executeQuery(
+					String.format("select last_id from LICHESS where username = '%s'", 
+							lichessUsername));
+			if  (rslt.next()) {
+				return rslt.getString("last_id");
+			} 
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		}		
+		return null;
+	}
+	
+	public void updateLichessUsername(String lichessUsername, String lastID) {		
+		String delete = String.format("delete from LICHESS where username = '%s'", lichessUsername);
+		String insert = String.format("INSERT INTO LICHESS (USERNAME, LAST_ID) VALUES ('%s','%s')",
+				lichessUsername, lastID);		
+		try (Statement stmt = con.createStatement()) {
+			stmt.execute(delete);
+			stmt.execute(insert);
+			con.commit();			
+		} catch (SQLException ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			ex.printStackTrace();
+		}
+	}
 	
 	public List<Integer> listGames() {
 		List<Integer> result = new ArrayList<Integer>();

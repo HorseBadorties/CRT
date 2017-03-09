@@ -23,3 +23,12 @@ event VARCHAR(128),
 startPosition INTEGER
 );
 
+DROP TABLE LICHESS;
+
+CREATE TABLE LICHESS 
+(
+username VARCHAR(50),
+last_id VARCHAR(10)
+);
+
+

@@ -25,26 +25,20 @@ public class Lichess {
 		NetworkConfig.doConfig();
 	}
 	
-	public static List<Game> downloadGames(String lichessUser, File targetDir) {
-		return downloadGames(lichessUser, targetDir, null, null, true, true, (String[])null, (String[])null);
+	public static List<Game> downloadGames(String lichessUser) {
+		return downloadGames(lichessUser, null, null, null, true, true, (String[])null, (String[])null);
 	}
 			
 	// speed=bullet|blitz|classical|unlimited
-	public static List<Game> downloadGames(String lichessUser, File targetDir, Date from, Date to, boolean whiteGames, boolean blackGames, String[] speed, String[] movesStartWith) {		
+	public static List<Game> downloadGames(String lichessUser, String upToID, Date from, Date to, boolean whiteGames, boolean blackGames, String[] speed, String[] movesStartWith) {		
 		System.out.println("starting at " + new Date());
 		List<Game> result = new ArrayList<>();
 		if (!whiteGames && !blackGames) {
 			System.out.println("neither white nor black games requested");
 			return result;
 		}
-		InputStream is = null;
-		FileWriter writer = null;
-		try {
-			if (targetDir != null) {
-				File pgn = new File(targetDir, lichessUser + ".pgn");
-				writer = new FileWriter(pgn);
-				System.out.println("downloading to " + pgn);
-			}
+		InputStream is = null;		
+		try {			
 			int nb = 100;
 			int page = 1;
 			
@@ -100,12 +94,10 @@ public class Lichess {
 					
 					Game g = toGame(jsonGame);
 					if (g != null) {
-						if (writer != null) {
-							writer.write(g.toPGN() + "\n");	
-							writer.flush();
-						} else {
-							result.add(g);
+						if (get(jsonGame, "id").equals(upToID)) {
+							break while_loop;
 						}
+						result.add(g);						
 					}
 				}				
 				if (get(json, "nextPage") != null) {
@@ -123,12 +115,8 @@ public class Lichess {
 				if (is != null) is.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-			}			
-			try {
-				if (writer != null) writer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} 
+			}		
+			
 		}
 		return result;
 	}
@@ -181,6 +169,7 @@ public class Lichess {
 			result.addTag("PlyCount", get(lichessGame, "turns"));
 			result.addTag("TimeControl", get(lichessGame, "clock.initial") + "+" + get(lichessGame, "clock.increment"));
 			result.addTag("Termination", toPGNTermination(get(lichessGame, "status")));
+			result.addTag("LichessID", get(lichessGame, "id"));
 			return result;
 		} catch (Exception ex) {
 			System.err.println("failed to parse game " + get(lichessGame, "url"));
@@ -213,15 +202,19 @@ public class Lichess {
 		return "normal";
 	}
 	
-	public static void main(String[] args) {
-		Lichess.downloadGames("hillrp", 
-				new File(System.getProperty("user.home") + "/Downloads"),
+	public static void main(String[] args) throws Exception {
+		String lichessUser = "Makaronnik";
+		List<Game> games = Lichess.downloadGames(lichessUser,
+				null,				
 				new GregorianCalendar(2016, Calendar.MARCH, 4).getTime(), // from //new GregorianCalendar(2016, Calendar.JANUARY, 1).getTime()
 				null, // to
-				false, // whiteGames
-				true, // blackGames
+				true, // whiteGames
+				false, // blackGames
 				new String[] {"blitz","classical","unlimited"}, // speed
 				null); // moves  //new String[] {"e4 e6", "e3"}
+		
+		Game.saveToFile(games, new File(System.getProperty("user.home") + "/Downloads", lichessUser + ".pgn"), true);
+			
 	}
 	
 	

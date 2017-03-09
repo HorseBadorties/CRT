@@ -1,5 +1,8 @@
 package de.toto.game;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -399,6 +402,27 @@ public class Game {
 
 	public void setDbId(int dbId) {
 		this.dbId = dbId;
+	}
+	
+	public static void saveToFile(List<Game> games, File file, boolean append) {
+		FileWriter writer = null;
+		try {		
+			
+			writer = new FileWriter(file, append);
+			System.out.println("saving to " + file);				
+			for (Game g : games) {
+				writer.write(g.toPGN() + "\n");
+			}
+			writer.flush();		
+		} catch (IOException ioEx) {
+			throw new RuntimeException(ioEx);		
+		} finally {						
+			try {
+				if (writer != null) writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} 
+		}
 	}
 		
 	
