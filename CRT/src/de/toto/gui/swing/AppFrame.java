@@ -411,17 +411,32 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					int result = 0;
 					DB db = new DB("CRT");
 					try {
-						List<Game> games = loadGames(db,  "H_Badorties");
+						List<Game> games = loadGames(db,  "h_badorties");
 						for (Game g : games) {
-							if ("H_Badorties".equalsIgnoreCase(g.getTagValue("White"))) {
-								g.addTag("White", "Horse_Badorties"); 
-							} else if ("H_Badorties".equalsIgnoreCase(g.getTagValue("Black"))) {
-								g.addTag("Black", "Horse_Badorties"); 
+							if ("h_badorties".equalsIgnoreCase(g.getTagValue("White"))) {
+								g.addTag("White", "horse_badorties"); 
+							} else {
+								g.addTag("Black", "horse_badorties"); 
 							}
 						}
-						games.addAll(loadGames(db,  "Horse_Badorties"));			
-						File pgn = new File(System.getProperty("user.home") + "/Downloads", "Horse_Badorties.pgn");
-						Game.saveToFile(games, pgn, true);
+						games.addAll(loadGames(db,  "horse_badorties"));
+						List<Game> whites = new ArrayList<Game>();
+						List<Game> blacks = new ArrayList<Game>();
+						for (Game g : games) {
+							if ("horse_badorties".equalsIgnoreCase(g.getTagValue("White"))) {
+								whites.add(g); 
+							} else {
+								blacks.add(g); 
+							}
+						}
+						if (!whites.isEmpty()) {
+							File pgn = new File(System.getProperty("user.home") + "/Downloads", "Horse_Badorties_White.pgn");
+							Game.saveToFile(whites, pgn, true);
+						}
+						if (!blacks.isEmpty()) {
+							File pgn = new File(System.getProperty("user.home") + "/Downloads", "Horse_Badorties_Black.pgn");
+							Game.saveToFile(blacks, pgn, true);
+						}
 						result = Integer.valueOf(games.size());
 					} finally {
 						db.close();
