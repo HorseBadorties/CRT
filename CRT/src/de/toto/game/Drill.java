@@ -275,6 +275,14 @@ public class Drill extends Game {
 		fireDrillEvent(new DrillEvent(DrillEvent.ID_DRILL_ENDED, this, null));		
 	}
 	
+	private boolean isPrior(Position first, Position second) {
+		if (!first.isWhiteToMove() && second.isWhiteToMove()) {
+			return first.getMoveNumber() <= second.getMoveNumber();
+		} else {
+			return first.getMoveNumber() < second.getMoveNumber();
+		}
+	}
+	
 	private List<Position> getAllDrillPositions(boolean randomDrill, boolean variationDrill) {
 		List<Position> result = new ArrayList<Position>();
 		Position drillPosition = currentPosition;
@@ -297,7 +305,7 @@ public class Drill extends Game {
 			if (nextDrillPosition == null
 					|| nextDrillPosition.equals(drillPosition)
 					|| nextDrillPosition.equals(drillStartingPosition)
-					|| nextDrillPosition.getMoveNumber() < drillStartingPosition.getMoveNumber()) 
+					|| isPrior(nextDrillPosition , drillStartingPosition)) 
 			{
 				log.info("end of line");
 				break;
