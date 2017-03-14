@@ -56,7 +56,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	private JLabel txtStatus;
 	private JPanel pnlMoves;
 	private JPanel pnlComments;
-	private JPanel pnlMovesAndComments;
+	private JSplitPane splitMovesAndComments;
 	private JTable tblMoves;
 	private PositionTableModel modelMoves;
 	private JList<Position> lstVariations;
@@ -108,6 +108,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	public static final String PREFS_SPLITTER_CENTER_POSITION = "SPLITTER_CENTER_POSITION";
 	public static final String PREFS_SPLITTER_EAST_POSITION = "SPLITTER_EAST_POSITION";
 	public static final String PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION = "PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION";
+	public static final String PREFS_SPLITTER_MOVES_AND_COMMENTS_POSITION = "PREFS_SPLITTER_MOVES_AND_COMMENTS_POSITION";
+	
 	public static final String PREFS_FONT_SIZE = "FONT_SIZE";
 	public static final String PREFS_FONT_NAME = "FONT_NAME";
 	public static final String PREFS_ONLY_MAINLINE = "ONLY_MAINLINE";
@@ -246,6 +248,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		menuActions.add(actionDiagonalDrill);
 		menuActions.add(actionKnightMoveDrill);
 		menuActions.add(actionShowTranspositions);
+		menuActions.add(actionFindPosition);
 		
 		menuBar.add(menuFile);
 		menuBar.add(menuEdit);
@@ -268,6 +271,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		prefs.putInt(PREFS_SPLITTER_CENTER_POSITION, splitCenter.getDividerLocation());
 		prefs.putInt(PREFS_SPLITTER_EAST_POSITION, splitEast.getDividerLocation());
 		prefs.putInt(PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION, splitMovesAndEngine.getDividerLocation());
+		prefs.putInt(PREFS_SPLITTER_MOVES_AND_COMMENTS_POSITION, splitMovesAndComments.getDividerLocation());
 		prefs.putInt(PREFS_FONT_SIZE, lstVariations.getFont().getSize());
 		prefs.put(PREFS_FONT_NAME, lstVariations.getFont().getName());
 		prefs.putBoolean(PREFS_RANDOM_DRILL, cbRandomDrill.isSelected());
@@ -725,7 +729,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 					if (enginePanel == null) {
 						enginePanel = new EnginePanel(AppFrame.this, engine);											
 					}					
-					setVerticalSplitPaneComponents(splitMovesAndEngine, pnlMovesAndComments, enginePanel);
+					setVerticalSplitPaneComponents(splitMovesAndEngine, splitMovesAndComments, enginePanel);
 					setVerticalSplitPaneComponents(splitEast, null, splitMovesAndEngine);
 					engine.setFEN(getCurrentPosition().getFen());	
 					this.putValue(Action.NAME, "Stop Engine");
@@ -776,7 +780,8 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				tryVariation.removeGameListener(AppFrame.this);
 				tryVariation = null;				
 				updateBoard(false);
-				btnTryVariation.setIcon(loadIcon("Microscope"));
+				btnTryVariation.setIcon(loadIcon("Microscope"));				
+				actionFindPosition.setEnabled(false);
 				this.putValue(Action.NAME, "Try Variation");				
 				
 			} else {
@@ -785,6 +790,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				tryVariation.addGameListener(AppFrame.this);
 				updateBoard(false);
 				btnTryVariation.setIcon(loadIcon("Microscope red"));
+				actionFindPosition.setEnabled(true);
 				this.putValue(Action.NAME, "End Variation");				
 			}
 		}
@@ -910,6 +916,37 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				p = allPositions.get(i);
 			}		
 					
+		}
+	};
+	
+	private Action actionFindPosition = new AbstractAction("Find Current Position in Repertoire") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			Position currentPosition = getCurrentPosition();
+			Position result = null;		
+			
+			for (Position p : repertoire.getAllPositions()) {
+				if (p.isSamePositionAs(currentPosition)) {
+					/*
+					 * in case we find the position more than once, try to deduct the "main line"
+					 */
+					if (result != null) {
+						if (p.getDepth() > result.getDepth()) {
+							result = p;
+						}
+					} else {
+						result = p;
+					}
+				}
+			}			
+			
+			if (result != null) {
+				btnTryVariation.doClick();
+				getCurrentGame().gotoPosition(result);
+			} else {
+				JOptionPane.showMessageDialog(AppFrame.this, "Position not found.");
+			}					
 		}
 	};
 	
@@ -1109,8 +1146,13 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlCenter.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 0));
 		
 		JPopupMenu popUpChooseFont = new JPopupMenu();
-		popUpChooseFont.add(actionChooseFont);				
-		pnlMovesAndComments = new JPanel(new BorderLayout());
+		popUpChooseFont.add(actionChooseFont);
+		
+		splitMovesAndComments = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		int splitPosition = prefs.getInt(PREFS_SPLITTER_MOVES_AND_COMMENTS_POSITION, 0);
+		if (splitPosition > 0) {
+			splitMovesAndComments.setDividerLocation(splitPosition);
+		}		
 		pnlMoves = new JPanel(new BorderLayout());
 		pnlMoves.setBorder(BorderFactory.createTitledBorder("Move List"));
 		modelMoves = new PositionTableModel();
@@ -1138,7 +1180,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 			}			
 		});
 		pnlMoves.add(new JScrollPane(tblMoves));
-		pnlMovesAndComments.add(pnlMoves, BorderLayout.CENTER);
+		splitMovesAndComments.setTopComponent(pnlMoves);
 		pnlComments = new JPanel(new BorderLayout());
 		pnlComments.setBorder(BorderFactory.createTitledBorder("Move Comments"));
 		txtComment = new JTextArea(2, 2);
@@ -1146,7 +1188,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		txtComment.setFocusable(false);
 		txtComment.setOpaque(false);
 		pnlComments.add(new JScrollPane(txtComment));
-		pnlMovesAndComments.add(pnlComments, BorderLayout.PAGE_END);
+		splitMovesAndComments.setBottomComponent(pnlComments);
 		
 		pnlTryVariation = new JPanel(new BorderLayout());
 		lblTryVariation = new JLabel("Trying Variation");
@@ -1160,13 +1202,10 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		txtYourMove = new JTextField(5);
 		pnlEngineGame.add(lblEngineGame);
 		pnlEngineGame.add(txtYourMove, BorderLayout.PAGE_END);
-		txtYourMove.addActionListener(new ActionListener() {
-			
+		txtYourMove.addActionListener(new ActionListener() {			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String comment = txtComment.getText();
-				userMove(txtYourMove.getText());
-				getCurrentPosition().setComment(comment);
+				userMove(txtYourMove.getText().trim());
 			}
 		});
 		
@@ -1203,12 +1242,12 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		pnlDrillHistory.add(btnBackToCurrentDrillPosition);
 		
 		splitMovesAndEngine  = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		int splitPosition = prefs.getInt(PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION, 0);
+		splitPosition = prefs.getInt(PREFS_SPLITTER_MOVES_AND_ENGINE_POSITION, 0);
 		if (splitPosition > 0) {
 			splitMovesAndEngine.setDividerLocation(splitPosition);
 		}
 		
-		splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlVariationsAndDrillStatus, pnlMovesAndComments);
+		splitEast = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlVariationsAndDrillStatus, splitMovesAndComments);
 		splitEast.setBorder(null);
 		splitPosition = prefs.getInt(PREFS_SPLITTER_EAST_POSITION, 0);
 		if (splitPosition > 0) {
@@ -1439,9 +1478,12 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		if (!getCurrentGame().getPosition().isPossibleMove(move)) {			
 			return;
 		}		
-		if (gameAgainstTheEngine != null) {
+		if (gameAgainstTheEngine != null) {			
 			try {
+				String comment = txtComment.getText();
+				Position p = getCurrentPosition();	
 				gameAgainstTheEngine.addMove(move);
+				p.setComment(comment);
 			} catch (Exception ex) {
 				JOptionPane.showMessageDialog(AppFrame.this, String.format("Move '%s' is not legal", move), 
 						"Illegal move", JOptionPane.WARNING_MESSAGE);
@@ -1682,7 +1724,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	@Override
 	public void engineStopped(UCIEngine e) {
 		if (e == engine && enginePanel != null && enginePanel.isVisible()) {			
-			setVerticalSplitPaneComponents(splitEast, null, pnlMovesAndComments);
+			setVerticalSplitPaneComponents(splitEast, null, splitMovesAndComments);
 		}
 	}
 

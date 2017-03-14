@@ -216,6 +216,20 @@ public class Position {
 	
 	/**
 	 * 
+	 * @return
+	 */
+	public int getDepth() {
+		int result = 0;
+		Position p = this;
+		while (p.hasNext()) {			
+			result++;
+			p = p.getNext();
+		}
+		return result;
+	}
+	
+	/**
+	 * 
 	 * @return the complete variation that leads to this position - beginning at startPosition and including this position. 
 	 */
 	public List<Position> getLine(Position startPosition) {
