@@ -203,13 +203,13 @@ public class Lichess {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		String lichessUser = "Makaronnik";
+		String lichessUser = "dose7781";
 		List<Game> games = Lichess.downloadGames(lichessUser,
 				null,				
-				new GregorianCalendar(2016, Calendar.MARCH, 4).getTime(), // from //new GregorianCalendar(2016, Calendar.JANUARY, 1).getTime()
+				null, // from //new GregorianCalendar(2016, Calendar.JANUARY, 1).getTime()
 				null, // to
-				true, // whiteGames
-				false, // blackGames
+				false, // whiteGames
+				true, // blackGames
 				new String[] {"blitz","classical","unlimited"}, // speed
 				null); // moves  //new String[] {"e4 e6", "e3"}
 		

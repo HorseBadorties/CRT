@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang.StringUtils;
+
 public class Game {
 	
 	private static Logger log = Logger.getLogger("Game");
@@ -14,6 +16,7 @@ public class Game {
 	private int dbId;
 	protected Position currentPosition;
 	private Map<String, String> tags = new HashMap<String, String>();
+	private transient Set<Position> repertoirePositions;
 	
 	private List<GameListener> listener = new ArrayList<GameListener>();
 	
@@ -289,7 +292,14 @@ public class Game {
 	
 	@Override
 	public String toString() {
-		return String.format("%s - %s: %s", getTagValue("White"), getTagValue("Black"), getTagValue("Event")); 
+		String eloWhite = getTagValue("WhiteElo");
+		String eloBlack = getTagValue("BlackElo");
+		return String.format("%s %s - %s %s: %s", 
+				getTagValue("White"),
+				StringUtils.isEmpty(eloWhite) ? "" : eloWhite,
+				getTagValue("Black"),
+				StringUtils.isEmpty(eloBlack) ? "" : eloBlack,
+				getTagValue("Event")); 
 	}
 	
 	public Position findNovelty1(Game other) {
@@ -345,9 +355,31 @@ public class Game {
 		
 	}
 	
-	public boolean contains(Position aPosition) {
+	/**
+	 * 
+	 * @return all Positions with a "#REP" comment
+	 */
+	private Set<Position> getRepertoirePositions() {
+		if (repertoirePositions == null) {		
+			repertoirePositions = new HashSet<Position>();
+			for (Position p : getAllPositions()) {
+				if (p.getComment() != null && p.getComment().contains("#REP")) {
+					repertoirePositions.add(p);
+				}
+			}
+		}
+		return repertoirePositions;
+	}
+	
+	public boolean isRepertoireRelevant(Game aGame) {
+		return aGame.contains(getRepertoirePositions().toArray(new Position[0]));				
+	}
+	
+	public boolean contains(Position... otherPositions) {
 		for (Position p : getAllPositions()) {
-			if (p.isSamePositionAs(aPosition)) return true;
+			for (Position o : otherPositions) {
+				if (p.isSamePositionAs(o)) return true;
+			}
 		}
 		return false;
 	}

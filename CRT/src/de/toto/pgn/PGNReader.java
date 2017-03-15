@@ -14,6 +14,8 @@ import de.toto.game.*;
 
 public class PGNReader {
 		
+	private BufferedReader reader;
+	
 	private static final boolean DEBUG = false;
 	
 	private static Logger log = Logger.getLogger("PGNReader");
@@ -26,7 +28,38 @@ public class PGNReader {
 		return PGN_DATE_FOMATTER.format(new Date(millis));
 	}
 	
-	public static List<Game> parse(File pgn) {
+	public PGNReader(File pgn) {
+		try {
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(pgn), "UTF-8"));
+		} catch (Exception e) {
+			throw new RuntimeException("opening PGN file failed", e);		
+		}
+	}
+	
+	public void close() {
+		if (reader != null) {
+			try {
+				reader.close();
+			} catch (IOException e) {
+				throw new RuntimeException(e.getMessage(), e);	
+			}
+		}
+	}
+	
+	public Game readNextGame() {
+		try {
+			Game result = readGame(reader);
+			if (result == null) {
+				reader.close();
+				reader = null;
+			}
+			return result;
+		} catch (IOException e) {
+			throw new RuntimeException(e.getMessage(), e);	
+		}
+	}
+	
+	public static List<Game> parse2(File pgn) {
 		try {	
 			return doParse(new BufferedReader(new InputStreamReader(new FileInputStream(pgn), "UTF-8")));
 		} catch (Exception ex) {
@@ -35,7 +68,27 @@ public class PGNReader {
 		}	
 	}
 	
-	public static List<Game> parse(URL url) {		
+	public static List<Game> parse(File pgn) {
+		try {
+			List<Game> result = new ArrayList<Game>();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(pgn), "UTF-8"));
+			try {
+				Game g = readGame(reader);
+				while (g != null) {
+					result.add(g);
+					g = readGame(reader);
+				}
+			} finally {
+				reader.close();
+			}	
+			return result;
+		} catch (Exception ex) {
+			//TODO better error handling
+			throw new RuntimeException("parsing PGN file failed", ex);
+		}	
+	}
+	
+	public static List<Game> parse2(URL url) {		
 		try {
 			return doParse(new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8")));
 		} catch (Exception ex) {
@@ -44,6 +97,15 @@ public class PGNReader {
 		}
 	}
 	
+	public static List<Game> parse(URL url) {		
+		try {
+			return parse(new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8")));
+		} catch (Exception ex) {
+			//TODO better error handling
+			throw new RuntimeException("parsing PGN url failed", ex);
+		}
+	}
+		
 	public static List<Game> doParse(BufferedReader reader) {	
 		List<String> pgnLines = new ArrayList<String>();
 		try {			
@@ -132,6 +194,117 @@ public class PGNReader {
 				System.err.println("parsing error at line no " + i);
 				throw ex;
 			}
+		}
+		//add last game
+		if (currentGame != null) {
+			if (DEBUG) log.info("adding game " + currentGame);
+			result.add(currentGame);
+		}
+		return result;
+	}
+	
+	private static Game readGame(BufferedReader reader) throws IOException {
+		if (reader == null) return null;
+		String line = reader.readLine();
+		while (line != null && isEmpty(line)) {
+			line = reader.readLine();
+		}		
+		if (line == null) { // EOF
+			return null;
+		}
+		// Handle first 3 ChessBase special characters		
+		line = line.substring(line.indexOf('['));
+
+		StringBuilder movetext = new StringBuilder();;
+		Game currentGame = new Game();
+		currentGame.start();
+		
+		while (line != null) {			
+			try {
+				line = line.trim();
+				if (isEmpty(line)) {
+					line = reader.readLine();
+					continue;
+				}				
+				if (line.startsWith("[") && movetext.length() == 0) {
+					line = line.replaceAll("\\[|\\]", ""); //strip "[" and "]"
+					String name = line.substring(0, line.indexOf(" "));
+					String value = line.substring(line.indexOf(" "), line.length()).trim().replace("\"", "");
+					currentGame.addTag(name, value);
+					if ("FEN".equals(name)) {
+						currentGame.addMove("--", value);
+					}
+				} else {
+					movetext.append(line).append(" ");
+					if (line.endsWith(currentGame.getTagValue("Result"))) {
+						// TODO Result might be inside a Comment at a line end...
+						parseMovetext(movetext.toString(), currentGame);
+						if (DEBUG) log.info("prased game " + currentGame);
+						return currentGame;
+					}
+				}
+			} catch (RuntimeException ex) {
+				System.err.println("parsing error at line: " + line);
+				throw ex;
+			}
+			line = reader.readLine();
+		}
+		// EOF
+		return null;
+	}
+	
+	private static List<Game> parse(BufferedReader reader) throws IOException {
+		List<Game> result = new ArrayList<Game>();		
+		
+		String line = reader.readLine();
+		while (isEmpty(line) && line != null) {
+			line = reader.readLine();
+		}
+		// Handle first 3 ChessBase special characters		
+		line = line.substring(line.indexOf('['));
+				
+		boolean isBeginOfGame = true;
+		StringBuilder movetext = null;
+		Game currentGame = null;
+		while (line != null) {			
+			try {
+				line = line.trim();
+				if (isEmpty(line)) {
+					line = reader.readLine();
+					continue;
+				}
+				if (isBeginOfGame) {				
+					if (currentGame != null) {
+						if (DEBUG) log.info("adding game " + currentGame);
+						result.add(currentGame);
+					}
+					currentGame = new Game();
+					currentGame.start();
+					movetext = new StringBuilder();
+					isBeginOfGame = false;
+				}
+				
+				if (line.startsWith("[") && movetext.length() == 0) {
+					line = line.replaceAll("\\[|\\]", ""); //strip "[" and "]"
+					String name = line.substring(0, line.indexOf(" "));
+					String value = line.substring(line.indexOf(" "), line.length()).trim().replace("\"", "");
+					currentGame.addTag(name, value);
+					if ("FEN".equals(name)) {
+						currentGame.addMove("--", value);
+					}
+				} else {
+					movetext.append(line).append(" ");
+					if (line.endsWith(currentGame.getTagValue("Result"))) {
+						// TODO Result might be inside a Comment at a line end...
+						parseMovetext(movetext.toString(), currentGame);
+						isBeginOfGame = true;
+					}
+				}
+			} catch (RuntimeException ex) {
+				System.err.println("parsing error at line: " + line);
+				throw ex;
+			}
+			line = reader.readLine();
 		}
 		//add last game
 		if (currentGame != null) {

@@ -228,6 +228,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		JMenu menuFile = new JMenu("File");
 		menuFile.add(actionLoadPGN);
 		menuFile.add(actionShowNovelties);
+		menuFile.add(actionShowRelevantGames);
 		menuFile.add(actionDownloadPGN);
 		
 		JMenu menuEdit = new JMenu("Edit");
@@ -318,6 +319,7 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 		repertoire = g;
 		repertoire.addGameListener(this);
 		g.gotoStartPosition();
+		setTitle(g.toString());
 	}
 	
 	public Position getCurrentPosition() {	
@@ -876,13 +878,10 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 	
 	private Action actionShowNovelties = new AbstractAction("Show Novelties") {
 		@Override
-		public void actionPerformed(ActionEvent e) {
-			
-			JOptionPane.showMessageDialog(AppFrame.this, new SettingsPanel(AppFrame.this), "Options", JOptionPane.OK_OPTION);
-			
+		public void actionPerformed(ActionEvent e) {			
 			File lastDir = pgn != null ? pgn.getParentFile() : null;
 			JFileChooser fc = new JFileChooser(lastDir);
-			fc.setDialogTitle("Please choose a PGN file that contains your games!");
+			fc.setDialogTitle("Please choose a PGN file!");
 			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fc.setFileFilter(new FileNameExtensionFilter("*.pgn", "pgn"));
 			int ok = fc.showOpenDialog(AppFrame.this);
@@ -890,6 +889,51 @@ implements BoardListener, GameListener, DrillListener, EngineListener, AWTEventL
 				for (Game g : PGNReader.parse(fc.getSelectedFile())) {
 					repertoire.findNovelty(g);
 				}
+			}		
+		}
+	};
+	
+	private Action actionShowRelevantGames = new AbstractAction("Show Repertoire-relevant Games") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			File lastDir = pgn != null ? pgn.getParentFile() : null;
+			JFileChooser fc = new JFileChooser(lastDir);
+			fc.setDialogTitle("Please choose a PGN file!");
+			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			fc.setFileFilter(new FileNameExtensionFilter("*.pgn", "pgn"));
+			int ok = fc.showOpenDialog(AppFrame.this);
+			if (ok == JFileChooser.APPROVE_OPTION) {
+				List<Game> relevantGames = new ArrayList<Game>();
+				File selectedFile = fc.getSelectedFile();
+				PGNReader reader = new PGNReader(selectedFile);
+				Game g = reader.readNextGame();
+				while (g != null) {
+					if (repertoire.isRepertoireRelevant(g)) {
+						relevantGames.add(g);
+					}
+					g = reader.readNextGame();
+				}
+				reader.close();
+				if (relevantGames.isEmpty()) {
+					JOptionPane.showMessageDialog(AppFrame.this, "No games found");
+				} else {
+					GameListDialog d = new GameListDialog(AppFrame.this, relevantGames);
+					d.setTitle(selectedFile.getName());
+					d.addActionListener(new ActionListener() {						
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							Game g = (Game)e.getSource();
+							if (g == null) return;							
+							g.gotoStartPosition();
+							setGame(g);
+							AppFrame.this.requestFocus();
+						}
+					});
+					d.pack();
+					d.setLocationRelativeTo(AppFrame.this);
+					d.setVisible(true);
+				}
+				
 			}		
 		}
 	};
