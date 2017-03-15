@@ -40,7 +40,7 @@ public class DB {
 		try (Statement stmt = con.createStatement()) {
 			ResultSet rslt = stmt.executeQuery(
 					String.format("select last_id from LICHESS where username = '%s'", 
-							lichessUsername));
+							lichessUsername.toLowerCase()));
 			if  (rslt.next()) {
 				return rslt.getString("last_id");
 			} 
@@ -51,9 +51,9 @@ public class DB {
 	}
 	
 	public void updateLichessUsername(String lichessUsername, String lastID) {		
-		String delete = String.format("delete from LICHESS where username = '%s'", lichessUsername);
+		String delete = String.format("delete from LICHESS where username = '%s'", lichessUsername.toLowerCase());
 		String insert = String.format("INSERT INTO LICHESS (USERNAME, LAST_ID) VALUES ('%s','%s')",
-				lichessUsername, lastID);		
+				lichessUsername.toLowerCase(), lastID);		
 		try (Statement stmt = con.createStatement()) {
 			stmt.execute(delete);
 			stmt.execute(insert);
