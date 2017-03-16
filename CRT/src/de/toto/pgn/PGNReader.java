@@ -5,10 +5,11 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang.StringUtils;
 
 import de.toto.game.*;
 
@@ -58,20 +59,11 @@ public class PGNReader {
 			throw new RuntimeException(e.getMessage(), e);	
 		}
 	}
-	
-	public static List<Game> parse2(File pgn) {
-		try {	
-			return doParse(new BufferedReader(new InputStreamReader(new FileInputStream(pgn), "UTF-8")));
-		} catch (Exception ex) {
-			//TODO better error handling
-			throw new RuntimeException("parsing PGN file failed", ex);
-		}	
-	}
-	
-	public static List<Game> parse(File pgn) {
+		
+	public static List<Game> parse(InputStream stream) {
 		try {
 			List<Game> result = new ArrayList<Game>();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(pgn), "UTF-8"));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
 			try {
 				Game g = readGame(reader);
 				while (g != null) {
@@ -88,141 +80,52 @@ public class PGNReader {
 		}	
 	}
 	
-	public static List<Game> parse2(URL url) {		
+	public static List<Game> parse(File pgn) {
 		try {
-			return doParse(new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8")));
-		} catch (Exception ex) {
-			//TODO better error handling
-			throw new RuntimeException("parsing PGN url failed", ex);
-		}
-	}
-	
-	public static List<Game> parse(URL url) {		
-		try {
-			return parse(new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8")));
-		} catch (Exception ex) {
-			//TODO better error handling
-			throw new RuntimeException("parsing PGN url failed", ex);
+			return parse(new FileInputStream(pgn));
+		} catch (FileNotFoundException ex) {			
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 	}
 		
-	public static List<Game> doParse(BufferedReader reader) {	
-		List<String> pgnLines = new ArrayList<String>();
-		try {			
-			try {
-				String line = null;
-				for(;;) {
-					line = reader.readLine();
-					if (line != null) {
-						pgnLines.add(line);
-					} else break;
-				}				
-			} finally {
-				reader.close();
-			}
-			return parse(pgnLines);
+	public static List<Game> parse(URL url) {		
+		try {
+			return parse(url.openStream());
 		} catch (Exception ex) {
-			//TODO better error handling
-			throw new RuntimeException("parsing PGN file failed", ex);
-		}	
+			throw new RuntimeException(ex.getMessage(), ex);
+		}
 	}
 	
 	public static List<Game> parse(String pgn) {
-		return parse(Arrays.asList(pgn.split("\\R")));
-	}
-	
-	private static boolean isEmpty(String line) {
-		if (line == null || line.trim().isEmpty()) return true;
-		
-		return false;
-	}
-	
-	private static List<Game> parse(List<String> pgnLines) {
-		List<Game> result = new ArrayList<Game>();
-		if (pgnLines == null || pgnLines.isEmpty()) return result;
-		while (isEmpty(pgnLines.get(0))) {
-			pgnLines.remove(0);
+		try {
+			return parse(new ByteArrayInputStream(pgn.getBytes("UTF-8")));
+		} catch (Exception ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}		
-		// Handle first 3 ChessBase special characters		
-		pgnLines.set(0, pgnLines.get(0).substring(pgnLines.get(0).indexOf('[')));
-		boolean isBeginOfGame = true;
-		StringBuilder movetext = null;
-		Game currentGame = null;
-		for (int i = 0; i < pgnLines.size(); i++) {			
-			try {
-			String line = pgnLines.get(i).trim();
-			if (isEmpty(line)) {
-				continue;
-			}
-			if (isBeginOfGame) {				
-				if (currentGame != null) {
-					if (DEBUG) log.info("adding game " + currentGame);
-					result.add(currentGame);
-				}
-				currentGame = new Game();
-				currentGame.start();
-				movetext = new StringBuilder();
-				isBeginOfGame = false;
-			}
-			
-			if (line.startsWith("[") && movetext.length() == 0) {
-				line = line.replaceAll("\\[|\\]", ""); //strip "[" and "]"
-				String name = line.substring(0, line.indexOf(" "));
-				String value = line.substring(line.indexOf(" "), line.length()).trim().replace("\"", "");
-				currentGame.addTag(name, value);
-				if ("FEN".equals(name)) {
-					currentGame.addMove("--", value);
-				}
-			} else {
-				movetext.append(line).append(" ");
-				if (line.endsWith(currentGame.getTagValue("Result"))) {
-					//EOF or next line is either empty or start with a "["?
-					if (i < pgnLines.size()-1) {
-						String nextLine = pgnLines.get(i+1).trim();
-						if (isEmpty(nextLine) || nextLine.startsWith("[")) {							
-							parseMovetext(movetext.toString(), currentGame);
-							isBeginOfGame = true;
-						}
-					} else {
-						parseMovetext(movetext.toString(), currentGame);
-						isBeginOfGame = true;
-					}
-					
-				}
-			}
-			} catch (RuntimeException ex) {
-				System.err.println("parsing error at line no " + i);
-				throw ex;
-			}
-		}
-		//add last game
-		if (currentGame != null) {
-			if (DEBUG) log.info("adding game " + currentGame);
-			result.add(currentGame);
-		}
-		return result;
 	}
-	
+		
 	private static Game readGame(BufferedReader reader) throws IOException {
 		if (reader == null) return null;
 		String line = reader.readLine();
-		while (line != null && isEmpty(line)) {
+		while (line != null && StringUtils.isBlank(line)) {
 			line = reader.readLine();
 		}		
 		if (line == null) { // EOF
 			return null;
 		}
 		// Handle first 3 ChessBase special characters		
-		line = line.substring(line.indexOf('['));
+		if (line.indexOf('[') >= 0) {
+			line = line.substring(line.indexOf('['));
+		}
 
-		StringBuilder movetext = new StringBuilder();;
-		Game currentGame = new Game();
-		currentGame.start();
+		StringBuilder movetext = new StringBuilder();
+		Game game = new Game();
+		game.start();
 		
 		while (line != null) {			
 			try {
 				line = line.trim();
-				if (isEmpty(line)) {
+				if (StringUtils.isBlank(line)) {
 					line = reader.readLine();
 					continue;
 				}				
@@ -230,17 +133,21 @@ public class PGNReader {
 					line = line.replaceAll("\\[|\\]", ""); //strip "[" and "]"
 					String name = line.substring(0, line.indexOf(" "));
 					String value = line.substring(line.indexOf(" "), line.length()).trim().replace("\"", "");
-					currentGame.addTag(name, value);
+					game.addTag(name, value);
 					if ("FEN".equals(name)) {
-						currentGame.addMove("--", value);
+						game.addMove("--", value);
 					}
 				} else {
 					movetext.append(line).append(" ");
-					if (line.endsWith(currentGame.getTagValue("Result"))) {
-						// TODO Result might be inside a Comment at a line end...
-						parseMovetext(movetext.toString(), currentGame);
-						if (DEBUG) log.info("prased game " + currentGame);
-						return currentGame;
+					String gameResult = game.getTagValue("Result");
+					if (line.endsWith(gameResult)) {
+						/*  
+						 *  TODO The Result String might be inside a Comment at a line end...
+						 *  This would break our parser.
+						 */
+						parseMovetext(movetext.toString(), game, gameResult);
+						if (DEBUG) log.info("parsed game " + game);
+						return game;
 					}
 				}
 			} catch (RuntimeException ex) {
@@ -253,69 +160,7 @@ public class PGNReader {
 		return null;
 	}
 	
-	private static List<Game> parse(BufferedReader reader) throws IOException {
-		List<Game> result = new ArrayList<Game>();		
-		
-		String line = reader.readLine();
-		while (isEmpty(line) && line != null) {
-			line = reader.readLine();
-		}
-		// Handle first 3 ChessBase special characters		
-		line = line.substring(line.indexOf('['));
-				
-		boolean isBeginOfGame = true;
-		StringBuilder movetext = null;
-		Game currentGame = null;
-		while (line != null) {			
-			try {
-				line = line.trim();
-				if (isEmpty(line)) {
-					line = reader.readLine();
-					continue;
-				}
-				if (isBeginOfGame) {				
-					if (currentGame != null) {
-						if (DEBUG) log.info("adding game " + currentGame);
-						result.add(currentGame);
-					}
-					currentGame = new Game();
-					currentGame.start();
-					movetext = new StringBuilder();
-					isBeginOfGame = false;
-				}
-				
-				if (line.startsWith("[") && movetext.length() == 0) {
-					line = line.replaceAll("\\[|\\]", ""); //strip "[" and "]"
-					String name = line.substring(0, line.indexOf(" "));
-					String value = line.substring(line.indexOf(" "), line.length()).trim().replace("\"", "");
-					currentGame.addTag(name, value);
-					if ("FEN".equals(name)) {
-						currentGame.addMove("--", value);
-					}
-				} else {
-					movetext.append(line).append(" ");
-					if (line.endsWith(currentGame.getTagValue("Result"))) {
-						// TODO Result might be inside a Comment at a line end...
-						parseMovetext(movetext.toString(), currentGame);
-						isBeginOfGame = true;
-					}
-				}
-			} catch (RuntimeException ex) {
-				System.err.println("parsing error at line: " + line);
-				throw ex;
-			}
-			line = reader.readLine();
-		}
-		//add last game
-		if (currentGame != null) {
-			if (DEBUG) log.info("adding game " + currentGame);
-			result.add(currentGame);
-		}
-		return result;
-	}
-	
-	private static void parseMovetext(String movetext, Game game) {
-		String expectedGameResult = game.getTagValue("Result");
+	private static void parseMovetext(String movetext, Game game, String expectedGameResult) {
 		boolean insideComment = false;
 		StringBuilder moveComment = null;
 		boolean startVariation = false;
