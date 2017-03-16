@@ -15,8 +15,7 @@ public class Game {
 	
 	private int dbId;
 	protected Position currentPosition;
-	private Map<String, String> tags = new HashMap<String, String>();
-	private transient Set<Position> repertoirePositions;
+	private Map<String, String> tags = new HashMap<String, String>();	
 	
 	private List<GameListener> listener = new ArrayList<GameListener>();
 	
@@ -212,8 +211,8 @@ public class Game {
 				while (previous.getVariationLevel() != p.getVariationLevel()-1) {
 					if (previous.getVariationLevel() == p.getVariationLevel()) headOfVariation = previous;
 					previous = previous.getPrevious();
-				}
-				if (previous.hasVariation(startPosition)) return null;
+					if (previous.hasVariation(startPosition)) return null;
+				}				
 				// now look for the next variation
 				List<Position> variations = previous.getVariations();
 				int indexOfHeadOfVariation = variations.indexOf(headOfVariation);
@@ -294,11 +293,13 @@ public class Game {
 	public String toString() {
 		String eloWhite = getTagValue("WhiteElo");
 		String eloBlack = getTagValue("BlackElo");
-		return String.format("%s %s - %s %s: %s", 
+		String result = getTagValue("Result");
+		return String.format("%s %s - %s %s %s - %s", 
 				getTagValue("White"),
 				StringUtils.isEmpty(eloWhite) ? "" : eloWhite,
 				getTagValue("Black"),
 				StringUtils.isEmpty(eloBlack) ? "" : eloBlack,
+				StringUtils.isEmpty(result) ? "" : ": "  + result,
 				getTagValue("Event")); 
 	}
 	
@@ -354,25 +355,30 @@ public class Game {
 		return novelty;
 		
 	}
-	
+		
 	/**
 	 * 
-	 * @return all Positions with a "#REP" comment
+	 * @return all Positions with a "#REP" comment which are child positions of the given position
 	 */
-	private Set<Position> getRepertoirePositions() {
-		if (repertoirePositions == null) {		
-			repertoirePositions = new HashSet<Position>();
-			for (Position p : getAllPositions()) {
-				if (p.getComment() != null && p.getComment().contains("#REP")) {
-					repertoirePositions.add(p);
-				}
+	public Set<Position> getRepertoirePositions(Position startPosition) {
+		Set<Position> repertoirePositions = new HashSet<Position>();
+		if (isRepertoirePosition(startPosition)) {
+			repertoirePositions.add(startPosition);
+		}
+		for (Position p : getAllPositions(startPosition)) {
+			if (isRepertoirePosition(p)) {
+				repertoirePositions.add(p);
 			}
 		}
 		return repertoirePositions;
 	}
 	
-	public boolean isRepertoireRelevant(Game aGame) {
-		return aGame.contains(getRepertoirePositions().toArray(new Position[0]));				
+	private boolean isRepertoirePosition(Position p) {
+		return p.getComment() != null && p.getComment().contains("#REP");
+	}
+	
+	public boolean isRelevant(Game aGame, Position... relevantPositions) {		
+		return aGame.contains(relevantPositions);				
 	}
 	
 	public boolean contains(Position... otherPositions) {
