@@ -964,7 +964,7 @@ public class AppFrame extends JFrame
 			}
 		});
 		gameListDialog.setTitle(String.format("searching through %s ...", selectedFile.getName()));			
-		gameListDialog.pack();
+		gameListDialog.pack(); 
 		gameListDialog.setLocationRelativeTo(AppFrame.this);
 		gameListDialog.setVisible(true);
 
@@ -1021,7 +1021,7 @@ public class AppFrame extends JFrame
 		});		
 
 	}
-	
+		
 	private Action actionLoadPGN = new AbstractAction("Load PGN to browse Games") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
