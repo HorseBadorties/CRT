@@ -230,6 +230,7 @@ public class AppFrame extends JFrame
 		menuFile.add(actionLoadPGN);
 		menuFile.add(actionShowNovelties);
 		menuFile.add(actionShowRelevantGames);
+		menuFile.add(actionShowCurrentPositionGames);
 		menuFile.add(actionDownloadPGN);
 
 		JMenu menuEdit = new JMenu("Edit");
@@ -451,12 +452,12 @@ public class AppFrame extends JFrame
 						if (!whites.isEmpty()) {
 							File pgn = new File(System.getProperty("user.home") + "/Downloads",
 									"Horse_Badorties_White.pgn");
-							Game.saveToFile(whites, pgn, true);
+							Game.saveToFile(pgn, true, whites);
 						}
 						if (!blacks.isEmpty()) {
 							File pgn = new File(System.getProperty("user.home") + "/Downloads",
 									"Horse_Badorties_Black.pgn");
-							Game.saveToFile(blacks, pgn, true);
+							Game.saveToFile(pgn, true, blacks);
 						}
 						result = Integer.valueOf(games.size());
 					} finally {
@@ -816,12 +817,11 @@ public class AppFrame extends JFrame
 		public void actionPerformed(ActionEvent e) {
 			if (gameAgainstTheEngine != null) {
 				gameAgainstTheEngine.removeGameListener(AppFrame.this);
-				if (JOptionPane.showConfirmDialog(AppFrame.this, "Save game?") == JOptionPane.YES_OPTION) {
-					DB db = new DB("CRT");
+				if (JOptionPane.showConfirmDialog(AppFrame.this, "Save game?") == JOptionPane.YES_OPTION) {					
 					gameAgainstTheEngine.addTag("PlyCount",
 							String.valueOf(gameAgainstTheEngine.getAllPositions().size()));
-					db.saveGame(gameAgainstTheEngine);
-					db.close();
+					File targetPGN = new File(System.getProperty("user.home") + "/Downloads/CRT_Training_Games.pgn");
+					Game.saveToFile(targetPGN, true, gameAgainstTheEngine);
 				}
 				gameAgainstTheEngine = null;
 				if (gameEngine != null) {
@@ -865,14 +865,20 @@ public class AppFrame extends JFrame
 					updateBoard(false);
 					btnGameAgainstTheEngine.setIcon(loadIcon("Robot red"));
 					this.putValue(Action.NAME, "End Game");
-					setTitle(String.format("Playing against %s on level %d", gameEngine.getName(), result));
-
+					
+					String engineName = gameEngine.getName() + " on level " + result;
+					setTitle("Playing against " + engineName);
+					
 					gameAgainstTheEngine.addTag("White",
-							board.isOrientationWhite() ? "CRT-User" : gameEngine.getName());
+							board.isOrientationWhite() ? "CRT-User" : engineName);
 					gameAgainstTheEngine.addTag("Black",
-							board.isOrientationWhite() ? gameEngine.getName() : "CRT-User");
+							board.isOrientationWhite() ? engineName : "CRT-User");
 					gameAgainstTheEngine.addTag("Date", PGNReader.toPGNTimestamp(System.currentTimeMillis()));
-					gameAgainstTheEngine.addTag("Event", "Training game");
+					String event = "Training game"; 
+					if (!prefs.getBoolean(PREFS_SHOW_BOARD, true)) {
+						event += " (blindfolded)";
+					}
+					gameAgainstTheEngine.addTag("Event", event);
 					gameAgainstTheEngine.addTag("Result", "*");
 					txtComment.setEditable(true);
 					txtComment.setFocusable(true);
@@ -910,6 +916,18 @@ public class AppFrame extends JFrame
 			}
 		}
 	};
+	
+	private Action actionShowCurrentPositionGames = new AbstractAction("Show Games with Current Position") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					showRelevantGames(new Position[] {getCurrentPosition()});					
+				}
+			});
+		}	
+	};
 
 	private Action actionShowRelevantGames = new AbstractAction("Show Repertoire-relevant Games") {
 		@Override
@@ -917,13 +935,13 @@ public class AppFrame extends JFrame
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					showRelevantGames();					
+					showRelevantGames(repertoire.getRepertoirePositions(getCurrentPosition()).toArray(new Position[0]));					
 				}
 			});
 		}	
 	};
 		
-	private void showRelevantGames() {
+	private void showRelevantGames(final Position[] relevantPositions) {
 		File lastDir = pgn != null ? pgn.getParentFile() : null;
 		final JFileChooser fc = new JFileChooser(lastDir);
 		fc.setDialogTitle("Please choose a PGN file!");
@@ -957,14 +975,13 @@ public class AppFrame extends JFrame
 			@Override
 			protected List<Game> doInBackground() throws Exception {
 				PGNReader reader = new PGNReader(selectedFile);
-				Position[] repertoirePositions = 
-						repertoire.getRepertoirePositions(getCurrentPosition()).toArray(new Position[0]);
+				
 				try {
 					
 					Game g = reader.readNextGame();
 					while (g != null) {
 						count++;
-						if (repertoire.isRelevant(g, repertoirePositions)) {							
+						if (repertoire.isRelevant(g, relevantPositions)) {							
 							publish(g);
 						}
 						g = reader.readNextGame();

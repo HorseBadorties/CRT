@@ -9,6 +9,8 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
 
+import de.toto.pgn.PGNReader;
+
 public class Game {
 	
 	private static Logger log = Logger.getLogger("Game");
@@ -411,12 +413,9 @@ public class Game {
 	
 	public String toPGN() {
 		StringBuilder result = new StringBuilder();
-		for (Entry<String, String> tag : tags.entrySet()) {
-			result.append("[").append(tag.getKey()).append(" \"").append(tag.getValue()).append("\"]\n");
-		}
-		if (result.length() > 0) {
-			result.append("\n");
-		}
+		
+		result.append(tagsToPGN());
+		
 		Position p = findStartPosition();
 		if (p.isStartPosition()) {
 			p = p.getNext();
@@ -424,6 +423,9 @@ public class Game {
 		while (p != null) {
 			if (p.whiteMoved()) result.append(p.getMoveNumber()).append(". ");
 			result.append(p.getMoveAsSan()).append(" ");
+			if (!StringUtils.isBlank(p.getCommentText())) {
+				result.append("{").append(p.getCommentText()).append("} ");
+			}
 			if (p.hasNext()) {
 				p = p.getNext();
 			} else {
@@ -432,6 +434,37 @@ public class Game {
 		}
 		result.append(getTagValue("Result")).append("\n");
 		return result.toString();
+	}
+	
+	private String tagsToPGN() {
+		StringBuilder result = new StringBuilder();
+		Map<String, String> ourTags = new HashMap<String, String>(tags);
+		String value = ourTags.remove("Event");
+		appendTag(result, "Event", StringUtils.isBlank(value) ? "*" : value);
+		value = ourTags.remove("Date");
+		appendTag(result, "Date", StringUtils.isBlank(value) ? "*" : PGNReader.toPGNTimestamp(System.currentTimeMillis()));
+		value = ourTags.remove("White");
+		appendTag(result, "White", StringUtils.isBlank(value) ? "*" : value);
+		value = ourTags.remove("Black");
+		appendTag(result, "Black", StringUtils.isBlank(value) ? "*" : value);
+		value = ourTags.remove("Result");
+		appendTag(result, "Result", StringUtils.isBlank(value) ? "*" : value);
+		value = ourTags.remove("WhiteElo");
+		appendTag(result, "WhiteElo", StringUtils.isBlank(value) ? "*" : value);
+		value = ourTags.remove("BlackElo");
+		appendTag(result, "BlackElo", StringUtils.isBlank(value) ? "*" : value);
+		
+		for (Entry<String, String> tag : ourTags.entrySet()) {
+			appendTag(result, tag.getKey(), tag.getValue());
+		}
+		if (result.length() > 0) {
+			result.append("\n");
+		}
+		return result.toString();
+	}
+	
+	private void appendTag(StringBuilder pgn, String name, String value) {
+		pgn.append("[").append(name).append(" \"").append(value).append("\"]\n");
 	}
 
 	public int getDbId() {
@@ -442,7 +475,7 @@ public class Game {
 		this.dbId = dbId;
 	}
 	
-	public static void saveToFile(List<Game> games, File file, boolean append) {
+	public static void saveToFile(File file, boolean append, Game...games) {
 		FileWriter writer = null;
 		try {		
 			
@@ -461,6 +494,10 @@ public class Game {
 				e.printStackTrace();
 			} 
 		}
+	}
+	
+	public static void saveToFile(File file, boolean append, List<Game> games) {
+		saveToFile(file, append, games.toArray(new Game[0]));		
 	}
 		
 	

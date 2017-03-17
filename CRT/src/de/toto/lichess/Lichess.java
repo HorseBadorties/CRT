@@ -213,7 +213,8 @@ public class Lichess {
 				new String[] {"blitz","classical","unlimited"}, // speed
 				null); // moves  //new String[] {"e4 e6", "e3"}
 		
-		Game.saveToFile(games, new File(System.getProperty("user.home") + "/Downloads", lichessUser + ".pgn"), true);
+		Game.saveToFile(new File(System.getProperty("user.home") + "/Downloads", lichessUser + ".pgn"), 
+				true, games);
 			
 	}
 	
