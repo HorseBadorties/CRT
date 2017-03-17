@@ -45,7 +45,9 @@ public class GameListDialog extends JDialog {
 		Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
 		String fontName = prefs.get(AppFrame.PREFS_FONT_NAME, "Frutiger Standard");
 		int fontSize = prefs.getInt(AppFrame.PREFS_FONT_SIZE, 12); 
-		tblGames.setFont(new Font(fontName, Font.PLAIN, fontSize));
+		Font font = new Font(fontName, Font.PLAIN, fontSize);
+		tblGames.setFont(font);
+		tblGames.setRowHeight(fontSize + 6);
 		
 		
 	}
