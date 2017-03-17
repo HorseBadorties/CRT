@@ -10,7 +10,8 @@ import javax.swing.DefaultListModel;
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
-import javax.swing.ListModel;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -18,21 +19,26 @@ import de.toto.game.Game;
 
 public class GameListDialog extends JDialog {
 	
+	private GameTableModel gameTableModel = new GameTableModel();
+	private JTable tblGames = new JTable(gameTableModel);
 	private List<ActionListener> ourActionListener = new ArrayList<ActionListener>();	
-//	private List<Game> games = new ArrayList<Game>();
-	private DefaultListModel<Game> games = new DefaultListModel<Game>();
-	private JList<Game> gameList = new JList<Game>(games);
 	
 	public GameListDialog(Frame owner) {
 		super(owner, false);
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);		
-		gameList.addListSelectionListener(new ListSelectionListener() {
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		tblGames.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
-				fireActionPerformed(gameList.getSelectedValue());
+				int modelRow = tblGames.convertRowIndexToModel(tblGames.getSelectedRow());
+				fireActionPerformed(gameTableModel.getGameAt(modelRow));
 			}
 		});
-		getContentPane().add(new JScrollPane(gameList));
+		tblGames.setRowSelectionAllowed(true);
+		tblGames.setColumnSelectionAllowed(false);
+		tblGames.setCellSelectionEnabled(false);
+		tblGames.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tblGames.setAutoCreateRowSorter(true);
+		getContentPane().add(new JScrollPane(tblGames));
 	}
 	
 	public void addActionListener(ActionListener e) {
@@ -51,24 +57,21 @@ public class GameListDialog extends JDialog {
 	}
 	
 	public void addGame(Game g) {
-		games.addElement(g);
+		gameTableModel.addGames(g);
 	}
 	
 	public void addGames(List<Game> _games) {
 		for (Game g : _games) {
-			games.addElement(g);
+			gameTableModel.addGames(g);
 		}
 	}
 	
 	public void setGames(List<Game> _games) {
-		games.clear();
-		for (Game g : _games) {
-			games.addElement(g);
-		}
+		gameTableModel.setGames(_games.toArray(new Game[0]));
 	}
 	
 	public int getGamesCount() {
-		return games.getSize();
+		return gameTableModel.getRowCount();
 	}
 	
 }

@@ -423,8 +423,8 @@ public class Game {
 		while (p != null) {
 			if (p.whiteMoved()) result.append(p.getMoveNumber()).append(". ");
 			result.append(p.getMoveAsSan()).append(" ");
-			if (!StringUtils.isBlank(p.getCommentText())) {
-				result.append("{").append(p.getCommentText()).append("} ");
+			if (!StringUtils.isBlank(p.getComment())) {
+				result.append("{").append(p.getComment()).append("} ");
 			}
 			if (p.hasNext()) {
 				p = p.getNext();
