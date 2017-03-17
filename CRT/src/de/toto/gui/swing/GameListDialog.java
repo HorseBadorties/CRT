@@ -1,10 +1,12 @@
 package de.toto.gui.swing;
 
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JDialog;
@@ -39,6 +41,13 @@ public class GameListDialog extends JDialog {
 		tblGames.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tblGames.setAutoCreateRowSorter(true);
 		getContentPane().add(new JScrollPane(tblGames));
+		
+		Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
+		String fontName = prefs.get(AppFrame.PREFS_FONT_NAME, "Frutiger Standard");
+		int fontSize = prefs.getInt(AppFrame.PREFS_FONT_SIZE, 12); 
+		tblGames.setFont(new Font(fontName, Font.PLAIN, fontSize));
+		
+		
 	}
 	
 	public void addActionListener(ActionListener e) {
