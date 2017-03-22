@@ -124,6 +124,7 @@ public class AppFrame extends JFrame
 	public static final String PREFS_SHOW_MATERIAL_IMBALANCE = "SHOW_MATERIAL_IMBALANCE";
 	public static final String PREFS_SHOW_MOVE_NOTATION = "SHOW_MOVE_NOTATION";
 	public static final String PREFS_ANNOUNCE_MOVES = "ANNOUNCE_MOVES";
+	public static final String PREFS_PLAY_MOVE_SOUNDS = "PREFS_PLAY_MOVE_SOUNDS";
 	public static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
 	public static final String PREFS_VARIATION_DRILL = "VARIATION_DRILL";
 	public static final String PREFS_DELAY_AFTER_MOVE = "DELAY_AFTER_MOVE";
@@ -635,6 +636,13 @@ public class AppFrame extends JFrame
 			toggleBooleanPreference(PREFS_SHOW_MATERIAL_IMBALANCE);
 		}
 	};
+	
+	protected Action actionPlayMoveSound = new AbstractAction("Play move sounds?") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			toggleBooleanPreference(PREFS_PLAY_MOVE_SOUNDS);
+		}
+	};
 
 	public static void toggleBooleanPreference(String preferenceKey) {
 		prefs.putBoolean(preferenceKey, !prefs.getBoolean(preferenceKey, true));
@@ -643,7 +651,7 @@ public class AppFrame extends JFrame
 	protected Action actionAnnounceMoves = new AbstractAction("Announce moves?") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			prefs.putBoolean(PREFS_ANNOUNCE_MOVES, e == null ? false : !prefs.getBoolean(PREFS_ANNOUNCE_MOVES, true));
+			toggleBooleanPreference(PREFS_ANNOUNCE_MOVES);
 		}
 	};
 
@@ -1575,7 +1583,7 @@ public class AppFrame extends JFrame
 			comment = " ";
 		}
 		txtComment.setText(comment);
-		if (playSound) {
+		if (playSound && prefs.getBoolean(PREFS_PLAY_MOVE_SOUNDS, true)) {
 			if (p.wasCapture()) {
 				Sounds.capture();
 			} else {
@@ -1666,7 +1674,9 @@ public class AppFrame extends JFrame
 					drill.doMove(move);
 					waitAndLoadNextDrillPosition(drill.getPosition());
 				} else if (drill.getPosition().hasNext()) {
-					Sounds.wrong();
+					if (prefs.getBoolean(PREFS_PLAY_MOVE_SOUNDS, true)) {
+						Sounds.wrong();
+					}
 				}
 			}
 		} else {
@@ -1696,7 +1706,9 @@ public class AppFrame extends JFrame
 					drill.gotoPosition(drill.getPosition().getNext());
 					waitAndLoadNextDrillPosition(drill.getPosition());
 				} else if (drill.getPosition().hasNext()) {
-					Sounds.wrong();
+					if (prefs.getBoolean(PREFS_PLAY_MOVE_SOUNDS, true)) {
+						Sounds.wrong();
+					}
 				}
 			}
 		} else {

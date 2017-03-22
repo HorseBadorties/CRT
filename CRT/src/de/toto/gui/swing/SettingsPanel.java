@@ -34,6 +34,7 @@ public class SettingsPanel extends JPanel implements ActionListener {
 	private JCheckBox cbShowArrows;
 	private JCheckBox cbShowEngineArrows;
 	private JCheckBox cbShowMaterialImbalance;
+	private JCheckBox cbMoveSounds;
 	private JCheckBox cbAnnounceMoves;
 	private SpinnerModel spinnerModel;  
 	private JSpinner spinnerDelayAfterMove;
@@ -66,6 +67,8 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		cbShowEngineArrows.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_ENGINE_ARROWS, true));	
 		cbShowMaterialImbalance = new JCheckBox(appFrame.actionShowMaterialImbalance);
 		cbShowMaterialImbalance.setSelected(prefs.getBoolean(AppFrame.PREFS_SHOW_MATERIAL_IMBALANCE, false));		
+		cbMoveSounds = new JCheckBox(appFrame.actionPlayMoveSound);
+		cbMoveSounds.setSelected(prefs.getBoolean(AppFrame.PREFS_PLAY_MOVE_SOUNDS, true));		
 		cbAnnounceMoves = new JCheckBox(appFrame.actionAnnounceMoves);
 		cbAnnounceMoves.setSelected(prefs.getBoolean(AppFrame.PREFS_ANNOUNCE_MOVES, false));	
 		spinnerModel = new SpinnerNumberModel(prefs.getInt(AppFrame.PREFS_DELAY_AFTER_MOVE, 500), 0, 3000, 100);  
@@ -110,6 +113,7 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		pnlBoardOptions.add(cbShowArrows);
 		pnlBoardOptions.add(cbShowEngineArrows);
 		pnlBoardOptions.add(cbShowMaterialImbalance);
+		pnlBoardOptions.add(cbMoveSounds);
 		pnlBoardOptions.add(cbAnnounceMoves);
 		
 		JPanel pnlDrillOptions = createTabPanel();
