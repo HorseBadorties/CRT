@@ -442,7 +442,7 @@ public class Game {
 		String value = ourTags.remove("Event");
 		appendTag(result, "Event", StringUtils.isBlank(value) ? "*" : value);
 		value = ourTags.remove("Date");
-		appendTag(result, "Date", StringUtils.isBlank(value) ? "*" : PGNReader.toPGNTimestamp(System.currentTimeMillis()));
+		appendTag(result, "Date", StringUtils.isBlank(value) ? PGNReader.toPGNTimestamp(System.currentTimeMillis()) : value);
 		value = ourTags.remove("White");
 		appendTag(result, "White", StringUtils.isBlank(value) ? "*" : value);
 		value = ourTags.remove("Black");

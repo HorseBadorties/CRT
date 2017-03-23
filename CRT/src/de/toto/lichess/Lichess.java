@@ -160,7 +160,7 @@ public class Lichess {
 			}		
 			result.addTag("Event", toPGNEvent(get(lichessGame, "rated")));
 			result.addTag("Site", "https://lichess.org/" + get(lichessGame, "id"));
-			result.addTag("Date", PGNReader.toPGNTimestamp(get(lichessGame, "createdAt")));
+			result.addTag("Date", PGNReader.toPGNTimestamp(get(lichessGame, "lastMoveAt")));
 			result.addTag("White", get(lichessGame, "players.white.userId"));
 			result.addTag("Black", get(lichessGame, "players.black.userId"));
 			result.addTag("Result", toPGNResult(lichessGame));
@@ -203,13 +203,14 @@ public class Lichess {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		String lichessUser = "dose7781";
+		
+		String lichessUser = "badplayer_cm";
 		List<Game> games = Lichess.downloadGames(lichessUser,
 				null,				
-				null, // from //new GregorianCalendar(2016, Calendar.JANUARY, 1).getTime()
+				new GregorianCalendar(2017, Calendar.MARCH, 1).getTime(), // from )
 				null, // to
-				false, // whiteGames
-				true, // blackGames
+				true, // whiteGames
+				false, // blackGames
 				new String[] {"blitz","classical","unlimited"}, // speed
 				null); // moves  //new String[] {"e4 e6", "e3"}
 		
