@@ -41,6 +41,7 @@ import de.toto.game.Position;
 import de.toto.pgn.PGNReader;
 import de.toto.tts.MaryTTS;
 import de.toto.tts.TextToSpeach;
+import de.toto.twic.TWICDownload;
 
 @SuppressWarnings("serial")
 public class AppFrame extends JFrame
@@ -130,6 +131,8 @@ public class AppFrame extends JFrame
 	public static final String PREFS_DELAY_AFTER_MOVE = "DELAY_AFTER_MOVE";
 	public static final String PREFS_DRILL_DIALOG_WIDTH = "DRILL_DIALOG_WIDTH";
 	public static final String PREFS_DRILL_DIALOG_HEIGHT = "DRILL_DIALOG_HEIGHT";
+	
+	private static final String DOWNLOADS_DIR = System.getProperty("user.home") + "/Downloads";
 
 	public AppFrame() throws HeadlessException {
 
@@ -245,7 +248,7 @@ public class AppFrame extends JFrame
 		menuEdit.add(actionMergeGame);
 		menuEdit.add(actionDownloadLichessGames);
 		menuEdit.add(actionDownloadHorseBadorties);
-		menuEdit.add(actionTest);
+		menuEdit.add(actionDownloadTWIC);
 
 		JMenu menuActions = new JMenu("Actions");
 		menuActions.add(actionSquareColorDrill);
@@ -451,13 +454,11 @@ public class AppFrame extends JFrame
 							}
 						}
 						if (!whites.isEmpty()) {
-							File pgn = new File(System.getProperty("user.home") + "/Downloads",
-									"Horse_Badorties_White.pgn");
+							File pgn = new File(DOWNLOADS_DIR, "Horse_Badorties_White.pgn");
 							Game.saveToFile(pgn, true, whites);
 						}
 						if (!blacks.isEmpty()) {
-							File pgn = new File(System.getProperty("user.home") + "/Downloads",
-									"Horse_Badorties_Black.pgn");
+							File pgn = new File(DOWNLOADS_DIR, "Horse_Badorties_Black.pgn");
 							Game.saveToFile(pgn, true, blacks);
 						}
 						result = Integer.valueOf(games.size());
@@ -500,6 +501,60 @@ public class AppFrame extends JFrame
 		}
 		return games;
 	}
+	
+	private int parseInt(String s) {
+		try {
+			return Integer.parseInt(s);
+		} catch (Exception ex) {
+			return 0;
+		}
+	}
+	
+	private Action actionDownloadTWIC = new AbstractAction("Download a TWIC issue") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			final String issueNumber = JOptionPane.showInputDialog("TWIC issue number");
+			new SwingWorker<Integer, Void>() {
+
+				@Override
+				protected Integer doInBackground() throws Exception {										
+					List<Game> games = TWICDownload.downloadIssue(issueNumber);
+					if (!games.isEmpty()) {
+						File pgn = new File(DOWNLOADS_DIR, String.format("twic%s.pgn", issueNumber));
+						Game.saveToFile(pgn, true, games);
+						
+						List<Game> _2200 = new ArrayList<Game>();
+						for (Game g : games) {														
+							if (parseInt(g.getTagValue("WhiteElo")) > 2200
+									&& parseInt(g.getTagValue("BlackElo")) > 2200) 
+							{
+								_2200.add(g);
+							}
+						}
+						if (!_2200.isEmpty()) {
+							File pgn2200 = new File(DOWNLOADS_DIR, String.format("twic%s_2200.pgn", issueNumber));
+							Game.saveToFile(pgn2200, true, _2200);
+						}
+					}
+					return games.size();
+				}
+
+				@Override
+				protected void done() {
+					Integer count = 0;
+					try {
+						count = get();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					JOptionPane.showMessageDialog(AppFrame.this,
+							String.format("downloaded and saved %d games", count, "Download finished"));
+				}
+
+			}.execute();
+
+		}
+	};
 
 	private Action actionMergeGame = new AbstractAction("Merge Game") {
 		@Override
@@ -773,7 +828,7 @@ public class AppFrame extends JFrame
 	private Action actionDownloadPGN = new AbstractAction("Download PGNs from Google Drive") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			File targetDir = new File(System.getProperty("user.home") + "/Downloads");
+			File targetDir = new File(DOWNLOADS_DIR);
 			try {
 				GoogleDrive.downloadPGNs(targetDir);
 			} catch (IOException ioEx) {
@@ -828,7 +883,7 @@ public class AppFrame extends JFrame
 				if (JOptionPane.showConfirmDialog(AppFrame.this, "Save game?") == JOptionPane.YES_OPTION) {					
 					gameAgainstTheEngine.addTag("PlyCount",
 							String.valueOf(gameAgainstTheEngine.getAllPositions().size()));
-					File targetPGN = new File(System.getProperty("user.home") + "/Downloads/CRT_Training_Games.pgn");
+					File targetPGN = new File(DOWNLOADS_DIR, "CRT_Training_Games.pgn");
 					Game.saveToFile(targetPGN, true, gameAgainstTheEngine);
 				}
 				gameAgainstTheEngine = null;
@@ -1228,15 +1283,6 @@ public class AppFrame extends JFrame
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			toggleBooleanPreference(PREFS_ONLY_MAINLINE);
-		}
-	};
-
-	private Action actionTest = new AbstractAction("Test") {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			Set<Position> vars = getCurrentGame().getVariationEndpoints(getCurrentGame().getPosition());
-			JOptionPane.showMessageDialog(AppFrame.this, new JScrollPane(new JList(vars.toArray())),
-					vars.size() + " variations", JOptionPane.INFORMATION_MESSAGE);
 		}
 	};
 

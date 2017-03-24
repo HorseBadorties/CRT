@@ -1,7 +1,5 @@
 package de.toto;
 
-import java.io.IOException;
-
 import javax.swing.UIManager;
 
 import de.toto.google.GoogleDrive;
