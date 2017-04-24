@@ -36,6 +36,7 @@ public class SettingsPanel extends JPanel implements ActionListener {
 	private JCheckBox cbShowMaterialImbalance;
 	private JCheckBox cbMoveSounds;
 	private JCheckBox cbAnnounceMoves;
+	private JCheckBox cbStealthMode;
 	private SpinnerModel spinnerModel;  
 	private JSpinner spinnerDelayAfterMove;
 	private JCheckBox cbAcceptMainlineOnly;
@@ -71,6 +72,9 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		cbMoveSounds.setSelected(prefs.getBoolean(AppFrame.PREFS_PLAY_MOVE_SOUNDS, true));		
 		cbAnnounceMoves = new JCheckBox(appFrame.actionAnnounceMoves);
 		cbAnnounceMoves.setSelected(prefs.getBoolean(AppFrame.PREFS_ANNOUNCE_MOVES, false));	
+		cbStealthMode = new JCheckBox(appFrame.actionStealthMode);
+		cbStealthMode.setSelected(prefs.getBoolean(AppFrame.PREFS_STEALTH_MODE, false));	
+		
 		spinnerModel = new SpinnerNumberModel(prefs.getInt(AppFrame.PREFS_DELAY_AFTER_MOVE, 500), 0, 3000, 100);  
 		spinnerModel.addChangeListener(new ChangeListener() {			
 			@Override
@@ -115,6 +119,7 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		pnlBoardOptions.add(cbShowMaterialImbalance);
 		pnlBoardOptions.add(cbMoveSounds);
 		pnlBoardOptions.add(cbAnnounceMoves);
+		pnlBoardOptions.add(cbStealthMode);
 		
 		JPanel pnlDrillOptions = createTabPanel();
 		tabs.add("Drill Options", pnlDrillOptions);

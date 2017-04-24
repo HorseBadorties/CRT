@@ -204,15 +204,15 @@ public class Lichess {
 	
 	public static void main(String[] args) throws Exception {
 		
-		String lichessUser = "badplayer_cm";
+		String lichessUser = "alex_slow";
 		List<Game> games = Lichess.downloadGames(lichessUser,
 				null,				
-				new GregorianCalendar(2017, Calendar.MARCH, 1).getTime(), // from )
+				new GregorianCalendar(2016, Calendar.JANUARY, 1).getTime(), // from )
 				null, // to
-				true, // whiteGames
-				false, // blackGames
+				false, // whiteGames
+				true, // blackGames
 				new String[] {"blitz","classical","unlimited"}, // speed
-				null); // moves  //new String[] {"e4 e6", "e3"}
+				new String[] {"Nf3", "c4"}); // moves  //new String[] {"e4 e6", "e3"}
 		
 		Game.saveToFile(new File(System.getProperty("user.home") + "/Downloads", lichessUser + ".pgn"), 
 				true, games);

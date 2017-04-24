@@ -192,7 +192,7 @@ public class Board extends JPanel {
 		private static final Color darkGray = new Color(128, 128, 128);
 		private static final Color lightBrown = new Color(208, 192, 160);
 		private static final Color darkBrown = new Color(160, 128, 80);
-
+		
 		private Color squareColorWhite = lightBrown;
 		private Color squareColorBlack = darkBrown;
 		
@@ -397,7 +397,7 @@ public class Board extends JPanel {
 					case "Brown": {
 						setSquareColors(lightBrown, darkBrown);
 						break;
-					}
+					}					
 				}				
 				SVGUniverse svgUniverse = new SVGUniverse();				
 				String folder = prefs.get(AppFrame.PREFS_PIECES_NAME, "merida"); 
@@ -609,6 +609,10 @@ public class Board extends JPanel {
 		public void paint(Graphics g) {
 			Graphics2D g2 = (Graphics2D) g;
 			
+			if (prefs.getBoolean(AppFrame.PREFS_STEALTH_MODE, false)) {
+				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.05f));
+			}
+						
 			if (board.text != null) {				
 				g2.setFont(new Font("Arial", Font.PLAIN, getHeight() / 3));				
 				Rectangle2D stringBounds = g2.getFontMetrics().getStringBounds(board.text, g2);				
@@ -669,7 +673,7 @@ public class Board extends JPanel {
 					}
 				}
 			}
-
+			
 			// draw last move highlight
 			String[] squareNames = position.getMoveSquareNames();
 			if (squareNames != null) {
@@ -693,11 +697,11 @@ public class Board extends JPanel {
 			}
 
 			// draw pieces
-			if (board.showPieces) {
+			if (board.showPieces) {				
 				for (int rank = 1; rank <= 8; rank++) {
 					for (int file = 1; file <= 8; file++) {
 						Square square = getSquare(rank, file);
-						if (square.gameSquare.piece != null && !square.isDragSource) {
+						if (square.gameSquare.piece != null && !square.isDragSource) {							
 							getIconFor(square.gameSquare.piece).paintIcon(this, g2, square.topLeftOnBoard.x,
 									square.topLeftOnBoard.y);
 

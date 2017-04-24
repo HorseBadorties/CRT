@@ -125,6 +125,7 @@ public class AppFrame extends JFrame
 	public static final String PREFS_SHOW_MATERIAL_IMBALANCE = "SHOW_MATERIAL_IMBALANCE";
 	public static final String PREFS_SHOW_MOVE_NOTATION = "SHOW_MOVE_NOTATION";
 	public static final String PREFS_ANNOUNCE_MOVES = "ANNOUNCE_MOVES";
+	public static final String PREFS_STEALTH_MODE = "STEALTH_MODE";
 	public static final String PREFS_PLAY_MOVE_SOUNDS = "PREFS_PLAY_MOVE_SOUNDS";
 	public static final String PREFS_RANDOM_DRILL = "RANDOM_DRILL";
 	public static final String PREFS_VARIATION_DRILL = "VARIATION_DRILL";
@@ -204,6 +205,8 @@ public class AppFrame extends JFrame
 					modelMoves.setBlindfoldMode(!prefs.getBoolean(PREFS_SHOW_MOVE_NOTATION, true));
 				} else if (evt.getKey().equals(PREFS_DELAY_AFTER_MOVE)) {
 					delayAfterMove = prefs.getInt(PREFS_DELAY_AFTER_MOVE, 500);
+				} else if (evt.getKey().equals(PREFS_STEALTH_MODE)) {
+					// nothing to do
 				} else {
 					return;
 				}
@@ -696,6 +699,13 @@ public class AppFrame extends JFrame
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			toggleBooleanPreference(PREFS_PLAY_MOVE_SOUNDS);
+		}
+	};
+	
+	protected Action actionStealthMode = new AbstractAction("Stealth Mode?") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			toggleBooleanPreference(PREFS_STEALTH_MODE);
 		}
 	};
 
