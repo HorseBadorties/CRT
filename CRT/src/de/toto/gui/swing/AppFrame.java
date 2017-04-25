@@ -1981,6 +1981,9 @@ public class AppFrame extends JFrame
 
 	@Override
 	public void eventDispatched(AWTEvent event) {
+		if (SwingUtilities.getRoot((Component)event.getSource()) instanceof JDialog) {
+			return; 
+		}
 		if (event instanceof KeyEvent) {
 			KeyEvent keyEvent = (KeyEvent) event;
 			if (keyEvent.getID() == KeyEvent.KEY_TYPED) {

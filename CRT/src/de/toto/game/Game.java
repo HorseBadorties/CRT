@@ -417,7 +417,7 @@ public class Game {
 		result.append(tagsToPGN());
 		
 		Position p = findStartPosition();
-		if (p.isStartPosition()) {
+		if (p.isStartPosition() && p.hasNext()) {
 			p = p.getNext();
 		}
 		while (p != null) {
