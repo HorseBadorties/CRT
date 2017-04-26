@@ -12,6 +12,7 @@ public class Drill extends Game {
 	private Set<Position> drilledVariations = new HashSet<Position>();
 	private boolean drillingWhite;
 	private boolean acceptOnlyMainline;
+	private boolean variationDrill;
 	private List<Position> drillPositions;
 	private List<Position> drillHistory;
 	private DrillStats drillStats;
@@ -86,7 +87,8 @@ public class Drill extends Game {
 		currentPosition = startPosition;
 		drillStartingPosition = startPosition;
 		this.drillingWhite = drillingWhite;
-		this.acceptOnlyMainline = acceptOnlyMainline;		
+		this.acceptOnlyMainline = acceptOnlyMainline;	
+		this.variationDrill = variationDrill;
 		drillPositions = getAllDrillPositions(randomDrill, variationDrill);
 		drillHistory.clear();
 		drilledVariations.clear();		
@@ -236,10 +238,11 @@ public class Drill extends Game {
 				drillHistory.add(currentPosition);
 			} 
 			setCurrentDrillPosition(drillPositions.remove(0));
-			if (currentPosition.hasPrevious() 
+			if (variationDrill && 
+					(currentPosition.hasPrevious() 
 					&& drillStartingPosition.equals(currentPosition.getPrevious())
 					|| (currentPosition.hasPrevious() && 
-							drillStartingPosition.equals(currentPosition.getPrevious().getPrevious()))) 
+							drillStartingPosition.equals(currentPosition.getPrevious().getPrevious())))) 
 			{
 				drillHistory.clear();
 			}

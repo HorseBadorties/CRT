@@ -513,33 +513,44 @@ public class AppFrame extends JFrame
 		}
 	}
 	
-	private Action actionDownloadTWIC = new AbstractAction("Download a TWIC issue") {
+	private Action actionDownloadTWIC = new AbstractAction("Download TWIC issues") {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			final String issueNumber = JOptionPane.showInputDialog("TWIC issue number");
+			final String issueNumber = JOptionPane.showInputDialog("TWIC issue number(s) (separated by blanks)");
 			new SwingWorker<Integer, Void>() {
 
 				@Override
-				protected Integer doInBackground() throws Exception {										
-					List<Game> games = TWICDownload.downloadIssue(issueNumber);
-					if (!games.isEmpty()) {
-						File pgn = new File(DOWNLOADS_DIR, String.format("twic%s.pgn", issueNumber));
-						Game.saveToFile(pgn, true, games);
-						
-						List<Game> _2200 = new ArrayList<Game>();
-						for (Game g : games) {														
-							if (parseInt(g.getTagValue("WhiteElo")) > 2200
-									&& parseInt(g.getTagValue("BlackElo")) > 2200) 
-							{
-								_2200.add(g);
+				protected Integer doInBackground() throws Exception {
+					int result = -1;					
+					String[] issues = issueNumber != null ? issueNumber.trim().split(" ") : new String[0];
+					for (String issue : issues) {
+						if (issue.isEmpty()) continue;
+						try {
+							List<Game> games = TWICDownload.downloadIssue(issue);
+							if (!games.isEmpty()) {
+								String filePrefix = issues.length == 1 ? String.format("twic%s", issueNumber) : "twic_BULK";
+								File pgn = new File(DOWNLOADS_DIR, filePrefix + ".pgn");
+								Game.saveToFile(pgn, true, games);
+								
+								List<Game> _2200 = new ArrayList<Game>();
+								for (Game g : games) {														
+									if (parseInt(g.getTagValue("WhiteElo")) > 2200
+											&& parseInt(g.getTagValue("BlackElo")) > 2200) 
+									{
+										_2200.add(g);
+									}
+								}
+								if (!_2200.isEmpty()) {
+									File pgn2200 = new File(DOWNLOADS_DIR, filePrefix + "_2200.pgn");
+									Game.saveToFile(pgn2200, true, _2200);
+								}
 							}
-						}
-						if (!_2200.isEmpty()) {
-							File pgn2200 = new File(DOWNLOADS_DIR, String.format("twic%s_2200.pgn", issueNumber));
-							Game.saveToFile(pgn2200, true, _2200);
+							result += games.size();
+						} catch (Exception ex) {
+							ex.printStackTrace();
 						}
 					}
-					return games.size();
+					return result;
 				}
 
 				@Override
@@ -550,8 +561,10 @@ public class AppFrame extends JFrame
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-					JOptionPane.showMessageDialog(AppFrame.this,
-							String.format("downloaded and saved %d games", count, "Download finished"));
+					if (count >= 0) {
+						JOptionPane.showMessageDialog(AppFrame.this,
+								String.format("downloaded and saved %d games", count, "Download finished"));
+					}
 				}
 
 			}.execute();

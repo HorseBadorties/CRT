@@ -2,6 +2,7 @@ package de.toto.twic;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -21,6 +22,7 @@ public class TWICDownload {
 	
 	public static List<Game> downloadIssue(String issueNumber) throws Exception {
 		URL url = new URL(TWIC_URL + "/twic" + issueNumber + "g.zip");
+		System.out.println("downloading " + url);
 		InputStream in = url.openStream();
 		try {
 			ZipInputStream zip = new ZipInputStream(in);
@@ -31,5 +33,13 @@ public class TWICDownload {
 			if (in != null) in.close();
 		}
 		
+	}
+	
+	public static List<Game> downloadIssues(String... issueNumber) throws Exception {
+		List<Game> result = new ArrayList<Game>();
+		for (String issue : issueNumber) {
+			result.addAll(downloadIssue(issue));
+		}
+		return result;		
 	}
 }
