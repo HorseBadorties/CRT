@@ -133,7 +133,8 @@ public class UCIEngine {
 			sendCommand("quit");
 			if (outputListener != null) outputListener.stop();
 			reader.close();
-			writer.close();			
+			writer.close();	
+			process.destroy();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -156,15 +157,13 @@ public class UCIEngine {
 		return fen;
 	}
 	
-	public void setMultiPV(int value) {
-		if (value != multiPV) {
-			multiPV = value;
-			sendCommand("setoption name MultiPV value " + value);
-			if (isStarted() && fen != null) {
-				String _fen = fen;
-				fen = null;
-				setFEN(_fen);
-			}
+	public void setMultiPV(int value) {		
+		multiPV = value;
+		sendCommand("setoption name MultiPV value " + value);
+		if (isStarted() && fen != null) {
+			String _fen = fen;
+			fen = null;
+			setFEN(_fen);
 		}
 	}
 	

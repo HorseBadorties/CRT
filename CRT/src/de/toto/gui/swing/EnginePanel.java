@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.prefs.Preferences;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -26,12 +27,14 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 	private DefaultListModel<String> bestlines;
 	private JButton btnChangeEngine;
 	
+	private static Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
+	
 	public EnginePanel(AppFrame parent, UCIEngine engine) {
 		this.parent = parent;
 		
-		multiPV = new JSpinner(new SpinnerNumberModel(1, 1, 4, 1));
+		multiPV = new JSpinner(new SpinnerNumberModel(prefs.getInt(AppFrame.PREFS_ENGINE_MULTI_PV, 1), 1, 4, 1));
 		multiPV.addChangeListener(this);			
-		threads = new JSpinner(new SpinnerNumberModel(1, 1, 2, 1));
+		threads = new JSpinner(new SpinnerNumberModel(prefs.getInt(AppFrame.PREFS_ENGINE_THREADS, 1), 1, 2, 1));
 		threads.addChangeListener(this);
 		threads.setFocusable(false);
 		bestlines = new DefaultListModel<String>();
@@ -60,10 +63,10 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 		}
 		this.engine = engine;
 		if (engine != null) {
-			this.engine.addEngineListener(this);
-			lblEngineName.setText("<html><b>" + engine.getName() + "      </b></html>");
-			multiPV.setValue(1);
-			threads.setValue(1);
+			engine.setMultiPV(prefs.getInt(AppFrame.PREFS_ENGINE_MULTI_PV, 1));
+			engine.setThreadCount(prefs.getInt(AppFrame.PREFS_ENGINE_THREADS, 1));
+			engine.addEngineListener(this);
+			lblEngineName.setText("<html><b>" + engine.getName() + "      </b></html>");			
 		}
 		
 	}
@@ -79,7 +82,7 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 	}
 
 	@Override
-	public void newEngineScore(UCIEngine e, Score s) {	
+	public void newEngineScore(UCIEngine e, Score s) {		
 		if (bestlines.size() >= s.multiPV) {
 			Position p = parent.getCurrentPosition();
 			if (!s.fen.equals(p.getFen())) return;
@@ -105,10 +108,7 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 		bestlines.set(0, "<engine stopped>");
 		for (int i = 1; i < bestlines.size(); i++) {
 			bestlines.set(i, "");
-		}
-		multiPV.setValue(1);
-		threads.setValue(1);
-		
+		}		
 	}
 
 	// a spinner changed
@@ -117,15 +117,15 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 		if (!engine.isStarted()) return;
 		if (e.getSource() == multiPV) {
 			int newMultiPV = ((SpinnerNumberModel)multiPV.getModel()).getNumber().intValue();
-			if (newMultiPV != bestlines.size()) {
-				engine.setMultiPV(newMultiPV);			
-				for (int i = newMultiPV; i < bestlines.size(); i++) {
-					bestlines.set(i, "");
-				}
+			prefs.putInt(AppFrame.PREFS_ENGINE_MULTI_PV, newMultiPV);
+			engine.setMultiPV(newMultiPV);			
+			for (int i = newMultiPV; i < bestlines.size(); i++) {
+				bestlines.set(i, "");
 			}
-		} else if (e.getSource() == threads) {			
-			engine.setThreadCount(((SpinnerNumberModel)threads.getModel()).getNumber().intValue());
-			
+		} else if (e.getSource() == threads) {	
+			int newThreadCount = ((SpinnerNumberModel)threads.getModel()).getNumber().intValue();
+			prefs.putInt(AppFrame.PREFS_ENGINE_THREADS, newThreadCount);
+			engine.setThreadCount(newThreadCount);
 		}		
 	}
 
