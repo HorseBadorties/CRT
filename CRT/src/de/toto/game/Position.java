@@ -659,6 +659,8 @@ public class Position {
 				}
 			}			
 			createFen();
+		} else {
+			this.move = move.trim();
 		}
 	}
 	

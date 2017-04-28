@@ -938,8 +938,7 @@ public class AppFrame extends JFrame
 					gameEngine = new UCIEngine(pathToGameEngine);
 					gameEngine.addEngineListener(AppFrame.this);
 				}
-				Position start = getCurrentPosition();
-				gameAgainstTheEngine = new Game(new Position(null, start.getMove(), start.getFen()));
+				gameAgainstTheEngine = new Game(getCurrentGame());
 				gameAgainstTheEngine.addGameListener(AppFrame.this);
 				int[] allSkillLevel = gameEngine.getAllSkillLevel();
 				Integer[] levels = new Integer[allSkillLevel.length];

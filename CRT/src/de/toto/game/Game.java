@@ -38,6 +38,14 @@ public class Game {
 		firePositionChangedEvent();
 	}
 	
+	
+	public Game(Game other) {
+		for (Position p : other.getPosition().getLine(other.findStartPosition())) {
+			addMove(p.getMove(), p.getFen());			
+		};
+		firePositionChangedEvent();
+	}
+	
 	protected void firePositionChangedEvent() {
 		GameEvent e = new GameEvent(this);
 		for (GameListener l : listener) {
