@@ -43,6 +43,9 @@ public class Game {
 		for (Position p : other.getPosition().getLine(other.findStartPosition())) {
 			addMove(p.getMove(), p.getFen());			
 		};
+		if (currentPosition == null) {
+			currentPosition = new Position(); // from startposition
+		}
 		firePositionChangedEvent();
 	}
 	
