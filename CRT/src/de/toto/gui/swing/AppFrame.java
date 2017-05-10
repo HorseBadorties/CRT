@@ -103,6 +103,7 @@ public class AppFrame extends JFrame
 	public static final String PREFS_ENGINE_MULTI_PV = "ENGINE_MULTI_PV";
 	public static final String PREFS_ENGINE_THREADS = "ENGINE_THREADS";
 	public static final String PREFS_PATH_TO_GAME_ENGINE = "PATH_TO_GAME_ENGINE";
+	public static final String PREFS_PATH_TO_RODENT_PERSONALITY = "PATH_TO_RODENT_PERSONALITY";
 	public static final String PREFS_FRAME_WIDTH = "FRAME_WIDTH";
 	public static final String PREFS_FRAME_HEIGHT = "FRAME_HEIGHT";
 	public static final String PREFS_FRAME_EXTENDED_STATE = "FRAME_EXTENDED_STATE";

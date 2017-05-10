@@ -4,6 +4,9 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+
+import de.toto.gui.swing.AppFrame;
 
 public class UCIEngine {
 	
@@ -118,6 +121,7 @@ public class UCIEngine {
 	 * @param command
 	 */
 	private void sendCommand(String command) {
+//		log.info("sending command: " + command);
 		try {
 			writer.write(command + "\n");
 			writer.flush();
@@ -209,13 +213,6 @@ public class UCIEngine {
 		return new int[]{1,2,3,4,5,6,7,8,9};
 	}
 	
-	
-	private static final String RODENT_DIR = "C:\\Scid vs PC-4.12\\bin\\engines\\rodent_II\\";
-//	private static final String RODENT_DIR = "C:\\Program Files\\engines\\Rodent_II\\";
-	
-//	private static final String RODENT_PERSONALITY = RODENT_DIR + "personalities\\masters\\victor.txt";
-	private static final String RODENT_PERSONALITY = RODENT_DIR + "personalities\\school\\ben.txt";
-	
 	public void startGame(int skillLevel, String startFEN) {
 		this.skillLevel = skillLevel;		
 		gameTimeInMillis = translateGameTime(); 
@@ -230,10 +227,8 @@ public class UCIEngine {
 		if (isStockfish()) {
 			sendCommand("setoption name Skill Level value " + translateSkillLevel()); 
 		}
-		if (isRodentII()) {
-			sendCommand("setoption name PersonalityFile value " + RODENT_PERSONALITY);
-//			sendCommand("setoption name GuideBookFile value " + RODENT_DIR + "books\\guide\\solid.bin");
-//			sendCommand("setoption name MainBookFile value " + RODENT_DIR + "books\\rodent.bin");
+		if (isRodentIII()) {
+			sendCommand("setoption name PersonalityFile value " + Preferences.userNodeForPackage(AppFrame.class).get(AppFrame.PREFS_PATH_TO_RODENT_PERSONALITY,  ""));
 		}
 		sendCommand("ucinewgame");
 		sendCommand("isready");
@@ -277,8 +272,8 @@ public class UCIEngine {
 		return getName().indexOf("Stockfish") >= 0;
 	}
 	
-	public boolean isRodentII() {
-		return getName().indexOf("Rodent II") >= 0;
+	public boolean isRodentIII() {
+		return getName().indexOf("Rodent III") >= 0;
 	}
 				
 	private static class OutputReader implements Runnable {
@@ -313,7 +308,7 @@ public class UCIEngine {
 				String line = null;
 				while (isAlive && (line = engine.reader.readLine()) != null) {
 					String fen = engine.getFEN();
-//					log.info(line);
+					//log.info(line);
 					Score newScore = Score.parse(fen, line);
 					if (newScore != null) {
 						engine.lastTimeAnnounced = newScore.time;

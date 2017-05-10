@@ -43,7 +43,10 @@ public class SettingsPanel extends JPanel implements ActionListener {
 	private JLabel txtEnginePath;
 	private JButton btnPickEngine;
 	private JLabel txtGameEnginePath;
-	private JButton btnPickGameEngine;	
+	private JButton btnPickGameEngine;
+	private JLabel txtRodentPersonalityPath;
+	private JButton btnPickRodentPersonality;	
+	
 	
 	private Preferences prefs = Preferences.userNodeForPackage(AppFrame.class);
 	
@@ -95,6 +98,10 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		txtGameEnginePath.setBorder(BorderFactory.createLoweredBevelBorder());	
 		btnPickGameEngine = new JButton("..");
 		btnPickGameEngine.addActionListener(this);
+		txtRodentPersonalityPath = new JLabel(prefs.get(AppFrame.PREFS_PATH_TO_RODENT_PERSONALITY, "     "));
+		txtRodentPersonalityPath.setBorder(BorderFactory.createLoweredBevelBorder());	
+		btnPickRodentPersonality = new JButton("..");
+		btnPickRodentPersonality.addActionListener(this);
 		
 		
 		
@@ -133,26 +140,23 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		
 		
 		JPanel pnlEngineOptions = createTabPanel();
-		tabs.add("Engine Options", pnlEngineOptions);
-		JPanel pnlEngine = new JPanel(new FlowLayout(FlowLayout.LEFT, 5,0));
-		pnlEngine.add(new JLabel("Analysis engine: "));
-		pnlEngine.add(txtEnginePath);
-		pnlEngine.add(btnPickEngine);
-		pnlEngine.setAlignmentX(LEFT_ALIGNMENT);
-		pnlEngine.setMaximumSize(pnlEngine.getPreferredSize());
-		pnlEngineOptions.add(pnlEngine);
-		JPanel pnlGameEngine = new JPanel(new FlowLayout(FlowLayout.LEFT, 5,0));
-		pnlGameEngine.add(new JLabel("Game engine: "));
-		pnlGameEngine.add(txtGameEnginePath);
-		pnlGameEngine.add(btnPickGameEngine);
-		pnlGameEngine.setAlignmentX(LEFT_ALIGNMENT);
-		pnlGameEngine.setMaximumSize(pnlGameEngine.getPreferredSize());
-		pnlEngineOptions.add(pnlGameEngine);
-		
-		
+		tabs.add("Engine Options", pnlEngineOptions);		
+		pnlEngineOptions.add(createLabelAndButtonPanel("Analysis engine: ", txtEnginePath, btnPickEngine));
+		pnlEngineOptions.add(createLabelAndButtonPanel("Game engine: ", txtGameEnginePath, btnPickGameEngine));
+		pnlEngineOptions.add(createLabelAndButtonPanel("Rodent personality: ", txtRodentPersonalityPath, btnPickRodentPersonality));
 		setLayout(new BorderLayout());
 		add(tabs);		
 		
+	}
+	
+	private static JPanel createLabelAndButtonPanel(String title, JLabel label, JButton btn) {
+		JPanel pnlResult = new JPanel(new FlowLayout(FlowLayout.LEFT, 5,0));
+		pnlResult.add(new JLabel(title));
+		pnlResult.add(label);
+		pnlResult.add(btn);
+		pnlResult.setAlignmentX(LEFT_ALIGNMENT);
+		pnlResult.setMaximumSize(pnlResult.getPreferredSize());
+		return pnlResult;
 	}
 	
 	private static JPanel createTabPanel() {
@@ -171,8 +175,15 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		} else if (e.getSource() == cmbPieces) {
 			prefs.put(AppFrame.PREFS_PIECES_NAME, cmbPieces.getSelectedItem().toString());
 		} else {
-			String pref = e.getSource() == btnPickGameEngine ? AppFrame.PREFS_PATH_TO_GAME_ENGINE : AppFrame.PREFS_PATH_TO_ENGINE;
-			JLabel textField = e.getSource() == btnPickGameEngine ? txtGameEnginePath : txtEnginePath; 
+			String pref = AppFrame.PREFS_PATH_TO_ENGINE;
+			JLabel textField = txtEnginePath;
+			if (e.getSource() == btnPickGameEngine) {
+				pref = AppFrame.PREFS_PATH_TO_GAME_ENGINE;
+				textField = txtGameEnginePath;				
+			} else if (e.getSource() == btnPickRodentPersonality) {
+				pref = AppFrame.PREFS_PATH_TO_RODENT_PERSONALITY;
+				textField = txtRodentPersonalityPath;				
+			}
 			
 			String newPath = AppFrame.askForPathToEngine(this, prefs.get(pref, null));
 			if (newPath != null && !newPath.equals(textField.getText())) {
