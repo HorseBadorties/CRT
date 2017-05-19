@@ -1,5 +1,0 @@
-#JSGF V1.0;
-
-grammar chess;
-
-public <command> = play | pause | next | previous;
