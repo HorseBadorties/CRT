@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang.StringUtils;
 
 import de.toto.game.*;
@@ -31,7 +32,7 @@ public class PGNReader {
 	
 	public PGNReader(File pgn) {
 		try {
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(pgn), "UTF-8"));
+			reader = new BufferedReader(new InputStreamReader(new BOMInputStream(new FileInputStream(pgn), false), "UTF-8"));
 		} catch (Exception e) {
 			throw new RuntimeException("opening PGN file failed", e);		
 		}
@@ -82,7 +83,7 @@ public class PGNReader {
 	
 	public static List<Game> parse(File pgn) {
 		try {
-			return parse(new FileInputStream(pgn));
+			return parse(new BOMInputStream(new FileInputStream(pgn), false));
 		} catch (FileNotFoundException ex) {			
 			throw new RuntimeException(ex.getMessage(), ex);
 		}
@@ -107,8 +108,14 @@ public class PGNReader {
 	private static Game readGame(BufferedReader reader) throws IOException {
 		if (reader == null) return null;
 		String line = reader.readLine();
+		if (line != null) { 
+			line = line.trim();
+		}
 		while (line != null && StringUtils.isBlank(line)) {
 			line = reader.readLine();
+			if (line != null) { 
+				line = line.trim();
+			}
 		}		
 		if (line == null) { // EOF
 			return null;
