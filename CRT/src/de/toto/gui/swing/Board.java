@@ -14,9 +14,7 @@ import java.util.ArrayList;
 import java.util.prefs.Preferences;
 
 import javax.imageio.ImageIO;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
+import javax.swing.*;
 
 import com.kitfox.svg.SVGUniverse;
 import com.kitfox.svg.app.beans.SVGIcon;
@@ -501,6 +499,7 @@ public class Board extends JPanel {
 						y = boardSize - ((rank - 1) * squareSize) - squareSize + borderSize;
 					} else {
 						x = boardSize - ((file - 1) * squareSize) - squareSize + borderSize;
+						x = boardSize - ((file - 1) * squareSize) - squareSize + borderSize;
 						y = (rank - 1) * squareSize + borderSize;
 					}
 					square.topLeftOnBoard = new Point(x, y);
@@ -806,5 +805,31 @@ public class Board extends JPanel {
 			return transform.createTransformedShape(path);
 		}
 
+	}
+
+	public static void main(String[] args) {
+		URL url =  Board.class.getResource("/images/pieces/merida/wR.svg");
+		Dimension size = new Dimension(1100, 1100);
+		JFrame frame = new JFrame("SVGSalamanderTest-Swing");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		JComponent canvas = new JComponent() {
+			@Override
+			protected void paintComponent(Graphics g) {
+				g.setColor(Color.WHITE);
+				g.fillRect(0,0, size.width, size.height);
+				SVGUniverse svgUniverse = new SVGUniverse();
+				SVGIcon icon = new SVGIcon();
+				icon.setSvgURI(svgUniverse.loadSVG(url));
+				icon.setScaleToFit(true);
+				icon.setAntiAlias(true);
+				icon.setPreferredSize(size);
+				icon.paintIcon(null, g, 0, 0);
+			}
+		};
+		canvas.setPreferredSize(size);
+		frame.getContentPane().add(canvas);
+		frame.pack();
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
 	}
 }
