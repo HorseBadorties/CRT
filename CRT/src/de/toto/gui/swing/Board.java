@@ -808,8 +808,8 @@ public class Board extends JPanel {
 	}
 
 	public static void main(String[] args) {
-		URL url =  Board.class.getResource("/images/pieces/merida/wR.svg");
-		Dimension size = new Dimension(1100, 1100);
+		final URL url =  Board.class.getResource("/images/pieces/merida/wR.svg");
+		final Dimension size = new Dimension(1100, 1100);
 		JFrame frame = new JFrame("SVGSalamanderTest-Swing");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		JComponent canvas = new JComponent() {
