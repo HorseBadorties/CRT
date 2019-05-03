@@ -85,7 +85,7 @@ public class EnginePanel extends JPanel implements EngineListener, ChangeListene
 	public void newEngineScore(UCIEngine e, Score s) {		
 		if (bestlines.size() >= s.multiPV) {
 			Position p = parent.getCurrentPosition();
-			if (!s.fen.equals(p.getFen())) return;
+			if (s.fen == null || !s.fen.equals(p.getFen())) return;
 			String scoreText = null;
 			if (s.mate > 0) {
 				scoreText = String.format("%d [M%d] %s", 

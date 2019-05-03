@@ -133,6 +133,7 @@ public class UCIEngine {
 	public synchronized void stop() {
 		if (!isStarted()) return;
 		try {
+			fen = null;
 			sendCommand("stop");
 			sendCommand("quit");
 			if (outputListener != null) outputListener.stop();
@@ -153,6 +154,7 @@ public class UCIEngine {
 			this.fen = newFEN;
 			sendCommand("stop");
 			sendCommand("position fen " + newFEN);
+			sendCommand("setoption name UCI_AnalyseMode value true");
 			sendCommand("go infinite");
 		}
 	}
@@ -220,6 +222,7 @@ public class UCIEngine {
 			start();
 		}
 		sendCommand("stop");
+		fen = null;
 		
 //		sendCommand("setoption name UCI_LimitStrength value true");
 //		sendCommand("setoption name UCI_Elo value " + translateElo());
